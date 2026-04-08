@@ -1,0 +1,157 @@
+<div class="students-container animate-fade-in">
+
+  <!-- Header -->
+  <div class="page-header mb-4">
+    <div>
+      <h3 class="fw-bold mb-1">Student Registry</h3>
+      <p class="text-muted small mb-0">View and manage enrolled student records.</p>
+    </div>
+    <div class="search-box">
+      <i class="bi bi-search search-icon"></i>
+      <input type="text" class="search-input" placeholder="Search by name or ID..."
+        [(ngModel)]="searchQuery" (input)="onSearch()">
+    </div>
+  </div>
+
+  <!-- Table Card -->
+  <div class="glass-card overflow-hidden">
+    @if (isLoading) {
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <p class="text-muted small mt-3 mb-0">Retrieving students...</p>
+      </div>
+    } @else {
+      <div class="table-responsive">
+        <table class="modern-table">
+          <thead>
+            <tr>
+              <th>Student ID</th>
+              <th>Full Name</th>
+              <th>Program</th>
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (s of students; track s.id) {
+              <tr class="hover-row">
+                <td><span class="student-id">{{ s.student_number }}</span></td>
+                <td><span class="student-name">{{ s.name }}</span></td>
+                <td><span class="program-chip">{{ s.program?.code }}</span></td>
+                <td class="text-end">
+                  <button class="btn-view" (click)="viewDetails(s)">
+                    <i class="bi bi-person-lines-fill"></i> View Profile
+                  </button>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="4" class="empty-state">
+                  <i class="bi bi-people empty-icon"></i>
+                  <p class="text-muted mb-0 mt-2">No student records found.</p>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+
+</div>
+
+<!-- Modal Overlay -->
+@if (showModal && selectedStudent) {
+  <div class="modal-overlay" (click)="closeModal()"></div>
+  <div class="modal-wrapper">
+    <div class="modal-panel animate-fade-in">
+
+      <!-- Modal Header -->
+      <div class="modal-head">
+        <div class="modal-avatar">{{ selectedStudent.name?.charAt(0) }}</div>
+        <div>
+          <h5 class="modal-title">{{ selectedStudent.name }}</h5>
+          <span class="modal-subtitle">{{ selectedStudent.student_number }}</span>
+        </div>
+        <button class="modal-close" (click)="closeModal()">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tab-bar">
+        <button class="tab-btn" [class.tab-active]="activeTab === 'info'"
+          (click)="activeTab = 'info'">
+          <i class="bi bi-person"></i> Information
+        </button>
+        <button class="tab-btn" [class.tab-active]="activeTab === 'documents'"
+          (click)="activeTab = 'documents'">
+          <i class="bi bi-file-earmark-text"></i> Official Documents
+        </button>
+      </div>
+
+      <!-- Tab: Info -->
+      @if (activeTab === 'info') {
+        <div class="tab-content animate-fade-in">
+          <div class="info-grid">
+            <div class="info-item">
+              <label class="info-label">Full Name</label>
+              <p class="info-value">{{ selectedStudent.name }}</p>
+            </div>
+            <div class="info-item">
+              <label class="info-label">Student ID</label>
+              <p class="info-value accent">{{ selectedStudent.student_number }}</p>
+            </div>
+            <div class="info-item">
+              <label class="info-label">Program</label>
+              <p class="info-value">{{ selectedStudent.program?.name }}</p>
+            </div>
+            <div class="info-item">
+              <label class="info-label">Program Code</label>
+              <p class="info-value"><span class="program-chip">{{ selectedStudent.program?.code }}</span></p>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Tab: Documents -->
+      @if (activeTab === 'documents') {
+        <div class="tab-content animate-fade-in">
+          <div class="doc-section">
+            <p class="doc-section-title">Registrar Clearances</p>
+            <div class="doc-list">
+              <button class="doc-btn" (click)="generateCOR(selectedStudent.id)">
+                <div class="doc-btn-left">
+                  <div class="doc-icon doc-icon--red">
+                    <i class="bi bi-file-earmark-pdf"></i>
+                  </div>
+                  <div>
+                    <span class="doc-name">Certificate of Registration</span>
+                    <span class="doc-desc">COR — Current term enrollment</span>
+                  </div>
+                </div>
+                <i class="bi bi-download doc-arrow"></i>
+              </button>
+              <button class="doc-btn" (click)="generateTOR(selectedStudent.id)">
+                <div class="doc-btn-left">
+                  <div class="doc-icon doc-icon--indigo">
+                    <i class="bi bi-mortarboard"></i>
+                  </div>
+                  <div>
+                    <span class="doc-name">Transcript of Records</span>
+                    <span class="doc-desc">TOR — Full academic history</span>
+                  </div>
+                </div>
+                <i class="bi bi-download doc-arrow"></i>
+              </button>
+            </div>
+            <p class="doc-notice">
+              <i class="bi bi-info-circle"></i>
+              Documents can only be generated if the student has no unpaid balances.
+            </p>
+          </div>
+        </div>
+      }
+
+    </div>
+  </div>
+}

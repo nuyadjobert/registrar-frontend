@@ -1,0 +1,139 @@
+<div class="course-catalog-container animate-fade-in">
+
+  <!-- Header -->
+  <div class="page-header mb-4">
+    <div>
+      <h3 class="fw-bold mb-1">Subject Management</h3>
+      <p class="text-muted small mb-0">Configure degree requirements and course metadata.</p>
+    </div>
+    <button class="btn-main" (click)="showForm = !showForm">
+      <i class="bi" [class.bi-plus-lg]="!showForm" [class.bi-x-lg]="showForm"></i>
+      {{ showForm ? 'Cancel' : 'Add Subject' }}
+    </button>
+  </div>
+
+  <!-- Form Card -->
+  @if (showForm) {
+  <div class="glass-card p-4 mb-4 animate-fade-in">
+    <div class="form-section">
+      <h5 class="card-title">{{ isEditing ? 'Edit Existing' : 'Register New' }} Subject</h5>
+
+      <form (ngSubmit)="submitForm()" #subjectForm="ngForm">
+        <div class="form-grid">
+
+          <div class="form-group col-code">
+            <label class="form-label">Code</label>
+            <input type="text" name="subject_code" [(ngModel)]="form.subject_code" #subjCode="ngModel" required
+              [class.is-invalid]="subjCode.invalid && subjCode.touched" class="form-control" placeholder="IT101">
+            @if (subjCode.invalid && subjCode.touched) {
+            <div class="error-hint"><i class="bi bi-exclamation-circle-fill"></i> Required</div>
+            }
+          </div>
+
+          <div class="form-group col-name">
+            <label class="form-label">Subject Name</label>
+            <input type="text" name="subject_name" [(ngModel)]="form.subject_name" #subjName="ngModel" required
+              [class.is-invalid]="subjName.invalid && subjName.touched" class="form-control"
+              placeholder="Object Oriented Programming">
+            @if (subjName.invalid && subjName.touched) {
+            <div class="error-hint"><i class="bi bi-exclamation-circle-fill"></i> Name required</div>
+            }
+          </div>
+
+          <div class="form-group col-units">
+            <label class="form-label">Units</label>
+            <input type="number" name="units" [(ngModel)]="form.units" class="form-control" min="0" required>
+          </div>
+
+          <div class="form-group col-type">
+            <label class="form-label">Type</label>
+            <select name="type" [(ngModel)]="form.type" class="form-select">
+              <option value="lecture">Lecture Only</option>
+              <option value="lab">Laboratory</option>
+              <option value="internship">Internship/OJT</option>
+            </select>
+          </div>
+
+          <div class="form-group col-status">
+            <label class="form-label">Status</label>
+            <select name="status" [(ngModel)]="form.status" class="form-select">
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-actions mt-4">
+          <button type="button" class="btn-reset" (click)="resetForm()">Cancel</button>
+          <button type="submit" class="btn-main" [disabled]="subjectForm.invalid">
+            {{ isEditing ? 'Update Subject' : 'Save Subject' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+  }
+
+  <!-- Table Card -->
+  <div class="glass-card overflow-hidden">
+    @if (isLoading) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p class="text-muted small mt-3 mb-0">Retrieving subjects...</p>
+    </div>
+    } @else {
+    <div class="table-responsive">
+      <table class="modern-table">
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>Description</th>
+            <th>Units</th>
+            <th>Classification</th>
+            <th>Status</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (sub of subjects; track sub.id) {
+          <tr class="hover-row">
+            <td><span class="subject-code">{{ sub.subject_code }}</span></td>
+            <td><span class="fw-medium">{{ sub.subject_name }}</span></td>
+            <td><span class="units-badge">{{ sub.units }} units</span></td>
+            <td><span class="type-label">{{ sub.type || 'General' }}</span></td>
+            <td>
+              <span [class]="sub.status === 'active' ? 'pill pill-active' : 'pill pill-inactive'">
+                {{ sub.status | uppercase }}
+              </span>
+            </td>
+            <td class="text-end">
+              <button class="btn-edit" (click)="editSubject(sub)" title="Edit">
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+                  <path d="M11 2a2 2 0 112.8 2.8L5 13.6 2 14.5l.9-3L11 2z" stroke="currentColor" stroke-width="1.4"
+                    stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </button>
+              <button class="btn-delete" (click)="deleteSubject(sub.id)" title="Delete">
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+                  <path
+                    d="M3 4h10M5 4V3a1 1 0 011-1h4a1 1 0 011 1v1M6 7v5M10 7v5M4 4l.8 9a1 1 0 001 .9h4.4a1 1 0 001-.9L12 4"
+                    stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </button>
+            </td>
+          </tr>
+          } @empty {
+          <tr>
+            <td colspan="6" class="empty-state">
+              <i class="bi bi-journal-x empty-icon"></i>
+              <p class="text-muted mb-0 mt-2">No subject records available.</p>
+            </td>
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    }
+  </div>
+
+</div>

@@ -1,0 +1,104 @@
+<div class="grades-container animate-fade-in">
+
+  <!-- Header -->
+  <div class="page-header mb-4">
+    <div>
+      <h3 class="fw-bold mb-1">Grading Portal</h3>
+      <p class="text-muted small mb-0">Select a section to manage student grades.</p>
+    </div>
+  </div>
+
+  <!-- Section Selector Card -->
+  <div class="glass-card p-4 mb-4">
+    <div class="selector-row">
+      <div class="selector-label">
+        <i class="bi bi-collection"></i>
+        <span>Select Section</span>
+      </div>
+      <select class="form-select section-select"
+        [(ngModel)]="selectedSectionId"
+        (change)="onSectionChange()">
+        <option [ngValue]="undefined">— Choose a section —</option>
+        @for (sec of sections; track sec.id) {
+          <option [ngValue]="sec.id">
+            {{ sec.section_name }} — {{ sec.subject?.subject_name }}
+          </option>
+        }
+      </select>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  @if (isLoading) {
+    <div class="glass-card">
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <p class="text-muted small mt-3 mb-0">Retrieving grade records...</p>
+      </div>
+    </div>
+
+  <!-- Grades Table -->
+  } @else if (selectedSectionId && grades.length > 0) {
+    <div class="glass-card overflow-hidden">
+      <div class="table-responsive">
+        <table class="modern-table">
+          <thead>
+            <tr>
+              <th>Student</th>
+              <th>Current Grade</th>
+              <th>Remarks</th>
+              <th class="text-end">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (g of grades; track g.id) {
+              <tr class="hover-row">
+                <td>
+                  <span class="student-name">{{ g.student?.name }}</span>
+                  <span class="student-number">{{ g.student?.student_number }}</span>
+                </td>
+                <td>
+                  <input type="text"
+                    class="grade-input"
+                    [(ngModel)]="g.grade"
+                    placeholder="1.25">
+                </td>
+                <td>
+                  <input type="text"
+                    class="remarks-input"
+                    [(ngModel)]="g.remarks"
+                    placeholder="Optional remarks">
+                </td>
+                <td class="text-end">
+                  <button class="btn-save"
+                    (click)="saveGrade(g.student_id, g.grade, g.remarks)">
+                    <i class="bi bi-floppy"></i> Save
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- Empty State -->
+  } @else if (selectedSectionId) {
+    <div class="glass-card">
+      <div class="empty-state">
+        <i class="bi bi-person-x empty-icon"></i>
+        <p class="text-muted mb-0 mt-2">No students found in this section.</p>
+      </div>
+    </div>
+
+  <!-- No Selection -->
+  } @else {
+    <div class="glass-card">
+      <div class="empty-state">
+        <i class="bi bi-collection empty-icon"></i>
+        <p class="text-muted mb-0 mt-2">Please select a section to view grades.</p>
+      </div>
+    </div>
+  }
+
+</div>

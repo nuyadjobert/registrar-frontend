@@ -1,0 +1,95 @@
+<div class="db-wrap">
+
+  <!-- Header -->
+  <div class="db-header">
+    <div>
+      <p class="db-eyebrow">Overview</p>
+      <h2 class="db-title">Dashboard</h2>
+      <p class="db-sub">Welcome back, <span>{{ auth.currentUser()?.name }}</span></p>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-grid">
+
+    <div class="stat-card">
+      <div class="stat-top">
+        <div class="stat-icon icon-indigo">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+          </svg>
+        </div>
+        <span class="stat-badge badge-emerald">Active</span>
+      </div>
+      <p class="stat-num">{{ totalPrograms() }}</p>
+      <p class="stat-lbl">Total Programs</p>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-top">
+        <div class="stat-icon icon-violet">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+          </svg>
+        </div>
+        <span class="stat-badge badge-violet">Enrolled</span>
+      </div>
+      <p class="stat-num">{{ totalStudents() }}</p>
+      <p class="stat-lbl">Total Students</p>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-top">
+        <div class="stat-icon icon-blue">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+          </svg>
+        </div>
+        <span class="stat-badge badge-blue">Total</span>
+      </div>
+      <p class="stat-num">{{ totalEnrollments() }}</p>
+      <p class="stat-lbl">Enrollments</p>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-top">
+        <div class="stat-icon icon-amber">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+        </div>
+        <span class="stat-badge badge-amber">Pending</span>
+      </div>
+      <p class="stat-num">{{ pendingEnrollments() }}</p>
+      <p class="stat-lbl">Pending Enrollments</p>
+    </div>
+
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="qa-section">
+    <div class="qa-header">
+      <h3 class="qa-title">Quick Actions</h3>
+    </div>
+    <div class="qa-grid">
+      @for (action of quickActions; track action.label) {
+        <a [href]="action.path" class="action-card">
+          <div class="action-icon" [ngClass]="action.colorClass">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" [innerHTML]="action.icon"></svg>
+          </div>
+          <div class="action-text">
+            <p class="action-label">{{ action.label }}</p>
+            <p class="action-desc">{{ action.desc }}</p>
+          </div>
+          <svg class="action-arrow" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+          </svg>
+        </a>
+      }
+    </div>
+  </div>
+
+</div>

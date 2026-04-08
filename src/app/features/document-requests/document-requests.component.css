@@ -1,0 +1,288 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Syne:wght@700&display=swap');
+
+:host {
+  --primary: #1e293b;
+  --accent: #6366f1;
+  --surface: #ffffff;
+  --bg: #f8fafc;
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* ── Container ── */
+.doc-requests-container {
+  padding: 2rem;
+  background-color: var(--bg);
+  min-height: 100vh;
+}
+
+/* ── Page Header ── */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+h3 {
+  font-family: 'Syne', sans-serif;
+  color: var(--primary);
+  letter-spacing: -0.02em;
+  margin: 0 0 0.25rem;
+}
+
+.text-muted { color: #94a3b8; }
+.small      { font-size: 0.85rem; }
+.fw-bold    { font-weight: 700; }
+.mb-1       { margin-bottom: 0.25rem; }
+.mb-4       { margin-bottom: 1.5rem; }
+.text-end   { text-align: right; }
+.overflow-hidden { overflow: hidden; }
+
+/* ── Error Banner ── */
+.error-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  color: #991b1b;
+  font-size: 0.88rem;
+  font-weight: 500;
+  padding: 0.85rem 1.25rem;
+}
+
+/* ── Glass Card ── */
+.glass-card {
+  background: var(--surface);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 16px;
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.05),
+    0 2px 4px -1px rgba(0, 0, 0, 0.03);
+}
+
+/* ── Buttons ── */
+.btn-main {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: var(--primary);
+  color: #fff;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 0.6rem 1.5rem;
+  border: none;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+  white-space: nowrap;
+}
+
+.btn-main:hover  { background-color: #334155; }
+.btn-main:active { transform: scale(0.98); }
+
+.btn-approve {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #dcfce7;
+  color: #166534;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  margin-right: 0.4rem;
+  transition: background 0.2s;
+}
+
+.btn-approve:hover { background: #bbf7d0; }
+
+.btn-reject {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #fee2e2;
+  color: #991b1b;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-reject:hover { background: #fecaca; }
+
+.processed-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.8rem;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+/* ── Table ── */
+.modern-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.modern-table thead th {
+  background-color: #f8fafc;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: #64748b;
+  padding: 1rem 1.25rem;
+  border-bottom: 2px solid #f1f5f9;
+  white-space: nowrap;
+}
+
+.modern-table tbody td {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 0.9rem;
+  color: #334155;
+  vertical-align: middle;
+}
+
+.modern-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.hover-row { transition: background-color 0.15s ease; }
+.hover-row:hover { background-color: #f8fafc; }
+
+/* ── Cell Variants ── */
+.ref-id {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #94a3b8;
+  font-family: monospace;
+}
+
+.student-name {
+  font-weight: 600;
+  color: #1e293b;
+}
+
+/* ── Document Type Chip ── */
+.doc-type-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 0.3rem 0.7rem;
+  border-radius: 7px;
+}
+
+.chip-cor {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.chip-tor {
+  background: #eef2ff;
+  color: #4338ca;
+}
+
+/* ── Payment Badge ── */
+.payment-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.payment-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.payment-paid   { color: #166534; }
+.payment-paid .payment-dot   { background: #22c55e; }
+
+.payment-unpaid { color: #991b1b; }
+.payment-unpaid .payment-dot { background: #ef4444; }
+
+/* ── Status Pills ── */
+.pill {
+  padding: 0.35rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* getStatusClass() should return these */
+.pill-pending  { background: #fef3c7; color: #92400e; }
+.pill-pending::before  { content: ''; width: 6px; height: 6px; background: #f59e0b; border-radius: 50%; }
+
+.pill-approved { background: #dcfce7; color: #166534; }
+.pill-approved::before { content: ''; width: 6px; height: 6px; background: #22c55e; border-radius: 50%; }
+
+.pill-rejected { background: #fee2e2; color: #991b1b; }
+.pill-rejected::before { content: ''; width: 6px; height: 6px; background: #ef4444; border-radius: 50%; }
+
+/* ── Loading ── */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+}
+
+.spinner {
+  width: 34px; height: 34px;
+  border: 3px solid #e2e8f0;
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Empty State ── */
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem !important;
+}
+
+.empty-icon {
+  font-size: 2.5rem;
+  color: #cbd5e1;
+}
+
+/* ── Animation ── */
+.animate-fade-in {
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .doc-requests-container { padding: 1rem; }
+  .modern-table thead th,
+  .modern-table tbody td { padding: 0.75rem; }
+}

@@ -1,0 +1,106 @@
+<div class="doc-requests-container animate-fade-in">
+
+  <!-- Header -->
+  <div class="page-header mb-4">
+    <div>
+      <h3 class="fw-bold mb-1">Document Requests</h3>
+      <p class="text-muted small mb-0">Review and process student COR / TOR requests.</p>
+    </div>
+    <button class="btn-main" (click)="loadRequests()">
+      <i class="bi bi-arrow-clockwise"></i> Refresh
+    </button>
+  </div>
+
+  <!-- Error Banner -->
+  @if (errorMessage) {
+    <div class="error-banner mb-4">
+      <i class="bi bi-exclamation-triangle-fill"></i>
+      {{ errorMessage }}
+    </div>
+  }
+
+  <!-- Card -->
+  <div class="glass-card overflow-hidden">
+
+    @if (loading) {
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <p class="text-muted small mt-3 mb-0">Retrieving document requests...</p>
+      </div>
+
+    } @else {
+      <div class="table-responsive">
+        <table class="modern-table">
+          <thead>
+            <tr>
+              <th>Ref #</th>
+              <th>Student</th>
+              <th>Document Type</th>
+              <th>Payment</th>
+              <th>Status</th>
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (req of requests; track req.id) {
+              <tr class="hover-row">
+                <td>
+                  <span class="ref-id">#{{ req.id }}</span>
+                </td>
+                <td>
+                  <span class="student-name">{{ req.student?.name }}</span>
+                </td>
+                <td>
+                  <span class="doc-type-chip"
+                    [class.chip-cor]="req.type === 'COR' || req.type === 'cor'"
+                    [class.chip-tor]="req.type === 'TOR' || req.type === 'tor'">
+                    <i class="bi"
+                      [class.bi-file-earmark-text]="req.type === 'COR' || req.type === 'cor'"
+                      [class.bi-mortarboard]="req.type === 'TOR' || req.type === 'tor'">
+                    </i>
+                    {{ req.type | uppercase }}
+                  </span>
+                </td>
+                <td>
+                  <span class="payment-badge"
+                    [class.payment-paid]="req.payment_status === 'paid'"
+                    [class.payment-unpaid]="req.payment_status !== 'paid'">
+                    <span class="payment-dot"></span>
+                    {{ (req.payment_status || 'unpaid') | uppercase }}
+                  </span>
+                </td>
+                <td>
+                  <span class="pill" [ngClass]="getStatusClass(req.status)">
+                    {{ req.status | titlecase }}
+                  </span>
+                </td>
+                <td class="text-end">
+                  @if (req.status === 'pending') {
+                    <button class="btn-approve" (click)="handleApprove(req.id)">
+                      <i class="bi bi-check-lg"></i> Approve
+                    </button>
+                    <button class="btn-reject" (click)="handleReject(req.id)">
+                      <i class="bi bi-x-lg"></i> Reject
+                    </button>
+                  } @else {
+                    <span class="processed-label">
+                      <i class="bi bi-check2-circle"></i> Processed
+                    </span>
+                  }
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="6" class="empty-state">
+                  <i class="bi bi-file-earmark-x empty-icon"></i>
+                  <p class="text-muted mb-0 mt-2">No document requests found.</p>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+  </div>
+</div>

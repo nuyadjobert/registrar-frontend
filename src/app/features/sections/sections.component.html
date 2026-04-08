@@ -1,0 +1,159 @@
+<div class="sections-container animate-fade-in">
+
+  <!-- Header -->
+  <div class="page-header mb-4">
+    <div>
+      <h3 class="fw-bold mb-1">Section Scheduling</h3>
+      <p class="text-muted small mb-0">Manage class sections, rooms, and instructor assignments.</p>
+    </div>
+    <button class="btn-main" (click)="showForm = !showForm">
+      <i class="bi" [class.bi-plus-lg]="!showForm" [class.bi-x-lg]="showForm"></i>
+      {{ showForm ? 'Cancel' : 'Create Section' }}
+    </button>
+  </div>
+
+  <!-- Form Card -->
+  @if (showForm) {
+    <div class="glass-card p-4 mb-4 animate-fade-in">
+      <div class="form-section">
+        <h5 class="card-title">{{ isEditing ? 'Edit' : 'New' }} Class Section</h5>
+        <form (ngSubmit)="submitForm()">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Section Name</label>
+              <input type="text" name="section_name" [(ngModel)]="form.section_name"
+                class="form-control" placeholder="e.g. F1-A" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Subject</label>
+              <select name="subject_id" [(ngModel)]="form.subject_id" class="form-select" required>
+                <option [value]="0" disabled>Select Subject</option>
+                @for (sub of subjects; track sub.id) {
+                  <option [value]="sub.id">{{ sub.subject_name }}</option>
+                }
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Instructor</label>
+              <select name="instructor_id" [(ngModel)]="form.instructor_id" class="form-select" required>
+                <option [value]="0" disabled>Select Instructor</option>
+                @for (inst of instructors; track inst.id) {
+                  <option [value]="inst.id">{{ inst.name }}</option>
+                }
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Term</label>
+              <select name="term_id" [(ngModel)]="form.term_id" class="form-select" required>
+                <option [value]="0" disabled>Select Term</option>
+                @for (t of terms; track t.id) {
+                  <option [value]="t.id">{{ t.name }}</option>
+                }
+              </select>
+            </div>
+            <div class="form-group form-group--wide">
+              <label class="form-label">Schedule (Day / Time)</label>
+              <input type="text" name="schedule" [(ngModel)]="form.schedule"
+                class="form-control" placeholder="MW 8:00 AM – 10:00 AM">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Room / Venue</label>
+              <input type="text" name="room" [(ngModel)]="form.room"
+                class="form-control" placeholder="Lab 1">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Capacity</label>
+              <input type="number" name="capacity" [(ngModel)]="form.capacity"
+                class="form-control" placeholder="40">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Status</label>
+              <select name="status" [(ngModel)]="form.status" class="form-select">
+                <option value="open">Open</option>
+                <option value="closed">Closed</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn-reset" (click)="resetForm()">Cancel</button>
+            <button type="submit" class="btn-main">
+              {{ isEditing ? 'Update Section' : 'Save Section' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- Table Card -->
+  <div class="glass-card overflow-hidden">
+    @if (isLoading) {
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <p class="text-muted small mt-3 mb-0">Retrieving sections...</p>
+      </div>
+    } @else {
+      <div class="table-responsive">
+        <table class="modern-table">
+          <thead>
+            <tr>
+              <th>Section & Subject</th>
+              <th>Instructor</th>
+              <th>Schedule & Room</th>
+              <th>Capacity</th>
+              <th>Status</th>
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (sec of sections; track sec.id) {
+              <tr class="hover-row">
+                <td>
+                  <span class="section-name">{{ sec.section_name }}</span>
+                  <span class="subject-label">{{ sec.subject?.subject_name }}</span>
+                </td>
+                <td>
+                  <span class="instructor-name">{{ sec.instructor?.name || 'Unassigned' }}</span>
+                </td>
+                <td>
+                  <span class="schedule-text">{{ sec.schedule || 'TBA' }}</span>
+                  <span class="room-text">{{ sec.room || 'No Room' }}</span>
+                </td>
+                <td>
+                  <span class="capacity-text">{{ sec.capacity }} seats</span>
+                </td>
+                <td>
+                  <span class="pill"
+                    [class.pill-open]="sec.status === 'open'"
+                    [class.pill-closed]="sec.status === 'closed'">
+                    {{ sec.status | titlecase }}
+                  </span>
+                </td>
+                <td class="text-end">
+                  <button class="btn-edit" (click)="editSection(sec)" title="Edit">
+                    <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+                      <path d="M11 2a2 2 0 112.8 2.8L5 13.6 2 14.5l.9-3L11 2z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </button>
+                  <button class="btn-delete" (click)="deleteSection(sec.id)" title="Delete">
+                    <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+                      <path d="M3 4h10M5 4V3a1 1 0 011-1h4a1 1 0 011 1v1M6 7v5M10 7v5M4 4l.8 9a1 1 0 001 .9h4.4a1 1 0 001-.9L12 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </button>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="6" class="empty-state">
+                  <i class="bi bi-calendar2-x empty-icon"></i>
+                  <p class="text-muted mb-0 mt-2">No sections have been created yet.</p>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+
+</div>
