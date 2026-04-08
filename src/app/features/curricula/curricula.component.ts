@@ -75,14 +75,14 @@ export class CurriculaComponent implements OnInit {
   }
 
   fetchPrograms(): void {
-    this.programService.getAll().subscribe({
+    this.programService.getActive().subscribe({
       next: (data: Program[]) => (this.programs = data),
       error: (err: unknown) => console.error('Failed to load programs', err),
     });
   }
 
   fetchSubjects(): void {
-    this.subjectService.getAll().subscribe({
+    this.subjectService.getActive().subscribe({
       next: (data: Subject[]) => (this.subjects = data),
       error: (err: unknown) => console.error('Failed to load subjects', err),
     });

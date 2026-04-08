@@ -16,10 +16,10 @@ export class AuthService {
   currentUser = signal<User | null>(null);
 
   constructor(private http: HttpClient, private router: Router) {
-    if (this.getToken()) {
-      this.fetchCurrentUser().subscribe();
-    }
+  if (this.getToken()) {
+    setTimeout(() => this.fetchCurrentUser().subscribe(), 0);
   }
+}
 
   // POST /api/auth/register
   register(payload: RegisterPayload) {

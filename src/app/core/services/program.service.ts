@@ -12,6 +12,9 @@ export class ProgramService {
   getAll() {
     return this.api.get<Program[]>(this.path);
   }
+  getActive() {
+  return this.api.get<Program[]>(`${this.path}?status=active`);
+}
 
   // GET /api/programs/:id  (returns with students & curricula)
   getById(id: number) {

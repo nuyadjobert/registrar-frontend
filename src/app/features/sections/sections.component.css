@@ -334,3 +334,72 @@ h3 {
   .modern-table thead th,
   .modern-table tbody td { padding: 0.75rem; }
 }
+
+.schedule-grid {
+  border: 0.5px solid #ddd;
+  border-radius: 8px;
+  overflow: auto;
+  max-height: 280px;
+  user-select: none;
+  font-size: 12px;
+}
+.schedule-header, .schedule-row {
+  display: grid;
+  grid-template-columns: 72px repeat(7, 1fr);
+}
+.schedule-header {
+  position: sticky;
+  top: 0;
+  background: #f5f5f5;
+  z-index: 1;
+  border-bottom: 1px solid #ddd;
+}
+.day-col {
+  text-align: center;
+  padding: 6px 4px;
+  font-weight: 500;
+  color: #555;
+}
+.time-col {
+  padding: 4px 8px 4px 0;
+  text-align: right;
+  color: #999;
+  font-size: 11px;
+  line-height: 28px;
+}
+.slot {
+  height: 28px;
+  margin: 2px;
+  border-radius: 4px;
+  background: #f0f0f0;
+  cursor: pointer;
+  border: 0.5px solid #e0e0e0;
+  transition: background 0.1s;
+}
+.slot:hover { background: #c5bff5; }
+.slot.selected { background: #534AB7; border-color: #3C3489; }
+.schedule-output {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: #f9f9f9;
+  border-radius: 6px;
+  border: 0.5px solid #e0e0e0;
+}
+.schedule-preview {
+  font-size: 13px;
+  color: #333;
+  flex: 1;
+}
+.btn-clear-schedule {
+  font-size: 12px;
+  padding: 2px 10px;
+  border: 0.5px solid #ccc;
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+  color: #666;
+}
+.btn-clear-schedule:hover { background: #eee; }

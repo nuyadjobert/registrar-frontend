@@ -8,10 +8,15 @@ export class SubjectService {
 
   constructor(private api: ApiService) {}
 
-  // GET /api/subjects
-  getAll() {
-    return this.api.get<Subject[]>(this.path);
-  }
+ 
+getAll() {
+  return this.api.get<Subject[]>(this.path);
+}
+
+// GET /api/subjects?status=active (for dropdowns)
+getActive() {
+  return this.api.get<Subject[]>(`${this.path}?status=active`);
+}
 
   // GET /api/subjects/:id (returns with sections)
   getById(id: number) {

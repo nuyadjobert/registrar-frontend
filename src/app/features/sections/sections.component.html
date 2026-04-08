@@ -51,11 +51,43 @@
                 }
               </select>
             </div>
-            <div class="form-group form-group--wide">
-              <label class="form-label">Schedule (Day / Time)</label>
-              <input type="text" name="schedule" [(ngModel)]="form.schedule"
-                class="form-control" placeholder="MW 8:00 AM – 10:00 AM">
-            </div>
+       <div class="form-group form-group--wide">
+  <label class="form-label">Schedule (Day / Time)</label>
+
+  <!-- Day header row -->
+  <div class="schedule-grid" (mouseup)="onSlotMouseUp()">
+    <div class="schedule-header">
+      <div class="time-col"></div>
+      @for (d of days; track d) {
+        <div class="day-col">{{ d }}</div>
+      }
+    </div>
+
+    <!-- Time rows -->
+    @for (t of times; track t; let ti = $index) {
+  <div class="schedule-row">
+    <div class="time-col">{{ t }}</div>
+    @for (d of days; track d; let di = $index) {
+      <div
+        class="slot"
+        [class.selected]="isSlotSelected(di, ti)"
+        (mousedown)="onSlotMouseDown(di, ti)"
+        (mouseover)="onSlotMouseOver(di, ti)">
+      </div>
+    }
+  </div>
+}
+  </div>
+
+  <!-- Output preview -->
+  <div class="schedule-output">
+    <span class="schedule-preview">{{ form.schedule || 'No slots selected' }}</span>
+    @if (form.schedule) {
+      <button type="button" class="btn-clear-schedule" (click)="clearSchedule()">Clear</button>
+    }
+  </div>
+</div>
+
             <div class="form-group">
               <label class="form-label">Room / Venue</label>
               <input type="text" name="room" [(ngModel)]="form.room"

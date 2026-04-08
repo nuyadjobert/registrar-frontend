@@ -24,6 +24,14 @@ export class SectionsComponent implements OnInit {
   terms: Term[] = [];
   isLoading = false;
 
+  // Schedule Picker
+days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+dayAbbr = ['M','T','W','Th','F','Sa','Su'];
+times: string[] = [];
+selectedSlots = new Set<string>();
+isDragging = false;
+dragMode: 'select' | 'deselect' = 'select';
+
   
 
   // Form State
@@ -52,6 +60,8 @@ export class SectionsComponent implements OnInit {
   ngOnInit(): void {
     this.loadData();
     this.loadDropdowns();
+    this.initTimes(); // add this
+
   }
 
   loadData(): void {
@@ -66,10 +76,19 @@ export class SectionsComponent implements OnInit {
   }
 
   loadDropdowns(): void {
-    this.subjectService.getAll().subscribe(data => this.subjects = data);
+    this.subjectService.getActive().subscribe(data => this.subjects = data);
     this.instructorService.getAll().subscribe(data => this.instructors = data);
     this.termService.getAll().subscribe(data => this.terms = data);
   }
+
+  initTimes(): void {
+  for (let h = 7; h <= 20; h++) {
+    const h12 = h <= 12 ? h : h - 12;
+    const ampm = h < 12 ? 'AM' : 'PM';
+    this.times.push(`${h12}:00 ${ampm}`);
+    if (h < 20) this.times.push(`${h12}:30 ${ampm}`);
+  }
+}
 
   submitForm(): void {
     if (this.isEditing && this.currentId) {
@@ -110,6 +129,59 @@ export class SectionsComponent implements OnInit {
     this.showForm = false;
     this.isEditing = false;
     this.currentId = undefined;
+      this.selectedSlots.clear(); // add this
+
     this.form = { section_name: '', subject_id: 0, instructor_id: 0, term_id: 0, capacity: 40, schedule: '', room: '', status: 'open' };
   }
+
+  slotKey(di: number, ti: number): string { return `${di}-${ti}`; }
+isSlotSelected(di: number, ti: number): boolean { return this.selectedSlots.has(this.slotKey(di, ti)); }
+
+onSlotMouseDown(di: number, ti: number): void {
+  this.isDragging = true;
+  const k = this.slotKey(di, ti);
+  this.dragMode = this.selectedSlots.has(k) ? 'deselect' : 'select';
+  this.toggleSlot(k);
+}
+
+onSlotMouseOver(di: number, ti: number): void {
+  if (this.isDragging) this.toggleSlot(this.slotKey(di, ti));
+}
+
+onSlotMouseUp(): void { this.isDragging = false; }
+
+toggleSlot(k: string): void {
+  if (this.dragMode === 'select') this.selectedSlots.add(k);
+  else this.selectedSlots.delete(k);
+  this.form.schedule = this.buildScheduleString();
+}
+
+clearSchedule(): void {
+  this.selectedSlots.clear();
+  this.form.schedule = '';
+}
+
+buildScheduleString(): string {
+  const byDay: { [di: number]: number[] } = {};
+  this.selectedSlots.forEach(k => {
+    const [di, ti] = k.split('-').map(Number);
+    if (!byDay[di]) byDay[di] = [];
+    byDay[di].push(ti);
+  });
+  const parts: string[] = [];
+  Object.keys(byDay).sort((a, b) => +a - +b).forEach(diStr => {
+    const di = +diStr;
+    const tis = byDay[di].sort((a, b) => a - b);
+    let runStart = tis[0], prev = tis[0];
+    for (let i = 1; i <= tis.length; i++) {
+      if (i === tis.length || tis[i] !== prev + 1) {
+        const s = this.times[runStart];
+        const e = this.times[prev + 1] ?? '9:00 PM';
+        parts.push(`${this.dayAbbr[di]} ${s} – ${e}`);
+        if (i < tis.length) { runStart = tis[i]; prev = tis[i]; }
+      } else { prev = tis[i]; }
+    }
+  });
+  return parts.join(', ');
+}
 }
