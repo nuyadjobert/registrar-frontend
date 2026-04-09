@@ -82,6 +82,17 @@
                     <button class="btn-reject" (click)="handleReject(req.id)">
                       <i class="bi bi-x-lg"></i> Reject
                     </button>
+                  } @else if (req.status === 'approved') {
+                    <button
+                      class="btn-main"
+                      (click)="handleDownload(req)"
+                      [disabled]="generatingId === req.id">
+                      @if (generatingId === req.id) {
+                        <i class="bi bi-hourglass-split"></i> Generating...
+                      } @else {
+                        <i class="bi bi-download"></i> Download {{ req.type | uppercase }}
+                      }
+                    </button>
                   } @else {
                     <span class="processed-label">
                       <i class="bi bi-check2-circle"></i> Processed
