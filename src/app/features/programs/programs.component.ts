@@ -16,6 +16,45 @@ export class ProgramsComponent implements OnInit {
   isLoading = false;
   isSaving = false;
 
+
+  formErrors: { code: string; name: string; department: string } = {
+  code: '',
+  name: '',
+  department: ''
+};
+
+validateForm(): boolean {
+  this.formErrors = { code: '', name: '', department: '' };
+  let valid = true;
+
+  if (!this.form.code.trim()) {
+    this.formErrors.code = 'Program code is required.';
+    valid = false;
+  } else if (this.form.code.trim().length > 10) {
+    this.formErrors.code = 'Code must be 10 characters or less.';
+    valid = false;
+  }
+
+  if (!this.form.name.trim()) {
+    this.formErrors.name = 'Program name is required.';
+    valid = false;
+  }
+
+  if (!this.form.department?.trim()) {
+    this.formErrors.department = 'Department is required.';
+    valid = false;
+  }
+
+  return valid;
+}
+
+get isFormInvalid(): boolean {
+  return (
+    !this.form.code.trim() ||
+    !this.form.name.trim() ||
+    !this.form.department?.trim()
+  );
+}
   showForm = false;
   isEditing = false;
   selectedProgramId?: number;
@@ -58,6 +97,7 @@ export class ProgramsComponent implements OnInit {
   }
 
   onSubmit(): void {
+    if(!this.validateForm()) return;
     const payload: ProgramPayload = {
       code: this.form.code.trim(),
       name: this.form.name.trim(),
@@ -149,5 +189,6 @@ export class ProgramsComponent implements OnInit {
     this.isEditing = false;
     this.selectedProgramId = undefined;
     this.form = { code: '', name: '', department: '', status: 'active' };
+    this.formErrors={ code: '',name: '',department: ''};
   }
 }

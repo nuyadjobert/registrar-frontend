@@ -73,16 +73,27 @@
             </span>
           </td>
           <td class="text-right">
-            <button class="btn-delete" 
-        (click)="delete(item.id)" 
-        [disabled]="loading()">
-  <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
-    <path d="M3 4h10M5 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1M6 7v5M10 7v5M4 4l.8 9a1 1 0 0 0 1 .9h4.4a1 1 0 0 0 1-.9L12 4"
-          stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
-  </svg>
-  {{ loading() ? 'Deleting...' : 'Delete' }}
-</button>
-
+            <div class="action-buttons">
+              <button class="btn-edit" 
+                (click)="editCurriculum(item)" 
+                title="Edit">
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+                  <path d="M11 2a2 2 0 112.8 2.8L5 13.6 2 14.5l.9-3L11 2z" stroke="currentColor" stroke-width="1.4"
+                    stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                <span>Edit</span>
+              </button>
+              <button class="btn-delete" 
+                (click)="delete(item.id)" 
+                [disabled]="loading()"
+                title="Delete">
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+                  <path d="M3 4h10M5 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1M6 7v5M10 7v5M4 4l.8 9a1 1 0 0 0 1 .9h4.4a1 1 0 0 0 1-.9L12 4"
+                    stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>Delete</span>
+              </button>
+            </div>
           </td>
         </tr>
       </tbody>
@@ -114,8 +125,8 @@
           </svg>
         </div>
         <div>
-          <h3 class="modal-title">Add curriculum</h3>
-          <p class="modal-subtitle">Fill in the details to create a new entry</p>
+          <h3 class="modal-title">{{ isEditing ? 'Edit curriculum' : 'Add curriculum' }}</h3>
+          <p class="modal-subtitle">{{ isEditing ? 'Update the curriculum details' : 'Fill in the details to create a new entry' }}</p>
         </div>
       </div>
       <button class="modal-close" (click)="closeModal()">
@@ -128,15 +139,15 @@
     <div class="modal-body">
       <div class="form-row">
         <div class="form-group">
-          <label>Program</label>
-          <select [(ngModel)]="form.program_id">
+          <label>Program <span class="required">*</span></label>
+          <select [(ngModel)]="form.program_id" name="program_id">
             <option value="0" disabled>Select program</option>
             <option *ngFor="let p of programs" [value]="p.id">{{ p.name }}</option>
           </select>
         </div>
         <div class="form-group">
-          <label>Subject</label>
-          <select [(ngModel)]="form.subject_id">
+          <label>Subject <span class="required">*</span></label>
+          <select [(ngModel)]="form.subject_id" name="subject_id">
             <option value="0" disabled>Select subject</option>
             <option *ngFor="let s of subjects" [value]="s.id">{{ s.subject_name }}</option>
           </select>
@@ -145,8 +156,8 @@
 
       <div class="form-row">
         <div class="form-group">
-          <label>Year level</label>
-          <select [(ngModel)]="form.year_level">
+          <label>Year level <span class="required">*</span></label>
+          <select [(ngModel)]="form.year_level" name="year_level">
             <option [value]="1">Year 1</option>
             <option [value]="2">Year 2</option>
             <option [value]="3">Year 3</option>
@@ -154,8 +165,8 @@
           </select>
         </div>
         <div class="form-group">
-          <label>Semester</label>
-          <select [(ngModel)]="form.semester">
+          <label>Semester <span class="required">*</span></label>
+          <select [(ngModel)]="form.semester" name="semester">
             <option value="1">1st Semester</option>
             <option value="2">2nd Semester</option>
             <option value="summer">Summer</option>
@@ -164,27 +175,38 @@
       </div>
 
       <div class="form-group full">
-  <label>School year</label>
-  <input 
-    type="text" 
-    [(ngModel)]="form.school_year" 
-    name="school_year"
-    #schoolYear="ngModel"
-    required
-    pattern="\d{4}-\d{4}"
-    [class.input-error]="schoolYear.invalid && (schoolYear.dirty || schoolYear.touched)"
-    placeholder="e.g. 2024-2025">
-  
-  @if (schoolYear.invalid && (schoolYear.dirty || schoolYear.touched)) {
-    <div class="error-message">
-      <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
-        <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5"/>
-        <path d="M8 5v4M8 11h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-      </svg>
-      Invalid format. Use YYYY-YYYY (e.g. 2024-2025)
-    </div>
-  }
-</div>
+        <label>School year <span class="required">*</span></label>
+        <input 
+          type="text" 
+          [(ngModel)]="form.school_year" 
+          name="school_year"
+          #schoolYear="ngModel"
+          required
+          pattern="\d{4}-\d{4}"
+          [class.input-error]="schoolYear.invalid && (schoolYear.dirty || schoolYear.touched)"
+          placeholder="e.g. 2024-2025">
+        
+        @if (schoolYear.invalid && (schoolYear.dirty || schoolYear.touched)) {
+          <div class="error-message">
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+              <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M8 5v4M8 11h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            Invalid format. Use YYYY-YYYY (e.g. 2024-2025)
+          </div>
+        }
+      </div>
+
+      <!-- Duplicate Error Message -->
+      @if (isDuplicateCurriculum()) {
+        <div class="duplicate-error-message">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+            <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M8 5v4M8 11h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <span>This curriculum entry already exists!</span>
+        </div>
+      }
 
       <div class="form-group full">
         <label>Status</label>
@@ -207,11 +229,11 @@
 
     <div class="modal-footer">
       <button class="btn-cancel" (click)="closeModal()">Cancel</button>
-      <button class="btn-save" (click)="save()" [disabled]="saving()">
+      <button class="btn-save" (click)="save()" [disabled]="!isFormValid() || saving()">
         <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
           <path d="M2 6.5l3.5 3.5 5.5-6" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
-        <span>{{ saving() ? 'Saving...' : 'Save curriculum' }}</span>
+        <span>{{ saving() ? (isEditing ? 'Updating...' : 'Saving...') : (isEditing ? 'Update curriculum' : 'Save curriculum') }}</span>
       </button>
     </div>
 

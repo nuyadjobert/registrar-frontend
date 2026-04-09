@@ -22,6 +22,8 @@ export class CurriculaComponent implements OnInit {
   currentPage = 1;
   pageSize = 10;
   showModal = false;
+  isEditing = false;
+  currentEditId?: number;
 
   programs: Program[] = [];
   subjects: Subject[] = [];
@@ -89,6 +91,8 @@ export class CurriculaComponent implements OnInit {
   }
 
   openModal(): void {
+    this.isEditing = false;
+    this.currentEditId = undefined;
     this.form = {
       program_id: 0,
       subject_id: 0,
@@ -100,11 +104,77 @@ export class CurriculaComponent implements OnInit {
     this.showModal = true;
   }
 
+  editCurriculum(curriculum: Curriculum): void {
+    this.isEditing = true;
+    this.currentEditId = curriculum.id;
+    this.form = {
+      program_id: curriculum.program_id,
+      subject_id: curriculum.subject_id,
+      year_level: curriculum.year_level,
+      semester: curriculum.semester,
+      school_year: curriculum.school_year,
+      status: curriculum.status,
+    };
+    this.showModal = true;
+  }
+
   closeModal(): void {
     this.showModal = false;
+    this.isEditing = false;
+    this.currentEditId = undefined;
+  }
+
+  /**
+   * Validate school year format (YYYY-YYYY)
+   */
+  isValidSchoolYear(): boolean {
+    const pattern = /^\d{4}-\d{4}$/;
+    return pattern.test(this.form.school_year.trim());
+  }
+
+  /**
+   * Check if the curriculum entry already exists (duplicate)
+   */
+  isDuplicateCurriculum(): boolean {
+    return this._curricula().some(
+      (curr) =>
+        curr.program_id === Number(this.form.program_id) &&
+        curr.subject_id === Number(this.form.subject_id) &&
+        curr.year_level === Number(this.form.year_level) &&
+        curr.semester === this.form.semester &&
+        curr.school_year === this.form.school_year &&
+        // When editing, exclude the current record from duplicate check
+        curr.id !== this.currentEditId
+    );
+  }
+
+  /**
+   * Validate entire form
+   */
+  isFormValid(): boolean {
+    return (
+      Number(this.form.program_id) > 0 &&
+      Number(this.form.subject_id) > 0 &&
+      Number(this.form.year_level) > 0 &&
+      this.form.semester.trim() !== '' &&
+      this.isValidSchoolYear() &&
+      !this.isDuplicateCurriculum()
+    );
   }
 
   save(): void {
+    // Validate before saving
+    if (!this.isFormValid()) {
+      if (this.isDuplicateCurriculum()) {
+        alert('This curriculum entry already exists!');
+      } else if (!this.isValidSchoolYear()) {
+        alert('Invalid school year format. Use YYYY-YYYY (e.g., 2024-2025)');
+      } else {
+        alert('Please fill in all required fields correctly');
+      }
+      return;
+    }
+
     const payload: CurriculumPayload = {
       program_id: Number(this.form.program_id),
       subject_id: Number(this.form.subject_id),
@@ -115,17 +185,36 @@ export class CurriculaComponent implements OnInit {
     };
 
     this.saving.set(true);
-    this.curriculumService.create(payload).subscribe({
-      next: (created: Curriculum) => {
-        this.fetchAll();
-        this.saving.set(false);
-        this.closeModal();
-      },
-      error: (err: unknown): void => {
-        console.error('Failed to create curriculum', err);
-        this.saving.set(false);
-      },
-    });
+
+    if (this.isEditing && this.currentEditId) {
+      // Update existing curriculum
+      this.curriculumService.update(this.currentEditId, payload).subscribe({
+        next: (updated: Curriculum) => {
+          this.fetchAll();
+          this.saving.set(false);
+          this.closeModal();
+        },
+        error: (err: unknown): void => {
+          console.error('Failed to update curriculum', err);
+          this.saving.set(false);
+          alert('Failed to update curriculum. Please try again.');
+        },
+      });
+    } else {
+      // Create new curriculum
+      this.curriculumService.create(payload).subscribe({
+        next: (created: Curriculum) => {
+          this.fetchAll();
+          this.saving.set(false);
+          this.closeModal();
+        },
+        error: (err: unknown): void => {
+          console.error('Failed to create curriculum', err);
+          this.saving.set(false);
+          alert('Failed to create curriculum. Please try again.');
+        },
+      });
+    }
   }
 
   curricula = computed(() => this._curricula());
@@ -186,20 +275,24 @@ export class CurriculaComponent implements OnInit {
   }
 
   delete(id: number): void {
-  // Add the confirmation dialog
-  const confirmDelete = window.confirm('Are you sure you want to delete this curriculum entry? This action cannot be undone.');
+    // Add the confirmation dialog
+    const confirmDelete = window.confirm(
+      'Are you sure you want to delete this curriculum entry? This action cannot be undone.'
+    );
 
-  if (confirmDelete) {
-    this.curriculumService.delete(id).subscribe({
-      next: () => {
-        // Silently update the list without a full page refresh
-        this._curricula.update((list) => list.filter((item) => item.id !== id));
-      },
-      error: (err: unknown): void => {
-        console.error('Failed to delete curriculum', err);
-        alert('Could not delete. The record might be linked to an active section.');
-      },
-    });
+    if (confirmDelete) {
+      this.curriculumService.delete(id).subscribe({
+        next: () => {
+          // Silently update the list without a full page refresh
+          this._curricula.update((list) => list.filter((item) => item.id !== id));
+        },
+        error: (err: unknown): void => {
+          console.error('Failed to delete curriculum', err);
+          alert(
+            'Could not delete. The record might be linked to an active section.'
+          );
+        },
+      });
+    }
   }
-}
 }

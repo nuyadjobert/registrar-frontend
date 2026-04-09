@@ -45,7 +45,50 @@ export class SubjectsComponent implements OnInit {
     });
   }
 
+  /**
+   * Check if subject code or name already exists in the list
+   */
+  isDuplicate(): boolean {
+    const currentCode = this.form.subject_code.trim().toLowerCase();
+    const currentName = this.form.subject_name.trim().toLowerCase();
+
+    return this.subjects.some(subject => {
+      // If editing, exclude the current subject from comparison
+      if (this.isEditing && subject.id === this.currentId) {
+        return false;
+      }
+      
+      // Check for duplicate code or name
+      return (
+        subject.subject_code.toLowerCase() === currentCode ||
+        subject.subject_name.toLowerCase() === currentName
+      );
+    });
+  }
+
+  /**
+   * Validate form - check for empty fields and duplicates
+   */
+  isFormValid(): boolean {
+    return (
+      this.form.subject_code.trim() !== '' &&
+      this.form.subject_name.trim() !== '' &&
+      this.form.units > 0 &&
+      !this.isDuplicate()
+    );
+  }
+
   submitForm(): void {
+    // Validate before submission
+    if (!this.isFormValid()) {
+      if (this.isDuplicate()) {
+        alert('A subject with this code or name already exists!');
+      } else {
+        alert('Please fill in all required fields correctly');
+      }
+      return;
+    }
+
     if (this.isEditing && this.currentId) {
       this.subjectService.update(this.currentId, this.form).subscribe({
         next: () => this.handleSuccess(),
@@ -72,28 +115,28 @@ export class SubjectsComponent implements OnInit {
     this.showForm = true;
   }
 
- deleteSubject(id: number): void {
-  // Simple, themed confirmation
-  const isConfirmed = window.confirm(
-    "Are you sure you want to delete this subject? This might affect existing curricula records."
-  );
+  deleteSubject(id: number): void {
+    // Simple, themed confirmation
+    const isConfirmed = window.confirm(
+      "Are you sure you want to delete this subject? This might affect existing curricula records."
+    );
 
-  if (isConfirmed) {
-    this.isLoading = true; // Show your spinner
-    this.subjectService.delete(id).subscribe({
-      next: () => {
-        // Update local list without re-fetching everything
-        this.subjects = this.subjects.filter(s => s.id !== id);
-        this.isLoading = false;
-      },
-      error: (err) => {
-        console.error('Delete failed', err);
-        this.isLoading = false;
-        alert("This subject cannot be deleted because it is currently linked to a Curriculum.");
-      }
-    });
+    if (isConfirmed) {
+      this.isLoading = true; // Show your spinner
+      this.subjectService.delete(id).subscribe({
+        next: () => {
+          // Update local list without re-fetching everything
+          this.subjects = this.subjects.filter(s => s.id !== id);
+          this.isLoading = false;
+        },
+        error: (err) => {
+          console.error('Delete failed', err);
+          this.isLoading = false;
+          alert("This subject cannot be deleted because it is currently linked to a Curriculum.");
+        }
+      });
+    }
   }
-}
 
   handleSuccess(): void {
     this.resetForm();

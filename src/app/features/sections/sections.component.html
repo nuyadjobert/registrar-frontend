@@ -162,16 +162,20 @@
                   </span>
                 </td>
                 <td class="text-end">
-                  <button class="btn-edit" (click)="editSection(sec)" title="Edit">
-                    <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
-                      <path d="M11 2a2 2 0 112.8 2.8L5 13.6 2 14.5l.9-3L11 2z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                  </button>
-                  <button class="btn-delete" (click)="deleteSection(sec.id)" title="Delete">
-                    <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
-                      <path d="M3 4h10M5 4V3a1 1 0 011-1h4a1 1 0 011 1v1M6 7v5M10 7v5M4 4l.8 9a1 1 0 001 .9h4.4a1 1 0 001-.9L12 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                  </button>
+                  <div class="action-buttons">
+                    <button class="btn-edit" (click)="editSection(sec)" title="Edit">
+                      <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+                        <path d="M11 2a2 2 0 112.8 2.8L5 13.6 2 14.5l.9-3L11 2z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                      <span>Edit</span>
+                    </button>
+                    <button class="btn-delete" (click)="deleteSection(sec.id)" title="Delete">
+                      <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+                        <path d="M3 4h10M5 4V3a1 1 0 011-1h4a1 1 0 011 1v1M6 7v5M10 7v5M4 4l.8 9a1 1 0 001 .9h4.4a1 1 0 001-.9L12 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                      <span>Delete</span>
+                    </button>
+                  </div>
                 </td>
               </tr>
             } @empty {

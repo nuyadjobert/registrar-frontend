@@ -30,41 +30,71 @@
         </span>
       </div>
 
-      <div class="form-panel-body">
-        <div class="form-row">
-          <div class="form-group">
-            <label>Code</label>
-            <input type="text" [(ngModel)]="form.code" placeholder="e.g. BSIT">
-          </div>
-          <div class="form-group">
-            <label>Program name</label>
-            <input type="text" [(ngModel)]="form.name" placeholder="e.g. Bachelor of Science in IT">
-          </div>
-          <div class="form-group">
-            <label>Department</label>
-            <input type="text" [(ngModel)]="form.department" placeholder="e.g. ICT Department">
-          </div>
-          <div class="form-group">
-            <label>Status</label>
-            <select [(ngModel)]="form.status">
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-            </select>
-          </div>
-        </div>
-      </div>
+   <div class="form-panel-body">
+  <div class="form-row">
 
-      <div class="form-panel-footer">
-        <button class="btn-cancel-sm" (click)="resetForm()">Cancel</button>
-        <button class="btn-save-sm" (click)="onSubmit()" [disabled]="isSaving">
-          <svg width="12" height="12" viewBox="0 0 13 13" fill="none">
-            <path d="M2 6.5l3.5 3.5 5.5-6" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          {{ isSaving ? 'Saving...' : (isEditing ? 'Update program' : 'Save program') }}
-        </button>
-      </div>
+    <div class="form-group">
+      <label>Code <span class="required">*</span></label>
+      <input
+        type="text"
+        [(ngModel)]="form.code"
+        placeholder="e.g. BSIT"
+        [class.input-error]="formErrors.code">
+      @if (formErrors.code) {
+        <span class="error-msg">{{ formErrors.code }}</span>
+      }
     </div>
+
+    <div class="form-group">
+      <label>Program name <span class="required">*</span></label>
+      <input
+        type="text"
+        [(ngModel)]="form.name"
+        placeholder="e.g. Bachelor of Science in IT"
+        [class.input-error]="formErrors.name">
+      @if (formErrors.name) {
+        <span class="error-msg">{{ formErrors.name }}</span>
+      }
+    </div>
+
+    <div class="form-group">
+      <label>Department <span class="required">*</span></label>
+      <input
+        type="text"
+        [(ngModel)]="form.department"
+        placeholder="e.g. ICT Department"
+        [class.input-error]="formErrors.department">
+      @if (formErrors.department) {
+        <span class="error-msg">{{ formErrors.department }}</span>
+      }
+    </div>
+
+    <div class="form-group">
+      <label>Status</label>
+      <select [(ngModel)]="form.status">
+        <option value="active">Active</option>
+        <option value="inactive">Inactive</option>
+      </select>
+    </div>
+
+  </div>
+</div>
+
+<div class="form-panel-footer">
+  <button class="btn-cancel-sm" (click)="resetForm()">Cancel</button>
+  <button
+    class="btn-save-sm"
+    (click)="onSubmit()"
+    [disabled]="isSaving || isFormInvalid">
+    <svg width="12" height="12" viewBox="0 0 13 13" fill="none">
+      <path d="M2 6.5l3.5 3.5 5.5-6" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    {{ isSaving ? 'Saving...' : (isEditing ? 'Update program' : 'Save program') }}
+  </button>
+</div>
+</div>
   }
+  
 
   <!-- Loading State -->
   <div *ngIf="isLoading" class="state-container">

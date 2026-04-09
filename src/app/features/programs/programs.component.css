@@ -152,6 +152,28 @@
   gap: 4px;
 }
 
+.required {
+  color: #e24b4a;
+  margin-left: 2px;
+}
+
+.input-error {
+  border-color: #e24b4a !important;
+  background-color: #fff5f5;
+}
+
+.error-msg {
+  display: block;
+  font-size: 11px;
+  color: #e24b4a;
+  margin-top: 4px;
+}
+
+.btn-save-sm:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .form-group label {
   font-size: 11px;
   font-weight: 600;

@@ -63,9 +63,17 @@
           </div>
         </div>
 
+        <!-- Duplicate Error Message -->
+        @if (isDuplicate()) {
+        <div class="duplicate-error-message mt-3">
+          <i class="bi bi-exclamation-triangle-fill"></i>
+          <span>A subject with this code or name already exists!</span>
+        </div>
+        }
+
         <div class="form-actions mt-4">
           <button type="button" class="btn-reset" (click)="resetForm()">Cancel</button>
-          <button type="submit" class="btn-main" [disabled]="subjectForm.invalid">
+          <button type="submit" class="btn-main" [disabled]="!isFormValid()">
             {{ isEditing ? 'Update Subject' : 'Save Subject' }}
           </button>
         </div>
@@ -106,12 +114,13 @@
                 {{ sub.status | uppercase }}
               </span>
             </td>
-            <td class="text-end">
+            <td class="text-end action-buttons">
               <button class="btn-edit" (click)="editSubject(sub)" title="Edit">
                 <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
                   <path d="M11 2a2 2 0 112.8 2.8L5 13.6 2 14.5l.9-3L11 2z" stroke="currentColor" stroke-width="1.4"
                     stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
+                <span>Edit</span>
               </button>
               <button class="btn-delete" (click)="deleteSubject(sub.id)" title="Delete">
                 <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
@@ -119,6 +128,7 @@
                     d="M3 4h10M5 4V3a1 1 0 011-1h4a1 1 0 011 1v1M6 7v5M10 7v5M4 4l.8 9a1 1 0 001 .9h4.4a1 1 0 001-.9L12 4"
                     stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
+                <span>Delete</span>
               </button>
             </td>
           </tr>

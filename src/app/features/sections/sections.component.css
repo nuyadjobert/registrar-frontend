@@ -42,6 +42,8 @@ h3 {
 .fw-bold    { font-weight: 700; }
 .mb-1       { margin-bottom: 0.25rem; }
 .mb-4       { margin-bottom: 1.5rem; }
+.mt-3       { margin-top: 0.75rem; }
+.mt-4       { margin-top: 1.25rem; }
 .p-4        { padding: 1.5rem; }
 .text-end   { text-align: right; }
 .overflow-hidden { overflow: hidden; }
@@ -150,30 +152,59 @@ h3 {
   color: var(--primary);
 }
 
-.btn-edit {
-  color: #6366f1;
-  background: #eef2ff;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 8px;
-  cursor: pointer;
-  margin-right: 0.4rem;
-  transition: background 0.2s;
+/* ── Action buttons container ── */
+.action-buttons {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
-.btn-edit:hover { background: #e0e7ff; }
-
+/* ── Edit and Delete buttons ── */
+.btn-edit,
 .btn-delete {
-  color: #ef4444;
-  background: #fef2f2;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 6px;
+  border: 0.5px solid #e2e8f0;
+  padding: 5px 9px;
+  font-size: 12px;
+  font-weight: 500;
   cursor: pointer;
-  transition: background 0.2s;
+  background: transparent;
+  font-family: 'DM Sans', sans-serif;
+  transition: background 0.15s, border-color 0.15s;
 }
 
-.btn-delete:hover { background: #fee2e2; }
+.btn-edit { 
+  color: #3C3489; 
+}
+
+.btn-edit:hover { 
+  background: #EEEDFE; 
+  border-color: #AFA9EC; 
+}
+
+.btn-delete { 
+  color: #e53e3e; 
+}
+
+.btn-delete:hover:not(:disabled) { 
+  background: #fff5f5; 
+  border-color: #feb2b2; 
+}
+
+.btn-delete:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-edit svg,
+.btn-delete svg {
+  width: 12px;
+  height: 12px;
+  stroke-width: 1.4;
+}
 
 /* ── Table ── */
 .modern-table {
@@ -317,6 +348,92 @@ h3 {
   to   { opacity: 1; transform: translateY(0); }
 }
 
+/* ── Schedule Grid ── */
+.schedule-grid {
+  border: 0.5px solid #ddd;
+  border-radius: 8px;
+  overflow: auto;
+  max-height: 280px;
+  user-select: none;
+  font-size: 12px;
+}
+
+.schedule-header, .schedule-row {
+  display: grid;
+  grid-template-columns: 72px repeat(7, 1fr);
+}
+
+.schedule-header {
+  position: sticky;
+  top: 0;
+  background: #f5f5f5;
+  z-index: 1;
+  border-bottom: 1px solid #ddd;
+}
+
+.day-col {
+  text-align: center;
+  padding: 6px 4px;
+  font-weight: 500;
+  color: #555;
+}
+
+.time-col {
+  padding: 4px 8px 4px 0;
+  text-align: right;
+  color: #999;
+  font-size: 11px;
+  line-height: 28px;
+}
+
+.slot {
+  height: 28px;
+  margin: 2px;
+  border-radius: 4px;
+  background: #f0f0f0;
+  cursor: pointer;
+  border: 0.5px solid #e0e0e0;
+  transition: background 0.1s;
+}
+
+.slot:hover { background: #c5bff5; }
+
+.slot.selected { background: #534AB7; border-color: #3C3489; }
+
+.schedule-output {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: #f9f9f9;
+  border-radius: 6px;
+  border: 0.5px solid #e0e0e0;
+}
+
+.schedule-preview {
+  font-size: 13px;
+  color: #333;
+  flex: 1;
+}
+
+.btn-clear-schedule {
+  font-size: 12px;
+  padding: 2px 10px;
+  border: 0.5px solid #ccc;
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+  color: #666;
+}
+
+.btn-clear-schedule:hover { background: #eee; }
+
+/* ── Table Responsive ── */
+.table-responsive {
+  overflow-x: auto;
+}
+
 /* ── Responsive ── */
 @media (max-width: 1024px) {
   .form-grid {
@@ -333,73 +450,15 @@ h3 {
   .form-group--wide { grid-column: span 1; }
   .modern-table thead th,
   .modern-table tbody td { padding: 0.75rem; }
-}
+  
+  .action-buttons {
+    flex-direction: column;
+    gap: 2px;
+  }
 
-.schedule-grid {
-  border: 0.5px solid #ddd;
-  border-radius: 8px;
-  overflow: auto;
-  max-height: 280px;
-  user-select: none;
-  font-size: 12px;
+  .btn-edit,
+  .btn-delete {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
 }
-.schedule-header, .schedule-row {
-  display: grid;
-  grid-template-columns: 72px repeat(7, 1fr);
-}
-.schedule-header {
-  position: sticky;
-  top: 0;
-  background: #f5f5f5;
-  z-index: 1;
-  border-bottom: 1px solid #ddd;
-}
-.day-col {
-  text-align: center;
-  padding: 6px 4px;
-  font-weight: 500;
-  color: #555;
-}
-.time-col {
-  padding: 4px 8px 4px 0;
-  text-align: right;
-  color: #999;
-  font-size: 11px;
-  line-height: 28px;
-}
-.slot {
-  height: 28px;
-  margin: 2px;
-  border-radius: 4px;
-  background: #f0f0f0;
-  cursor: pointer;
-  border: 0.5px solid #e0e0e0;
-  transition: background 0.1s;
-}
-.slot:hover { background: #c5bff5; }
-.slot.selected { background: #534AB7; border-color: #3C3489; }
-.schedule-output {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 8px;
-  padding: 8px 12px;
-  background: #f9f9f9;
-  border-radius: 6px;
-  border: 0.5px solid #e0e0e0;
-}
-.schedule-preview {
-  font-size: 13px;
-  color: #333;
-  flex: 1;
-}
-.btn-clear-schedule {
-  font-size: 12px;
-  padding: 2px 10px;
-  border: 0.5px solid #ccc;
-  border-radius: 4px;
-  background: transparent;
-  cursor: pointer;
-  color: #666;
-}
-.btn-clear-schedule:hover { background: #eee; }

@@ -42,6 +42,8 @@ h3 {
 .fw-medium  { font-weight: 500; }
 .mb-1       { margin-bottom: 0.25rem; }
 .mb-4       { margin-bottom: 1.5rem; }
+.mt-3       { margin-top: 0.75rem; }
+.mt-4       { margin-top: 1.25rem; }
 .p-4        { padding: 1.5rem; }
 .text-end   { text-align: right; }
 .overflow-hidden { overflow: hidden; }
@@ -133,6 +135,16 @@ h3 {
 .btn-main:hover  { background-color: #334155; }
 .btn-main:active { transform: scale(0.98); }
 
+.btn-main:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: #ccc;
+}
+
+.btn-main:not(:disabled) {
+  cursor: pointer;
+}
+
 .btn-reset {
   background: transparent;
   border: 1px solid #e2e8f0;
@@ -151,30 +163,76 @@ h3 {
   color: var(--primary);
 }
 
-.btn-edit {
-  color: #6366f1;
-  background: #eef2ff;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 8px;
-  cursor: pointer;
-  margin-right: 0.4rem;
-  transition: background 0.2s;
+/* ── Action buttons container ── */
+.action-buttons {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
-.btn-edit:hover { background: #e0e7ff; }
-
+/* ── Edit and Delete buttons ── */
+.btn-edit,
 .btn-delete {
-  color: #ef4444;
-  background: #fef2f2;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 6px;
+  border: 0.5px solid #e2e8f0;
+  padding: 5px 9px;
+  font-size: 12px;
+  font-weight: 500;
   cursor: pointer;
-  transition: background 0.2s;
+  background: transparent;
+  font-family: 'DM Sans', sans-serif;
+  transition: background 0.15s, border-color 0.15s;
 }
 
-.btn-delete:hover { background: #fee2e2; }
+.btn-edit { 
+  color: #3C3489; 
+}
+
+.btn-edit:hover { 
+  background: #EEEDFE; 
+  border-color: #AFA9EC; 
+}
+
+.btn-delete { 
+  color: #e53e3e; 
+}
+
+.btn-delete:hover:not(:disabled) { 
+  background: #fff5f5; 
+  border-color: #feb2b2; 
+}
+
+.btn-delete:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-edit svg,
+.btn-delete svg {
+  width: 12px;
+  height: 12px;
+  stroke-width: 1.4;
+}
+
+/* Duplicate Error Message */
+.duplicate-error-message {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background-color: #fff3cd;
+  border: 1px solid #ffc107;
+  border-radius: 6px;
+  color: #856404;
+  font-size: 14px;
+}
+
+.duplicate-error-message i {
+  font-size: 16px;
+}
 
 /* ── Table ── */
 .modern-table {
@@ -272,8 +330,6 @@ h3 {
   box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1) !important;
 }
 
-
-
 .error-hint {
   color: #ef4444;
   font-size: 0.7rem;
@@ -284,6 +340,7 @@ h3 {
   gap: 4px;
   animation: fadeIn 0.2s ease;
 }
+
 .spinner {
   width: 34px; height: 34px;
   border: 3px solid #e2e8f0;
@@ -292,9 +349,9 @@ h3 {
   animation: spin 0.7s linear infinite;
 }
 
-
-
-@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes spin { 
+  to { transform: rotate(360deg); } 
+}
 
 /* ── Empty State ── */
 .empty-state {
@@ -317,6 +374,11 @@ h3 {
   to   { opacity: 1; transform: translateY(0); }
 }
 
+/* ── Table Responsive ── */
+.table-responsive {
+  overflow-x: auto;
+}
+
 /* ── Responsive ── */
 @media (max-width: 768px) {
   .form-grid {
@@ -325,5 +387,16 @@ h3 {
 
   .course-catalog-container {
     padding: 1rem;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .btn-edit,
+  .btn-delete {
+    padding: 4px 8px;
+    font-size: 11px;
   }
 }
