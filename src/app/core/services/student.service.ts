@@ -1,59 +1,63 @@
 import { Injectable } from '@angular/core';
-import { ApiService } from './api.service';
-import { Student } from '../models/student.model';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
-export interface CorData {
-  student: string;
-  student_number: string;
-  program: string;
-  enrollments: {
-    section: string;
-    subject: string;
-    units: number;
-    status: string;
-  }[];
+export interface GradePayload {
+  student_id: number;
+  section_id: number | string;
+  grade: string;
+  remarks?: string;
 }
 
-export interface TorData {
-  student: string;
-  student_number: string;
-  program: string;
-  grades: {
-    subject: string;
-    section: string;
-    grade: string;
-    remarks: string;
-  }[];
-}
-
-export interface DocumentResponse<T> {
-  message: string;
-  data: T;
+export interface GradeRow {
+  section_id: number;
+  section_name: string;
+  subject: string;
+  grade: string;
+  remarks: string;
 }
 
 @Injectable({ providedIn: 'root' })
 export class StudentService {
-  private path = 'students';
 
-  constructor(private api: ApiService) {}
+  private studentsBase = `${environment.apiUrl}/students`;
+  private gradesBase   = `${environment.apiUrl}/grades`;
 
-  // GET /api/students (returns with program & enrollments)
-  getAll() {
-    return this.api.get<Student[]>(this.path);
+  constructor(private http: HttpClient) {}
+
+  // GET /students
+  getAll(): Observable<any[]> {
+    return this.http.get<any[]>(this.studentsBase);
   }
 
-  // GET /api/students/:id (returns with program, enrollments & documentRequests)
-  getById(id: number) {
-    return this.api.get<Student>(`${this.path}/${id}`);
+  // GET /students/:id
+  getById(id: number): Observable<any> {
+    return this.http.get<any>(`${this.studentsBase}/${id}`);
   }
 
-  // GET /api/students/:id/cor
-  getCor(id: number) {
-    return this.api.get<DocumentResponse<CorData>>(`${this.path}/${id}/cor`);
+  // GET /students/:id/grades  → GradeController@byStudent
+  getGrades(studentId: number): Observable<GradeRow[]> {
+    return this.http.get<GradeRow[]>(`${this.studentsBase}/${studentId}/grades`);
   }
 
-  // GET /api/students/:id/tor
-  getTor(id: number) {
-    return this.api.get<DocumentResponse<TorData>>(`${this.path}/${id}/tor`);
+  // POST /grades  → GradeController@store
+  addGrade(payload: GradePayload): Observable<any> {
+    return this.http.post<any>(this.gradesBase, payload);
+  }
+
+  // PUT /grades/:id  → GradeController@update
+  updateGrade(gradeId: number, payload: { grade: string; remarks?: string }): Observable<any> {
+    return this.http.put<any>(`${this.gradesBase}/${gradeId}`, payload);
+  }
+
+  // GET /students/:id/cor
+  getCor(id: number): Observable<any> {
+    return this.http.get<any>(`${this.studentsBase}/${id}/cor`);
+  }
+
+  // GET /students/:id/transcript
+  getTor(id: number): Observable<any> {
+    return this.http.get<any>(`${this.studentsBase}/${id}/transcript`);
   }
 }
