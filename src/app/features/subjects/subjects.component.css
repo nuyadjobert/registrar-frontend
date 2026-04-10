@@ -400,3 +400,172 @@ h3 {
     font-size: 11px;
   }
 }
+
+/* ════════════════════════════════════════════════════════════ */
+/* UNDO TOAST/SNACKBAR STYLES */
+/* ════════════════════════════════════════════════════════════ */
+
+.undo-toast {
+  position: fixed;
+  bottom: 140px;
+  right: 20px;
+  left: auto;
+  transform: none;
+  background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+  border: 1px solid #28a745;
+  border-radius: 8px;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 10000;
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.25);
+  transition: transform 0.3s ease-out;
+  white-space: nowrap;
+  max-width: 280px;
+  width: auto;
+  animation: slideInLeft 0.3s ease;
+}
+
+.undo-toast.show {
+  transform: translateX(0);
+}
+
+.undo-icon {
+  font-size: 16px;
+  color: #28a745;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.undo-text {
+  color: #155724;
+  font-weight: 500;
+  font-size: 13px;
+}
+
+/* ════════════════════════════════════════════════════════════ */
+/* DELETE PROGRESS BAR STYLES */
+/* ════════════════════════════════════════════════════════════ */
+
+.delete-progress-container {
+  position: fixed;
+  bottom: 80px;
+  right: 20px;
+  left: auto;
+  transform: none;
+  z-index: 999;
+  animation: slideInLeft 0.3s ease;
+  width: auto;
+  max-width: 400px;
+}
+
+@keyframes slideInLeft {
+  from {
+    transform: translateX(450px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.delete-progress-bar {
+  background: linear-gradient(135deg, #fff3cd 0%, #ffe8cc 100%);
+  border: 1px solid #ffc107;
+  border-radius: 8px;
+  padding: 10px 14px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  position: relative;
+  overflow: hidden;
+}
+
+.delete-progress-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+  gap: 12px;
+}
+
+.delete-progress-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.delete-icon {
+  font-size: 18px;
+  display: inline-block;
+  animation: pulse 1s infinite;
+  flex-shrink: 0;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.delete-message {
+  color: #333;
+  font-weight: 500;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.delete-progress-right {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.btn-undo {
+  background-color: #ff6b6b;
+  color: white;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 4px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  box-shadow: 0 2px 4px rgba(255, 107, 107, 0.3);
+}
+
+.btn-undo:hover:not(:disabled) {
+  background-color: #ff5252;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(255, 107, 107, 0.4);
+}
+
+.btn-undo:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-undo:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  opacity: 0.6;
+  box-shadow: none;
+}
+
+.progress-bar-fill {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #ff6b6b, #fa5252);
+  transition: width 0.9s linear;
+  z-index: 0;
+}

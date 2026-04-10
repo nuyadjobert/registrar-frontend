@@ -147,3 +147,26 @@
   </div>
 
 </div>
+
+<!-- Delete Progress Bar (outside main container for proper positioning) -->
+<div *ngIf="showDeleteProgress" class="delete-progress-container">
+  <div class="delete-progress-bar">
+    <div class="delete-progress-content">
+      <div class="delete-progress-left">
+        <span class="delete-icon">⚠️</span>
+        <span class="delete-message">Deleting in {{ deleteProgressTime }}s...</span>
+      </div>
+      <div class="delete-progress-right">
+        <button 
+          type="button" 
+          class="btn-undo" 
+          (click)="undoDelete()"
+          [disabled]="deleteProgressTime <= 0">
+          UNDO
+        </button>
+      </div>
+    </div>
+    <!-- Progress bar animation -->
+    <div class="progress-bar-fill" [style.width.%]="(deleteProgressTime / 5) * 100"></div>
+  </div>
+</div>

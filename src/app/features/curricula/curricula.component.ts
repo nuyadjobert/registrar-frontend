@@ -25,6 +25,12 @@ export class CurriculaComponent implements OnInit {
   isEditing = false;
   currentEditId?: number;
 
+  // Delete progress state
+  showDeleteProgress = signal(false);
+  deleteProgressTime = signal(5);
+  pendingDeleteId = signal<number | null>(null);
+  private deleteTimer: ReturnType<typeof setInterval> | null = null;
+
   programs: Program[] = [];
   subjects: Subject[] = [];
   
@@ -274,25 +280,114 @@ export class CurriculaComponent implements OnInit {
     if (this.currentPage < last) this.currentPage++;
   }
 
+  /**
+   * Initiate delete with confirmation dialog
+   */
   delete(id: number): void {
-    // Add the confirmation dialog
     const confirmDelete = window.confirm(
       'Are you sure you want to delete this curriculum entry? This action cannot be undone.'
     );
 
     if (confirmDelete) {
-      this.curriculumService.delete(id).subscribe({
-        next: () => {
-          // Silently update the list without a full page refresh
-          this._curricula.update((list) => list.filter((item) => item.id !== id));
-        },
-        error: (err: unknown): void => {
-          console.error('Failed to delete curriculum', err);
-          alert(
-            'Could not delete. The record might be linked to an active section.'
-          );
-        },
-      });
+      this.startDeleteProgress(id);
     }
+  }
+
+  /**
+   * Start the delete progress timer
+   */
+  private startDeleteProgress(id: number): void {
+    this.pendingDeleteId.set(id);
+    this.showDeleteProgress.set(true);
+    this.deleteProgressTime.set(5);
+
+    // Clear any existing timer
+    if (this.deleteTimer) {
+      clearInterval(this.deleteTimer);
+    }
+
+    // Start countdown
+    this.deleteTimer = setInterval(() => {
+      this.deleteProgressTime.update((time) => time - 1);
+
+      // When timer reaches 0, execute delete
+      if (this.deleteProgressTime() <= 0) {
+        this.executeDelete();
+      }
+    }, 1000);
+  }
+
+  /**
+   * Execute the actual delete operation
+   */
+  private executeDelete(): void {
+    const id = this.pendingDeleteId();
+
+    if (!id) return;
+
+    // Clear timer
+    if (this.deleteTimer) {
+      clearInterval(this.deleteTimer);
+      this.deleteTimer = null;
+    }
+
+    this.curriculumService.delete(id).subscribe({
+      next: () => {
+        // Only remove from UI after successful deletion
+        this._curricula.update((list) => list.filter((item) => item.id !== id));
+        this.resetDeleteProgress();
+      },
+      error: (err: unknown): void => {
+        console.error('Failed to delete curriculum', err);
+        alert(
+          'Could not delete. The record might be linked to an active section.'
+        );
+        this.resetDeleteProgress();
+      },
+    });
+  }
+
+  /**
+   * Undo the delete operation - prevents the API call from happening
+   */
+  undoDelete(): void {
+    // Clear timer
+    if (this.deleteTimer) {
+      clearInterval(this.deleteTimer);
+      this.deleteTimer = null;
+    }
+
+    // Show undo success message (toast/snackbar)
+    const undoMessage = document.createElement('div');
+    undoMessage.className = 'undo-toast';
+    undoMessage.innerHTML = `
+      <span class="undo-icon">✓</span>
+      <span class="undo-text">Deletion cancelled</span>
+    `;
+    document.body.appendChild(undoMessage);
+
+    // Trigger animation
+    setTimeout(() => {
+      undoMessage.classList.add('show');
+    }, 10);
+
+    // Remove the message after 3 seconds
+    setTimeout(() => {
+      undoMessage.classList.remove('show');
+      setTimeout(() => {
+        undoMessage.remove();
+      }, 300);
+    }, 3000);
+
+    this.resetDeleteProgress();
+  }
+
+  /**
+   * Reset delete progress state
+   */
+  private resetDeleteProgress(): void {
+    this.showDeleteProgress.set(false);
+    this.deleteProgressTime.set(5);
+    this.pendingDeleteId.set(null);
   }
 }

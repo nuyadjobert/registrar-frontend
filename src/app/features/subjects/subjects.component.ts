@@ -15,6 +15,12 @@ export class SubjectsComponent implements OnInit {
   subjects: Subject[] = [];
   isLoading = false;
 
+  // Delete progress state
+  showDeleteProgress = false;
+  deleteProgressTime = 5;
+  pendingDeleteId: number | null = null;
+  private deleteTimer: ReturnType<typeof setInterval> | null = null;
+
   // Form State
   showForm = false;
   isEditing = false;
@@ -115,27 +121,113 @@ export class SubjectsComponent implements OnInit {
     this.showForm = true;
   }
 
+  /**
+   * Initiate delete with confirmation dialog
+   */
   deleteSubject(id: number): void {
-    // Simple, themed confirmation
     const isConfirmed = window.confirm(
       "Are you sure you want to delete this subject? This might affect existing curricula records."
     );
 
     if (isConfirmed) {
-      this.isLoading = true; // Show your spinner
-      this.subjectService.delete(id).subscribe({
-        next: () => {
-          // Update local list without re-fetching everything
-          this.subjects = this.subjects.filter(s => s.id !== id);
-          this.isLoading = false;
-        },
-        error: (err) => {
-          console.error('Delete failed', err);
-          this.isLoading = false;
-          alert("This subject cannot be deleted because it is currently linked to a Curriculum.");
-        }
-      });
+      this.startDeleteProgress(id);
     }
+  }
+
+  /**
+   * Start the delete progress timer
+   */
+  private startDeleteProgress(id: number): void {
+    this.pendingDeleteId = id;
+    this.showDeleteProgress = true;
+    this.deleteProgressTime = 5;
+
+    // Clear any existing timer
+    if (this.deleteTimer) {
+      clearInterval(this.deleteTimer);
+    }
+
+    // Start countdown
+    this.deleteTimer = setInterval(() => {
+      this.deleteProgressTime--;
+
+      // When timer reaches 0, execute delete
+      if (this.deleteProgressTime <= 0) {
+        this.executeDelete();
+      }
+    }, 1000);
+  }
+
+  /**
+   * Execute the actual delete operation
+   */
+  private executeDelete(): void {
+    const id = this.pendingDeleteId;
+
+    if (!id) return;
+
+    // Clear timer
+    if (this.deleteTimer) {
+      clearInterval(this.deleteTimer);
+      this.deleteTimer = null;
+    }
+
+    this.subjectService.delete(id).subscribe({
+      next: () => {
+        // Only remove from UI after successful deletion
+        this.subjects = this.subjects.filter((s) => s.id !== id);
+        this.resetDeleteProgress();
+      },
+      error: (err: unknown): void => {
+        console.error('Failed to delete subject', err);
+        alert("This subject cannot be deleted because it is currently linked to a Curriculum.");
+        this.resetDeleteProgress();
+      },
+    });
+  }
+
+  /**
+   * Undo the delete operation - prevents the API call from happening
+   */
+  undoDelete(): void {
+    // Clear timer
+    if (this.deleteTimer) {
+      clearInterval(this.deleteTimer);
+      this.deleteTimer = null;
+    }
+
+    // Show undo success message (toast/snackbar)
+    const undoMessage = document.createElement('div');
+    undoMessage.className = 'undo-toast';
+    undoMessage.innerHTML = `
+      <span class="undo-icon">✓</span>
+      <span class="undo-text">Deletion cancelled</span>
+    `;
+    document.body.appendChild(undoMessage);
+
+    // Trigger animation
+    setTimeout(() => {
+      undoMessage.classList.add('show');
+    }, 10);
+
+    // Remove the message after 3 seconds
+    setTimeout(() => {
+      undoMessage.classList.remove('show');
+      setTimeout(() => {
+        undoMessage.remove();
+      }, 300);
+    }, 3000);
+
+    this.resetDeleteProgress();
+  }
+
+  /**
+   * Reset delete progress state
+   */
+  private resetDeleteProgress(): void {
+    this.showDeleteProgress = false;
+    this.deleteProgressTime = 5;
+    this.pendingDeleteId = null;
   }
 
   handleSuccess(): void {

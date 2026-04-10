@@ -16,6 +16,11 @@ export class ProgramsComponent implements OnInit {
   isLoading = false;
   isSaving = false;
 
+  // Delete progress state
+  showDeleteProgress = false;
+  deleteProgressTime = 5;
+  pendingDeleteId: number | null = null;
+  private deleteTimer: ReturnType<typeof setInterval> | null = null;
 
   formErrors: { code: string; name: string; department: string } = {
   code: '',
@@ -167,15 +172,113 @@ get isFormInvalid(): boolean {
     }
   }
 
+  /**
+   * Initiate delete with confirmation dialog
+   */
   deleteProgram(id: number): void {
-    if (!confirm('Are you sure you want to delete this program?')) return;
-    // DELETE /api/programs/:id
+    const confirmDelete = window.confirm(
+      'Are you sure you want to delete this program?'
+    );
+
+    if (confirmDelete) {
+      this.startDeleteProgress(id);
+    }
+  }
+
+  /**
+   * Start the delete progress timer
+   */
+  private startDeleteProgress(id: number): void {
+    this.pendingDeleteId = id;
+    this.showDeleteProgress = true;
+    this.deleteProgressTime = 5;
+
+    // Clear any existing timer
+    if (this.deleteTimer) {
+      clearInterval(this.deleteTimer);
+    }
+
+    // Start countdown
+    this.deleteTimer = setInterval(() => {
+      this.deleteProgressTime--;
+
+      // When timer reaches 0, execute delete
+      if (this.deleteProgressTime <= 0) {
+        this.executeDelete();
+      }
+    }, 1000);
+  }
+
+  /**
+   * Execute the actual delete operation
+   */
+  private executeDelete(): void {
+    const id = this.pendingDeleteId;
+
+    if (!id) return;
+
+    // Clear timer
+    if (this.deleteTimer) {
+      clearInterval(this.deleteTimer);
+      this.deleteTimer = null;
+    }
+
     this.programService.delete(id).subscribe({
       next: () => {
-        this.programs = this.programs.filter(p => p.id !== id);
+        // Only remove from UI after successful deletion
+        this.programs = this.programs.filter((p) => p.id !== id);
+        this.resetDeleteProgress();
       },
-      error: (err: unknown) => console.error('Delete failed', err),
+      error: (err: unknown): void => {
+        console.error('Failed to delete program', err);
+        alert('Could not delete program.');
+        this.resetDeleteProgress();
+      },
     });
+  }
+
+  /**
+   * Undo the delete operation - prevents the API call from happening
+   */
+  undoDelete(): void {
+    // Clear timer
+    if (this.deleteTimer) {
+      clearInterval(this.deleteTimer);
+      this.deleteTimer = null;
+    }
+
+    // Show undo success message (toast/snackbar)
+    const undoMessage = document.createElement('div');
+    undoMessage.className = 'undo-toast';
+    undoMessage.innerHTML = `
+      <span class="undo-icon">✓</span>
+      <span class="undo-text">Deletion cancelled</span>
+    `;
+    document.body.appendChild(undoMessage);
+
+    // Trigger animation
+    setTimeout(() => {
+      undoMessage.classList.add('show');
+    }, 10);
+
+    // Remove the message after 3 seconds
+    setTimeout(() => {
+      undoMessage.classList.remove('show');
+      setTimeout(() => {
+        undoMessage.remove();
+      }, 300);
+    }, 3000);
+
+    this.resetDeleteProgress();
+  }
+
+  /**
+   * Reset delete progress state
+   */
+  private resetDeleteProgress(): void {
+    this.showDeleteProgress = false;
+    this.deleteProgressTime = 5;
+    this.pendingDeleteId = null;
   }
 
   handleSuccess(): void {
