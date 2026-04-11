@@ -30,4 +30,8 @@ export class GradeService {
   update(id: number, payload: Partial<GradePayload>) {
     return this.api.put<Grade>(`${this.path}/${id}`, payload);
   }
+
+  getStudentsBySection(sectionId: number) {
+  return this.api.get<any[]>(`sections/${sectionId}/students`);
+}
 }

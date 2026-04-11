@@ -16,6 +16,7 @@ import { Section } from '../../core/models/section.model';
 export class GradesComponent implements OnInit {
   sections: Section[] = [];
   grades: Grade[] = [];
+  students: any[] = [];
   selectedSectionId?: number;
   isLoading = false;
 
@@ -32,18 +33,29 @@ export class GradesComponent implements OnInit {
     this.sectionService.getAll().subscribe(data => this.sections = data);
   }
 
-  onSectionChange(): void {
-    if (this.selectedSectionId) {
-      this.isLoading = true;
-      this.gradeService.getAll(this.selectedSectionId).subscribe({
-        next: (data) => {
-          this.grades = data;
+ onSectionChange(): void {
+  if (!this.selectedSectionId) return;
+
+  this.isLoading = true;
+
+  // 1. Get students under section
+  this.gradeService.getStudentsBySection(this.selectedSectionId).subscribe({
+    next: (students) => {
+      this.students = students;
+
+      // 2. Get existing grades (optional but important)
+      this.gradeService.getAll(this.selectedSectionId!).subscribe({
+        next: (grades) => {
+          this.grades = grades;
           this.isLoading = false;
         },
         error: () => this.isLoading = false
       });
-    }
-  }
+
+    },
+    error: () => this.isLoading = false
+  });
+}
 
   saveGrade(studentId: number, gradeValue: string | null, remarksValue: string | null): void {
     if (!this.selectedSectionId) return;
