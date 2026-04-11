@@ -2,7 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SubjectService } from '../../core/services/subject.service';
-import { Subject, SubjectPayload } from '../../core/models/subject.model';
+import { ProgramService } from '../../core/services/program.service';
+import { Subject, SubjectPayload, Program } from '../../core/models/subject.model';
 
 @Component({
   selector: 'app-subjects',
@@ -13,6 +14,8 @@ import { Subject, SubjectPayload } from '../../core/models/subject.model';
 })
 export class SubjectsComponent implements OnInit {
   subjects: Subject[] = [];
+  programs: Program[] = [];
+
   isLoading = false;
 
   // Delete progress state
@@ -31,13 +34,30 @@ export class SubjectsComponent implements OnInit {
     subject_name: '',
     units: 3,
     type: 'lecture',
-    status: 'active'
+    status: 'active',
+    program_id: undefined
   };
 
-  constructor(private subjectService: SubjectService) {}
+  constructor(
+    private subjectService: SubjectService,
+    private programService: ProgramService
+  ) {}
 
   ngOnInit(): void {
+    this.loadPrograms();
     this.loadData();
+  }
+
+  /**
+   * Load programs for dropdown
+   */
+  loadPrograms(): void {
+    this.programService.getAll().subscribe({
+      next: (data) => {
+        this.programs = data;
+      },
+      error: (err) => console.error('Failed to load programs', err)
+    });
   }
 
   loadData(): void {
@@ -59,12 +79,10 @@ export class SubjectsComponent implements OnInit {
     const currentName = this.form.subject_name.trim().toLowerCase();
 
     return this.subjects.some(subject => {
-      // If editing, exclude the current subject from comparison
       if (this.isEditing && subject.id === this.currentId) {
         return false;
       }
       
-      // Check for duplicate code or name
       return (
         subject.subject_code.toLowerCase() === currentCode ||
         subject.subject_name.toLowerCase() === currentName
@@ -80,12 +98,12 @@ export class SubjectsComponent implements OnInit {
       this.form.subject_code.trim() !== '' &&
       this.form.subject_name.trim() !== '' &&
       this.form.units > 0 &&
+      this.form.program_id !== undefined &&
       !this.isDuplicate()
     );
   }
 
   submitForm(): void {
-    // Validate before submission
     if (!this.isFormValid()) {
       if (this.isDuplicate()) {
         alert('A subject with this code or name already exists!');
@@ -116,7 +134,8 @@ export class SubjectsComponent implements OnInit {
       subject_name: sub.subject_name,
       units: sub.units,
       type: sub.type,
-      status: sub.status
+      status: sub.status,
+      program_id: sub.program_id
     };
     this.showForm = true;
   }
@@ -142,16 +161,13 @@ export class SubjectsComponent implements OnInit {
     this.showDeleteProgress = true;
     this.deleteProgressTime = 5;
 
-    // Clear any existing timer
     if (this.deleteTimer) {
       clearInterval(this.deleteTimer);
     }
 
-    // Start countdown
     this.deleteTimer = setInterval(() => {
       this.deleteProgressTime--;
 
-      // When timer reaches 0, execute delete
       if (this.deleteProgressTime <= 0) {
         this.executeDelete();
       }
@@ -166,7 +182,6 @@ export class SubjectsComponent implements OnInit {
 
     if (!id) return;
 
-    // Clear timer
     if (this.deleteTimer) {
       clearInterval(this.deleteTimer);
       this.deleteTimer = null;
@@ -174,7 +189,6 @@ export class SubjectsComponent implements OnInit {
 
     this.subjectService.delete(id).subscribe({
       next: () => {
-        // Only remove from UI after successful deletion
         this.subjects = this.subjects.filter((s) => s.id !== id);
         this.resetDeleteProgress();
       },
@@ -190,13 +204,11 @@ export class SubjectsComponent implements OnInit {
    * Undo the delete operation - prevents the API call from happening
    */
   undoDelete(): void {
-    // Clear timer
     if (this.deleteTimer) {
       clearInterval(this.deleteTimer);
       this.deleteTimer = null;
     }
 
-    // Show undo success message (toast/snackbar)
     const undoMessage = document.createElement('div');
     undoMessage.className = 'undo-toast';
     undoMessage.innerHTML = `
@@ -205,12 +217,10 @@ export class SubjectsComponent implements OnInit {
     `;
     document.body.appendChild(undoMessage);
 
-    // Trigger animation
     setTimeout(() => {
       undoMessage.classList.add('show');
     }, 10);
 
-    // Remove the message after 3 seconds
     setTimeout(() => {
       undoMessage.classList.remove('show');
       setTimeout(() => {
@@ -244,7 +254,8 @@ export class SubjectsComponent implements OnInit {
       subject_name: '', 
       units: 3, 
       type: 'lecture', 
-      status: 'active' 
+      status: 'active',
+      program_id: undefined
     };
   }
 }

@@ -8,6 +8,12 @@ export interface Subject {
   units: number;
   type: SubjectType | null;
   status: SubjectStatus;
+  program_id?: number;  // ADD THIS
+  program?: {           // ADD THIS
+    id: number;
+    name: string;
+    code: string;
+  };
   created_at?: string;
   updated_at?: string;
 }
@@ -18,4 +24,11 @@ export interface SubjectPayload {
   units: number;
   type?: SubjectType | null;
   status?: SubjectStatus;
+  program_id?: number;  // ADD THIS
+}
+
+export interface Program {  // ADD THIS INTERFACE
+  id: number;
+  name: string;
+  code: string;
 }
