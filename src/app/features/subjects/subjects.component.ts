@@ -30,13 +30,16 @@ export class SubjectsComponent implements OnInit {
   currentId?: number;
 
   form: SubjectPayload = {
-    subject_code: '',
-    subject_name: '',
-    units: 3,
-    type: 'lecture',
-    status: 'active',
-    program_id: undefined
-  };
+  subject_code: '',
+  subject_name: '',
+  units: 3,
+  type: 'lecture',
+  status: 'active',
+  program_id: undefined,
+  year_level: 1,           // ADD THIS
+  semester: 'first',       // ADD THIS
+  school_year: new Date().getFullYear().toString()  // ADD THIS
+};
 
   constructor(
     private subjectService: SubjectService,
@@ -94,14 +97,16 @@ export class SubjectsComponent implements OnInit {
    * Validate form - check for empty fields and duplicates
    */
   isFormValid(): boolean {
-    return (
-      this.form.subject_code.trim() !== '' &&
-      this.form.subject_name.trim() !== '' &&
-      this.form.units > 0 &&
-      this.form.program_id !== undefined &&
-      !this.isDuplicate()
-    );
-  }
+  return (
+    this.form.subject_code.trim() !== '' &&
+    this.form.subject_name.trim() !== '' &&
+    this.form.units > 0 &&
+    this.form.program_id !== undefined &&
+    this.form.year_level !== undefined &&
+    this.form.semester?.trim() !== '' &&
+    !this.isDuplicate()
+  );
+}
 
   submitForm(): void {
     if (!this.isFormValid()) {
@@ -246,16 +251,19 @@ export class SubjectsComponent implements OnInit {
   }
 
   resetForm(): void {
-    this.showForm = false;
-    this.isEditing = false;
-    this.currentId = undefined;
-    this.form = { 
-      subject_code: '', 
-      subject_name: '', 
-      units: 3, 
-      type: 'lecture', 
-      status: 'active',
-      program_id: undefined
-    };
-  }
+  this.showForm = false;
+  this.isEditing = false;
+  this.currentId = undefined;
+  this.form = { 
+    subject_code: '', 
+    subject_name: '', 
+    units: 3, 
+    type: 'lecture', 
+    status: 'active',
+    program_id: undefined,
+    year_level: 1,
+    semester: 'first',
+    school_year: new Date().getFullYear().toString()
+  };
+}
 }

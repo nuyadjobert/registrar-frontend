@@ -75,6 +75,40 @@
               <option value="inactive">Inactive</option>
             </select>
           </div>
+
+          <div class="form-group col-year">
+            <label class="form-label">Year Level</label>
+            <input type="number" name="year_level" [(ngModel)]="form.year_level" #yearLevel="ngModel"
+              class="form-control" min="1" max="4" required
+              [class.is-invalid]="yearLevel.invalid && yearLevel.touched">
+            @if (yearLevel.invalid && yearLevel.touched) {
+            <div class="error-hint"><i class="bi bi-exclamation-circle-fill"></i> Year level required</div>
+            }
+          </div>
+
+          <div class="form-group col-semester">
+            <label class="form-label">Semester</label>
+            <select name="semester" [(ngModel)]="form.semester" #semesterSelect="ngModel" required
+              class="form-select" [class.is-invalid]="semesterSelect.invalid && semesterSelect.touched">
+              <option value="" disabled selected>Select Semester</option>
+              <option value="first">First</option>
+              <option value="second">Second</option>
+              <option value="summer">Summer</option>
+            </select>
+            @if (semesterSelect.invalid && semesterSelect.touched) {
+            <div class="error-hint"><i class="bi bi-exclamation-circle-fill"></i> Semester required</div>
+            }
+          </div>
+
+          <div class="form-group col-year">
+            <label class="form-label">School Year</label>
+            <input type="text" name="school_year" [(ngModel)]="form.school_year" #schoolYear="ngModel"
+              class="form-control" placeholder="2026" required
+              [class.is-invalid]="schoolYear.invalid && schoolYear.touched">
+            @if (schoolYear.invalid && schoolYear.touched) {
+            <div class="error-hint"><i class="bi bi-exclamation-circle-fill"></i> School year required</div>
+            }
+          </div>
         </div>
 
         <!-- Duplicate Error Message -->
