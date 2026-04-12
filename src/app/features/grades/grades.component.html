@@ -15,7 +15,7 @@
         <i class="bi bi-collection"></i>
         <span>Select Section</span>
       </div>
-      <select class="form-select section-select"
+      <select class="section-select"
         [(ngModel)]="selectedSectionId"
         (change)="onSectionChange()">
         <option [ngValue]="undefined">— Choose a section —</option>
@@ -28,51 +28,82 @@
     </div>
   </div>
 
-  <!-- Loading -->
+  <!-- Success Message -->
+  @if (successMessage) {
+    <div class="alert alert-success mb-4">
+      <i class="bi bi-check-circle"></i>
+      <span>{{ successMessage }}</span>
+    </div>
+  }
+
+  <!-- Error Message -->
+  @if (errorMessage) {
+    <div class="alert alert-error mb-4">
+      <i class="bi bi-exclamation-circle"></i>
+      <span>{{ errorMessage }}</span>
+    </div>
+  }
+
+  <!-- Loading State -->
   @if (isLoading) {
     <div class="glass-card">
       <div class="loading-state">
         <div class="spinner"></div>
-        <p class="text-muted small mt-3 mb-0">Retrieving grade records...</p>
+        <p class="text-muted small mt-3 mb-0">Retrieving student and grade records...</p>
       </div>
     </div>
 
-  <!-- Grades Table -->
-  } @else if (selectedSectionId && grades.length > 0) {
+  <!-- Grades Table - Students with Grade Inputs -->
+  } @else if (selectedSectionId && studentsWithGrades.length > 0) {
     <div class="glass-card overflow-hidden">
+      <div class="section-info p-4 border-bottom">
+        <h4 class="fw-bold mb-0">{{ getCurrentSectionName() }}</h4>
+        <p class="text-muted small mb-0">{{ studentsWithGrades.length }} student(s) enrolled</p>
+      </div>
+      
       <div class="table-responsive">
         <table class="modern-table">
           <thead>
             <tr>
               <th>Student</th>
-              <th>Current Grade</th>
+              <th>Grade</th>
               <th>Remarks</th>
               <th class="text-end">Action</th>
             </tr>
           </thead>
           <tbody>
-            @for (g of grades; track g.id) {
+            @for (student of studentsWithGrades; track student.id) {
               <tr class="hover-row">
                 <td>
-                  <span class="student-name">{{ g.student?.name }}</span>
-                  <span class="student-number">{{ g.student?.student_number }}</span>
+                  <span class="student-name">{{ student.name }}</span>
+                  <span class="student-number">{{ student.student_number }}</span>
                 </td>
                 <td>
                   <input type="text"
                     class="grade-input"
-                    [(ngModel)]="g.grade"
-                    placeholder="1.25">
+                    [(ngModel)]="student.grade"
+                    placeholder="e.g., 1.25"
+                    maxlength="10">
                 </td>
                 <td>
                   <input type="text"
                     class="remarks-input"
-                    [(ngModel)]="g.remarks"
-                    placeholder="Optional remarks">
+                    [(ngModel)]="student.remarks"
+                    placeholder="Optional remarks"
+                    maxlength="100">
                 </td>
                 <td class="text-end">
                   <button class="btn-save"
-                    (click)="saveGrade(g.student_id, g.grade, g.remarks)">
-                    <i class="bi bi-floppy"></i> Save
+                    (click)="saveGrade(student)"
+                    [disabled]="isSaveDisabled(student)"
+                    [class.btn-save-disabled]="isSaveDisabled(student)">
+                    @if (savingStudentId === student.id) {
+                      <i class="bi bi-hourglass-split"></i>
+                      <span>Saving...</span>
+                    } @else {
+                      <i class="bi bi-floppy"></i>
+                      <span>Save</span>
+                    }
                   </button>
                 </td>
               </tr>
@@ -82,21 +113,21 @@
       </div>
     </div>
 
-  <!-- Empty State -->
+  <!-- Empty State - Section selected but no students -->
   } @else if (selectedSectionId) {
     <div class="glass-card">
       <div class="empty-state">
         <i class="bi bi-person-x empty-icon"></i>
-        <p class="text-muted mb-0 mt-2">No students found in this section.</p>
+        <p class="text-muted mb-0 mt-2">No students enrolled in this section.</p>
       </div>
     </div>
 
-  <!-- No Selection -->
+  <!-- Initial State - No section selected -->
   } @else {
     <div class="glass-card">
       <div class="empty-state">
         <i class="bi bi-collection empty-icon"></i>
-        <p class="text-muted mb-0 mt-2">Please select a section to view grades.</p>
+        <p class="text-muted mb-0 mt-2">Please select a section to view and manage student grades.</p>
       </div>
     </div>
   }

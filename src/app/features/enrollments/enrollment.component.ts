@@ -14,6 +14,7 @@ export class EnrollmentComponent implements OnInit {
   enrollments: Enrollment[] = [];
   isLoading = false;
   errorMessage = '';
+  approvingId: number | null = null; // Track which enrollment is being approved
 
   constructor(private enrollmentService: EnrollmentService) {}
 
@@ -35,33 +36,47 @@ export class EnrollmentComponent implements OnInit {
     });
   }
 
-  onApprove(id: number): void {
-    this.enrollmentService.approve(id).subscribe({
-      next: (res) => {
-        this.updateLocalStatus(id, 'approved');
-        alert(res.message);
-      },
-      error: (err) => {
-        // This handles your Laravel 403 error for unpaid fines
-        const msg = err.error?.message || 'Approval failed.';
-        alert(msg);
-      }
-    });
+  /**
+   * Check if approve button should be disabled
+   * - Disable if payment is not paid
+   * - Disable if already approved/rejected
+   */
+  isApproveDisabled(enrollment: Enrollment): boolean {
+    return enrollment.payment_status !== 'paid' || enrollment.status !== 'pending';
   }
 
-  onReject(id: number): void {
-    if (confirm('Reject this enrollment?')) {
-      this.enrollmentService.reject(id).subscribe({
+  /**
+   * Get tooltip message for disabled approve button
+   */
+  getApproveTooltip(enrollment: Enrollment): string {
+    if (enrollment.status !== 'pending') {
+      return 'This enrollment has already been processed';
+    }
+    if (enrollment.payment_status !== 'paid') {
+      return `Cannot approve. Payment status is ${enrollment.payment_status}. Payment must be marked as paid.`;
+    }
+    return '';
+  }
+
+  onApprove(id: number): void {
+    if (confirm('Approve this enrollment?')) {
+      this.approvingId = id;
+      this.enrollmentService.approve(id).subscribe({
         next: (res) => {
-          this.updateLocalStatus(id, 'rejected');
-          alert(res.message);
+          this.updateLocalStatus(id, 'approved');
+          this.approvingId = null;
+          alert(res.message || 'Enrollment approved successfully!');
         },
-        error: () => alert('Rejection failed.')
+        error: (err) => {
+          this.approvingId = null;
+          const msg = err.error?.message || 'Approval failed.';
+          alert(msg);
+        }
       });
     }
   }
 
-  private updateLocalStatus(id: number, status: 'approved' | 'rejected'): void {
+  private updateLocalStatus(id: number, status: 'approved'): void {
     const index = this.enrollments.findIndex(e => e.id === id);
     if (index !== -1) {
       this.enrollments[index].status = status;

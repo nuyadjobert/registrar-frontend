@@ -3,8 +3,8 @@
   <!-- Header -->
   <div class="page-header mb-4">
     <div>
-      <h3 class="fw-bold mb-1">Enrollment Management</h3>
-      <p class="text-muted small mb-0">Review and process student enrollment requests.</p>
+      <h3 class="fw-bold">Enrollment Management</h3>
+      <p class="text-muted small mb-1">Review and process student enrollment requests.</p>
     </div>
   </div>
 
@@ -61,11 +61,18 @@
                 </td>
                 <td class="text-end">
                   @if (item.status === 'pending') {
-                    <button class="btn-approve" (click)="onApprove(item.id)">
-                      <i class="bi bi-check-lg"></i> Approve
-                    </button>
-                    <button class="btn-reject" (click)="onReject(item.id)">
-                      <i class="bi bi-x-lg"></i> Reject
+                    <button 
+                      class="btn-approve" 
+                      (click)="onApprove(item.id)"
+                      [disabled]="isApproveDisabled(item)"
+                      [title]="getApproveTooltip(item)"
+                      [class.btn-disabled]="isApproveDisabled(item)">
+                      <i class="bi bi-check-lg"></i> 
+                      @if (approvingId === item.id) {
+                        <span>Approving...</span>
+                      } @else {
+                        <span>Approve</span>
+                      }
                     </button>
                   } @else {
                     <span class="processed-label">
