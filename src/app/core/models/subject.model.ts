@@ -15,6 +15,11 @@ export interface Subject {
     name: string;
     code: string;
   };
+  programs?: Array<{  // ← ADD THIS (what backend returns)
+    id: number;
+    name: string;
+    code: string;
+  }>;
   created_at?: string;
   updated_at?: string;
 }
@@ -26,9 +31,9 @@ export interface SubjectPayload {
   type?: SubjectType | null;
   status?: SubjectStatus;
   program_id?: number;
-  year_level?: number;          // ADD THIS
-  semester?: Semester;          // ADD THIS
-  school_year?: string;         // ADD THIS
+  year_level?: number;
+  semester?: Semester;
+  school_year?: string;
 }
 
 export interface Program {

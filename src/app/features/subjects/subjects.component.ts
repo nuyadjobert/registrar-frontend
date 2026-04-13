@@ -64,16 +64,21 @@ export class SubjectsComponent implements OnInit {
   }
 
   loadData(): void {
-    this.isLoading = true;
-    this.subjectService.getAll().subscribe({
-      next: (data) => {
-        this.subjects = data;
-        this.isLoading = false;
-      },
-      error: () => this.isLoading = false
-    });
-  }
-
+  this.isLoading = true;
+  this.subjectService.getAll().subscribe({
+    next: (data) => {
+      // Map 'programs' array from backend to 'program' object
+      this.subjects = data.map(subject => ({
+        ...subject,
+        program: subject.programs && subject.programs.length > 0 
+          ? subject.programs[0] 
+          : undefined
+      }));
+      this.isLoading = false;
+    },
+    error: () => this.isLoading = false
+  });
+}
   /**
    * Check if subject code or name already exists in the list
    */
