@@ -108,13 +108,13 @@ export const routes: Routes = [
             (m) => m.DocumentRequestComponent
           ),
       },
-      {
-        path: 'instructors',
-        loadComponent: () =>
-          import('./features/instructors/instructors.component').then(
-            (m) => m.InstructorsComponent
-          ),
-      },
+      // {
+      //   path: 'instructors',
+      //   loadComponent: () =>
+      //     import('./features/instructors/instructors.component').then(
+      //       (m) => m.InstructorsComponent
+      //     ),
+      // },
     ],
   },
 

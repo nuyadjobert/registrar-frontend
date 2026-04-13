@@ -10,12 +10,15 @@ export interface Subject {
   type: SubjectType | null;
   status: SubjectStatus;
   program_id?: number;
+  year_level?: number;
+  semester?: Semester;
+  school_year?: string;
   program?: {
     id: number;
     name: string;
     code: string;
   };
-  programs?: Array<{  // ← ADD THIS (what backend returns)
+  programs?: Array<{  // ← what backend returns
     id: number;
     name: string;
     code: string;

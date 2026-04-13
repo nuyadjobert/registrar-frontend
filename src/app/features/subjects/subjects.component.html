@@ -152,7 +152,7 @@
           </tr>
         </thead>
         <tbody>
-          @for (sub of subjects; track sub.id) {
+          @for (sub of paginatedSubjects; track sub.id) {
           <tr class="hover-row">
             <td><span class="subject-code">{{ sub.subject_code }}</span></td>
             <td><span class="fw-medium">{{ sub.subject_name }}</span></td>
@@ -192,6 +192,38 @@
           }
         </tbody>
       </table>
+    </div>
+
+    <!-- Pagination Controls -->
+    <div class="pagination-container">
+      <span class="pagination-info">{{ paginationInfo }}</span>
+      
+      <div class="pagination-controls">
+        <button 
+          class="pagination-btn pagination-prev"
+          (click)="previousPage()"
+          [disabled]="currentPage === 1">
+          <span class="pagination-arrow">‹</span> Previous
+        </button>
+
+        <div class="pagination-numbers">
+          @for (page of pageNumbers; track page) {
+            <button 
+              class="pagination-number"
+              [class.active]="page === currentPage"
+              (click)="goToPage(page)">
+              {{ page }}
+            </button>
+          }
+        </div>
+
+        <button 
+          class="pagination-btn pagination-next"
+          (click)="nextPage()"
+          [disabled]="currentPage === totalPages">
+          Next <span class="pagination-arrow">›</span>
+        </button>
+      </div>
     </div>
     }
   </div>
