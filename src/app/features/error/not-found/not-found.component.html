@@ -1,0 +1,50 @@
+<div class="error-container">
+  <!-- Animated background elements -->
+  <div class="background-blur blur-1"></div>
+  <div class="background-blur blur-2"></div>
+  <div class="background-blur blur-3"></div>
+
+  <div class="error-content">
+    <!-- 404 Display with animation -->
+    <div class="error-code">
+      <span class="digit digit-1">4</span>
+      <span class="digit digit-2">0</span>
+      <span class="digit digit-3">4</span>
+    </div>
+
+    <!-- Separator -->
+    <div class="separator"></div>
+
+    <!-- Error message -->
+    <div class="error-message">
+      <h1 class="error-title">Page not found</h1>
+      <p class="error-description">
+        The page you're looking for doesn't exist or has been moved.
+      </p>
+    </div>
+
+    <!-- Animated dots -->
+    <div class="dots-loader">
+      <span class="dot"></span>
+      <span class="dot"></span>
+      <span class="dot"></span>
+    </div>
+
+    <!-- Action buttons -->
+    <div class="button-group">
+      <button class="btn btn-primary" (click)="goHome()">
+        <span class="btn-icon">→</span>
+        Go to dashboard
+      </button>
+      <button class="btn btn-secondary" (click)="goBack()">
+        <span class="btn-icon">←</span>
+        Go back
+      </button>
+    </div>
+
+    <!-- Footer -->
+    <div class="error-footer">
+      <p>Error code: 404 • Page not found</p>
+    </div>
+  </div>
+</div>

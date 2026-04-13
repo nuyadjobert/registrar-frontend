@@ -12,6 +12,8 @@ import { Program, ProgramPayload } from '../../core/models/program.model';
   styleUrls: ['./programs.component.css'],
 })
 export class ProgramsComponent implements OnInit {
+  Math = Math; // Expose Math object to template
+  
   programs: Program[] = [];
   isLoading = false;
   isSaving = false;
@@ -22,44 +24,49 @@ export class ProgramsComponent implements OnInit {
   pendingDeleteId: number | null = null;
   private deleteTimer: ReturnType<typeof setInterval> | null = null;
 
+  // Pagination
+  currentPage: number = 1;
+  itemsPerPage: number = 10;
+
   formErrors: { code: string; name: string; department: string } = {
-  code: '',
-  name: '',
-  department: ''
-};
+    code: '',
+    name: '',
+    department: ''
+  };
 
-validateForm(): boolean {
-  this.formErrors = { code: '', name: '', department: '' };
-  let valid = true;
+  validateForm(): boolean {
+    this.formErrors = { code: '', name: '', department: '' };
+    let valid = true;
 
-  if (!this.form.code.trim()) {
-    this.formErrors.code = 'Program code is required.';
-    valid = false;
-  } else if (this.form.code.trim().length > 10) {
-    this.formErrors.code = 'Code must be 10 characters or less.';
-    valid = false;
+    if (!this.form.code.trim()) {
+      this.formErrors.code = 'Program code is required.';
+      valid = false;
+    } else if (this.form.code.trim().length > 10) {
+      this.formErrors.code = 'Code must be 10 characters or less.';
+      valid = false;
+    }
+
+    if (!this.form.name.trim()) {
+      this.formErrors.name = 'Program name is required.';
+      valid = false;
+    }
+
+    if (!this.form.department?.trim()) {
+      this.formErrors.department = 'Department is required.';
+      valid = false;
+    }
+
+    return valid;
   }
 
-  if (!this.form.name.trim()) {
-    this.formErrors.name = 'Program name is required.';
-    valid = false;
+  get isFormInvalid(): boolean {
+    return (
+      !this.form.code.trim() ||
+      !this.form.name.trim() ||
+      !this.form.department?.trim()
+    );
   }
 
-  if (!this.form.department?.trim()) {
-    this.formErrors.department = 'Department is required.';
-    valid = false;
-  }
-
-  return valid;
-}
-
-get isFormInvalid(): boolean {
-  return (
-    !this.form.code.trim() ||
-    !this.form.name.trim() ||
-    !this.form.department?.trim()
-  );
-}
   showForm = false;
   isEditing = false;
   selectedProgramId?: number;
@@ -88,6 +95,8 @@ get isFormInvalid(): boolean {
       next: (data: Program[]) => {
         this.programs = data;
         this.isLoading = false;
+        // Reset to first page when data reloads
+        this.currentPage = 1;
       },
       error: (err: unknown) => {
         console.error('Failed to load programs', err);
@@ -102,7 +111,7 @@ get isFormInvalid(): boolean {
   }
 
   onSubmit(): void {
-    if(!this.validateForm()) return;
+    if (!this.validateForm()) return;
     const payload: ProgramPayload = {
       code: this.form.code.trim(),
       name: this.form.name.trim(),
@@ -145,30 +154,63 @@ get isFormInvalid(): boolean {
     this.showForm = true;
   }
 
-  // Existing properties...
-
-  // Add these for pagination
-  currentPage: number = 1;
-  itemsPerPage: number = 10;
-
-  // Mock or real filter function used in your HTML
-  filteredPrograms() {
-    return this.programs;
+  /**
+   * Get paginated programs for the current page
+   */
+  getPaginatedPrograms(): Program[] {
+    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    const endIndex = startIndex + this.itemsPerPage;
+    return this.programs.slice(startIndex, endIndex);
   }
 
-  // Calculates the number of pages needed
-  totalPages(): number[] {
-    const total = Math.ceil(this.filteredPrograms().length / this.itemsPerPage);
+  /**
+   * Get the end index for displaying pagination info
+   */
+  getPaginationEndIndex(): number {
+    return Math.min(this.currentPage * this.itemsPerPage, this.programs.length);
+  }
+
+  /**
+   * Get the start index for displaying pagination info
+   */
+  getPaginationStartIndex(): number {
+    return (this.currentPage - 1) * this.itemsPerPage + 1;
+  }
+
+  /**
+   * Get all available page numbers
+   */
+  getTotalPages(): number[] {
+    const total = Math.ceil(this.programs.length / this.itemsPerPage);
     return Array.from({ length: total }, (_, i) => i + 1);
   }
 
-  // Logic for the 'next' arrow button
-  nextPage() {
-    const total = this.totalPages().length;
+  /**
+   * Navigate to next page
+   */
+  nextPage(): void {
+    const total = this.getTotalPages().length;
     if (this.currentPage < total) {
       this.currentPage++;
-    } else {
-      this.currentPage = 1; // Optional: wraps back to page 1
+    }
+  }
+
+  /**
+   * Navigate to previous page
+   */
+  previousPage(): void {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+    }
+  }
+
+  /**
+   * Go to a specific page
+   */
+  goToPage(page: number): void {
+    const total = this.getTotalPages().length;
+    if (page >= 1 && page <= total) {
+      this.currentPage = page;
     }
   }
 
@@ -228,6 +270,12 @@ get isFormInvalid(): boolean {
         // Only remove from UI after successful deletion
         this.programs = this.programs.filter((p) => p.id !== id);
         this.resetDeleteProgress();
+        
+        // Adjust current page if needed (if we deleted the last item on the page)
+        const total = this.getTotalPages().length;
+        if (this.currentPage > total && total > 0) {
+          this.currentPage = total;
+        }
       },
       error: (err: unknown): void => {
         console.error('Failed to delete program', err);
@@ -285,6 +333,13 @@ get isFormInvalid(): boolean {
     this.isSaving = false;
     this.resetForm();
     this.loadPrograms(); // GET /api/programs
+    
+    // Auto-navigate to next page when item count reaches itemsPerPage
+    setTimeout(() => {
+      if (this.programs.length >= this.itemsPerPage && this.programs.length % this.itemsPerPage === 1) {
+        this.nextPage();
+      }
+    }, 300);
   }
 
   resetForm(): void {
@@ -292,6 +347,6 @@ get isFormInvalid(): boolean {
     this.isEditing = false;
     this.selectedProgramId = undefined;
     this.form = { code: '', name: '', department: '', status: 'active' };
-    this.formErrors={ code: '',name: '',department: ''};
+    this.formErrors = { code: '', name: '', department: '' };
   }
 }

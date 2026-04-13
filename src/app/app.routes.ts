@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { guestGuard } from './core/guards/guest.guard';
+import { NotFoundComponent } from './features/error/not-found/not-found.component';
 
 export const routes: Routes = [
   // ── Redirect root
@@ -120,6 +121,7 @@ export const routes: Routes = [
   // ── Fallback
   {
     path: '**',
-    redirectTo: 'login',
+    component: NotFoundComponent,
+
   },
 ];

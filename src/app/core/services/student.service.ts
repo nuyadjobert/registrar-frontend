@@ -23,6 +23,7 @@ export class StudentService {
 
   private studentsBase = `${environment.apiUrl}/students`;
   private gradesBase   = `${environment.apiUrl}/grades`;
+  private url = `${environment.apiUrl}/external/students/sync`; // for external API calls (e.g. for COR/TOR generation)
 
   constructor(private http: HttpClient) {}
 

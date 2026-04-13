@@ -1,0 +1,53 @@
+<div class="error-container">
+  <!-- Animated background elements -->
+  <div class="background-blur blur-1"></div>
+  <div class="background-blur blur-2"></div>
+  <div class="background-blur blur-3"></div>
+
+  <div class="error-content">
+    <!-- 401 Display with animation -->
+    <div class="error-code">
+      <span class="digit digit-1">4</span>
+      <span class="digit digit-2">0</span>
+      <span class="digit digit-3">1</span>
+    </div>
+
+    <!-- Separator -->
+    <div class="separator"></div>
+
+    <!-- Error message -->
+    <div class="error-message">
+      <h1 class="error-title">Unauthorized access</h1>
+      <p class="error-description">
+        You need to be logged in to access this page.
+      </p>
+      <p class="error-description">
+        Please log in with your credentials to continue.
+      </p>
+    </div>
+
+    <!-- Animated dots -->
+    <div class="dots-loader">
+      <span class="dot"></span>
+      <span class="dot"></span>
+      <span class="dot"></span>
+    </div>
+
+    <!-- Action buttons -->
+    <div class="button-group">
+      <button class="btn btn-primary" (click)="goLogin()">
+        <span class="btn-icon">🔓</span>
+        Go to login
+      </button>
+      <button class="btn btn-secondary" (click)="goBack()">
+        <span class="btn-icon">←</span>
+        Go back
+      </button>
+    </div>
+
+    <!-- Footer -->
+    <div class="error-footer">
+      <p>Error code: 401 • Unauthorized</p>
+    </div>
+  </div>
+</div>
