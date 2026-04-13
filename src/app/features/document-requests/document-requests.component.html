@@ -76,11 +76,13 @@
                 </td>
                 <td class="text-end">
                   @if (req.status === 'pending') {
-                    <button class="btn-approve" (click)="handleApprove(req.id)">
-                      <i class="bi bi-check-lg"></i> Approve
-                    </button>
-                    <button class="btn-reject" (click)="handleReject(req.id)">
-                      <i class="bi bi-x-lg"></i> Reject
+                    <button 
+                      class="btn-approve" 
+                      (click)="handleApprove(req.id)"
+                      [disabled]="req.payment_status !== 'paid'"
+                      [ngClass]="{'btn-disabled': req.payment_status !== 'paid'}"
+                      [title]="req.payment_status !== 'paid' ? 'Payment must be completed before approval' : ''">
+                      Approve
                     </button>
                   } @else if (req.status === 'approved') {
                     <button

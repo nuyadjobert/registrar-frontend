@@ -27,9 +27,10 @@ export class StudentService {
   constructor(private http: HttpClient) {}
 
   // GET /students
-  getAll(): Observable<any[]> {
+    getAll(): Observable<any[]> {
     return this.http.get<any[]>(this.studentsBase);
   }
+
 
   // GET /students/:id
   getById(id: number): Observable<any> {

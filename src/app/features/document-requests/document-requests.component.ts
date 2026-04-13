@@ -50,50 +50,38 @@ export class DocumentRequestComponent implements OnInit {
     });
   }
 
-  handleReject(id: number): void {
-    if (confirm('Are you sure you want to reject this request?')) {
-      this.requestService.reject(id).subscribe({
-        next: (response) => {
-          this.updateLocalStatus(id, 'rejected');
-          alert(response.message);
+  handleDownload(req: DocumentRequest): void {
+    if (!req.student_id) return;
+
+    this.generatingId = req.id;
+    const type = req.type.toUpperCase();
+
+    if (type === 'COR') {
+      this.requestService.getCOR(req.student_id).subscribe({
+        next: (res) => {
+          this.pdfService.generateCOR(res.data).finally(() => {
+            this.generatingId = null;
+          });
         },
-        error: () => alert('Error rejecting request')
+        error: (err) => {
+          alert(err.error?.message || 'Failed to generate COR.');
+          this.generatingId = null;
+        }
+      });
+    } else if (type === 'TOR') {
+      this.requestService.getTOR(req.student_id).subscribe({
+        next: (res) => {
+          this.pdfService.generateTOR(res.data).finally(() => {
+            this.generatingId = null;
+          });
+        },
+        error: (err) => {
+          alert(err.error?.message || 'Failed to generate TOR.');
+          this.generatingId = null;
+        }
       });
     }
   }
-
-  handleDownload(req: DocumentRequest): void {
-  if (!req.student_id) return;
-
-  this.generatingId = req.id;
-  const type = req.type.toUpperCase();
-
-  if (type === 'COR') {
-    this.requestService.getCOR(req.student_id).subscribe({
-      next: (res) => {
-        this.pdfService.generateCOR(res.data).finally(() => {
-          this.generatingId = null;
-        });
-      },
-      error: (err) => {
-        alert(err.error?.message || 'Failed to generate COR.');
-        this.generatingId = null;
-      }
-    });
-  } else if (type === 'TOR') {
-    this.requestService.getTOR(req.student_id).subscribe({
-      next: (res) => {
-        this.pdfService.generateTOR(res.data).finally(() => {
-          this.generatingId = null;
-        });
-      },
-      error: (err) => {
-        alert(err.error?.message || 'Failed to generate TOR.');
-        this.generatingId = null;
-      }
-    });
-  }
-}
 
   private updateLocalStatus(id: number, status: 'pending' | 'approved' | 'rejected'): void {
     const index = this.requests.findIndex(r => r.id === id);

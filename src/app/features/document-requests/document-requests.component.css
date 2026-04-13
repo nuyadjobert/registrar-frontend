@@ -82,6 +82,7 @@ h3 {
 .btn-main:hover  { background-color: #334155; }
 .btn-main:active { transform: scale(0.98); }
 
+/* ── Approve Button - GREEN ── */
 .btn-approve {
   display: inline-flex;
   align-items: center;
@@ -90,16 +91,32 @@ h3 {
   color: #166534;
   border: none;
   border-radius: 8px;
-  padding: 6px 12px;
-  font-size: 0.8rem;
+  padding: 8px 16px;
+  font-size: 0.85rem;
   font-weight: 600;
   font-family: 'DM Sans', sans-serif;
   cursor: pointer;
-  margin-right: 0.4rem;
-  transition: background 0.2s;
+  transition: all 0.2s ease;
 }
 
-.btn-approve:hover { background: #bbf7d0; }
+/* Enabled state - can be clicked */
+.btn-approve:hover:not(.btn-disabled) { 
+  background: #bbf7d0;
+  color: #15803d;
+}
+
+/* Disabled state - cannot be clicked */
+.btn-approve.btn-disabled {
+  background: #dcfce7 !important;
+  color: #86efac !important;
+  cursor: not-allowed !important;
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.btn-approve.btn-disabled:hover {
+  background: #dcfce7 !important;
+}
 
 .btn-reject {
   display: inline-flex;
