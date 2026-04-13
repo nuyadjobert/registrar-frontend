@@ -1,94 +1,98 @@
-<div class="db-wrap">
+<div class="animate-in fade-in slide-in-from-bottom-2 duration-500 bg-white border border-[#edf2f7] rounded-2xl overflow-hidden font-['DM_Sans'] p-6">
 
   <!-- Header -->
-  <div class="db-header">
+  <div class="flex flex-wrap items-start justify-between gap-4 mb-8">
     <div>
-      <p class="db-eyebrow">Overview</p>
-      <h2 class="db-title">Dashboard</h2>
-      <p class="db-sub">Welcome back, <span>{{ auth.currentUser()?.name }}</span></p>
+      <p class="text-[#718096] text-xs font-semibold tracking-widest uppercase mb-1">Overview</p>
+      <h2 class="font-['Syne'] text-[22px] font-bold text-[#1a202c] tracking-tight">Dashboard</h2>
+      <p class="text-[#718096] text-[13px]">Welcome back, <span class="text-[#534AB7] font-medium">{{ auth.currentUser()?.name || 'Admin' }}</span></p>
     </div>
   </div>
 
-  <!-- Stats -->
-  <div class="stats-grid">
+  <!-- Stats Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
 
-    <div class="stat-card">
-      <div class="stat-top">
-        <div class="stat-icon icon-indigo">
-          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+    <!-- Stat 1 -->
+    <div class="bg-white border border-[#e2e8f0] rounded-2xl p-6 hover:border-[#7F77DD] transition-all group">
+      <div class="flex justify-between items-start">
+        <div class="w-11 h-11 bg-[#EEEDFE] rounded-2xl flex items-center justify-center text-[#534AB7]">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
           </svg>
         </div>
-        <span class="stat-badge badge-emerald">Active</span>
+        <span class="text-xs font-semibold bg-emerald-100 text-emerald-700 px-3 py-1 rounded-3xl">Active</span>
       </div>
-      <p class="stat-num">{{ totalPrograms() }}</p>
-      <p class="stat-lbl">Total Programs</p>
+      <p class="text-3xl font-bold text-[#1a202c] mt-6">{{ totalPrograms() }}</p>
+      <p class="text-[#718096] text-sm mt-1">Total Programs</p>
     </div>
 
-    <div class="stat-card">
-      <div class="stat-top">
-        <div class="stat-icon icon-violet">
-          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+    <!-- Stat 2 -->
+    <div class="bg-white border border-[#e2e8f0] rounded-2xl p-6 hover:border-[#7F77DD] transition-all group">
+      <div class="flex justify-between items-start">
+        <div class="w-11 h-11 bg-[#f3e8ff] rounded-2xl flex items-center justify-center text-[#7c3aed]">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
             <circle cx="9" cy="7" r="4"/>
-            <path stroke-linecap="round" stroke-linejoin="round" d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
           </svg>
         </div>
-        <span class="stat-badge badge-violet">Enrolled</span>
+        <span class="text-xs font-semibold bg-violet-100 text-violet-700 px-3 py-1 rounded-3xl">Enrolled</span>
       </div>
-      <p class="stat-num">{{ totalStudents() }}</p>
-      <p class="stat-lbl">Total Students</p>
+      <p class="text-3xl font-bold text-[#1a202c] mt-6">{{ totalStudents() }}</p>
+      <p class="text-[#718096] text-sm mt-1">Total Students</p>
     </div>
 
-    <div class="stat-card">
-      <div class="stat-top">
-        <div class="stat-icon icon-blue">
-          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+    <!-- Stat 3 -->
+    <div class="bg-white border border-[#e2e8f0] rounded-2xl p-6 hover:border-[#7F77DD] transition-all group">
+      <div class="flex justify-between items-start">
+        <div class="w-11 h-11 bg-[#dbeafe] rounded-2xl flex items-center justify-center text-[#2563eb]">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
           </svg>
         </div>
-        <span class="stat-badge badge-blue">Total</span>
+        <span class="text-xs font-semibold bg-blue-100 text-blue-700 px-3 py-1 rounded-3xl">Total</span>
       </div>
-      <p class="stat-num">{{ totalEnrollments() }}</p>
-      <p class="stat-lbl">Enrollments</p>
+      <p class="text-3xl font-bold text-[#1a202c] mt-6">{{ totalEnrollments() }}</p>
+      <p class="text-[#718096] text-sm mt-1">Enrollments</p>
     </div>
 
-    <div class="stat-card">
-      <div class="stat-top">
-        <div class="stat-icon icon-amber">
-          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+    <!-- Stat 4 -->
+    <div class="bg-white border border-[#e2e8f0] rounded-2xl p-6 hover:border-[#7F77DD] transition-all group">
+      <div class="flex justify-between items-start">
+        <div class="w-11 h-11 bg-[#fef3c7] rounded-2xl flex items-center justify-center text-[#d97706]">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <circle cx="12" cy="12" r="10"/>
             <polyline points="12 6 12 12 16 14"/>
           </svg>
         </div>
-        <span class="stat-badge badge-amber">Pending</span>
+        <span class="text-xs font-semibold bg-amber-100 text-amber-700 px-3 py-1 rounded-3xl">Pending</span>
       </div>
-      <p class="stat-num">{{ pendingEnrollments() }}</p>
-      <p class="stat-lbl">Pending Enrollments</p>
+      <p class="text-3xl font-bold text-[#1a202c] mt-6">{{ pendingEnrollments() }}</p>
+      <p class="text-[#718096] text-sm mt-1">Pending Enrollments</p>
     </div>
 
   </div>
 
   <!-- Quick Actions -->
-  <div class="qa-section">
-    <div class="qa-header">
-      <h3 class="qa-title">Quick Actions</h3>
-    </div>
-    <div class="qa-grid">
+  <div>
+    <h3 class="font-['Syne'] text-[15px] font-bold text-[#1a202c] mb-4">Quick Actions</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
       @for (action of quickActions; track action.label) {
-        <a [href]="action.path" class="action-card">
-          <div class="action-icon" [ngClass]="action.colorClass">
-            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" [innerHTML]="action.icon"></svg>
+        <a [href]="action.path" 
+           class="group bg-white border border-[#e2e8f0] hover:border-[#7F77DD] rounded-2xl p-5 flex items-center gap-5 transition-all hover:shadow-md">
+          <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl" 
+               [ngClass]="action.colorClass">
+            <span [innerHTML]="action.icon"></span>
           </div>
-          <div class="action-text">
-            <p class="action-label">{{ action.label }}</p>
-            <p class="action-desc">{{ action.desc }}</p>
+          <div class="flex-1 min-w-0">
+            <p class="font-medium text-[#1a202c] group-hover:text-[#534AB7]">{{ action.label }}</p>
+            <p class="text-[#718096] text-xs mt-0.5">{{ action.desc }}</p>
           </div>
-          <svg class="action-arrow" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
-          </svg>
+          <span class="text-[#a0aec0] group-hover:text-[#7F77DD] text-2xl">→</span>
         </a>
       }
+
     </div>
   </div>
 

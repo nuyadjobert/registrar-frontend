@@ -7,7 +7,6 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './not-found.component.html',
-  styleUrls: ['./not-found.component.css']
 })
 export class NotFoundComponent {
   constructor(private router: Router) {}

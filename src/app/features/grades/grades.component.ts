@@ -19,7 +19,7 @@ interface StudentWithGrade extends Student {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './grades.component.html',
-  styleUrls: ['./grades.component.css']
+
 })
 export class GradesComponent implements OnInit, OnDestroy {
   sections: Section[] = [];

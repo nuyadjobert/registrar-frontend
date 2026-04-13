@@ -9,7 +9,6 @@ import { Program, ProgramPayload } from '../../core/models/program.model';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './programs.component.html',
-  styleUrls: ['./programs.component.css'],
 })
 export class ProgramsComponent implements OnInit {
   Math = Math; // Expose Math object to template

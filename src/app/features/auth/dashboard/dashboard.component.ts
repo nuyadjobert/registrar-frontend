@@ -10,7 +10,6 @@ import { EnrollmentService } from '../../../core/services/enrollment.service';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.css']
 })
 export class DashboardComponent implements OnInit {
   auth = inject(AuthService);

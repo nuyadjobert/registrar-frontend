@@ -1,121 +1,99 @@
-<div class="login-wrap">
-  <div class="blob blob-tr"></div>
-  <div class="blob blob-bl"></div>
+<div class="min-h-screen bg-[#f5f5f7] flex items-center justify-center p-4 font-['DM_Sans'] relative overflow-hidden">
 
-  <div class="login-box">
+  <!-- Background Blobs -->
+  <div class="fixed top-[-120px] right-[-120px] w-[400px] h-[400px] rounded-full bg-indigo-500/10 blur-[80px] pointer-events-none"></div>
+  <div class="fixed bottom-[-120px] left-[-120px] w-[400px] h-[400px] rounded-full bg-violet-500/10 blur-[80px] pointer-events-none"></div>
 
-    <!-- Left -->
-    <div class="login-left">
-      <div class="left-logo">
-        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 14l9-5-9-5-9 5 9 5z"/>
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 14l6.16-3.422A12.083 12.083 0 0121 13c0 5.523-4 10-9 10S3 18.523 3 13c0-.538.05-1.064.144-1.578L12 14z"/>
-        </svg>
+  <div class="w-full max-w-[780px] bg-white rounded-3xl shadow-xl overflow-hidden flex animate-in fade-in slide-in-from-bottom-2 duration-500">
+
+    <!-- Left Side -->
+    <div class="hidden lg:flex w-[42%] bg-gradient-to-br from-[#1e1b4b] via-[#3730a3] to-[#4c1d95] p-8 flex-col justify-between relative">
+      <div>
+        <div class="w-10 h-10 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl flex items-center justify-center text-white mb-6">
+          📚
+        </div>
+        <p class="text-indigo-200 text-xs font-semibold tracking-widest uppercase mb-2">Registrar System</p>
+        <h1 class="text-white text-2xl font-bold leading-tight tracking-tight">Your academic hub,<br>all in one place.</h1>
+        <p class="text-indigo-200/80 mt-4 text-[15px]">Manage programs, students, enrollments and more with ease.</p>
       </div>
-      <p class="left-system">Registrar System</p>
-      <h2 class="left-headline">Your academic hub, all in one place.</h2>
-      <p class="left-desc">Manage programs, students, and enrollments seamlessly.</p>
 
-      <div class="left-features">
-        <div class="left-feature">
-          <div class="lf-icon">
-            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
-            </svg>
-          </div>
+      <div class="space-y-6 mt-auto">
+        <div class="flex items-center gap-4 text-white/90 text-sm">
+          <div class="w-8 h-8 bg-white/10 rounded-xl flex items-center justify-center">📋</div>
           <span>Program Management</span>
         </div>
-        <div class="left-feature">
-          <div class="lf-icon">
-            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>
-            </svg>
-          </div>
+        <div class="flex items-center gap-4 text-white/90 text-sm">
+          <div class="w-8 h-8 bg-white/10 rounded-xl flex items-center justify-center">👥</div>
           <span>Student Records</span>
         </div>
-        <div class="left-feature">
-          <div class="lf-icon">
-            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-            </svg>
-          </div>
+        <div class="flex items-center gap-4 text-white/90 text-sm">
+          <div class="w-8 h-8 bg-white/10 rounded-xl flex items-center justify-center">📝</div>
           <span>Enrollment Tracking</span>
         </div>
       </div>
     </div>
 
-    <!-- Right -->
-    <div class="login-right">
-      <div class="form-header">
-        <h1 class="form-title">Sign in</h1>
-        <p class="form-sub">Welcome back! Enter your credentials below.</p>
+    <!-- Right Side - Form -->
+    <div class="flex-1 p-8 lg:p-10 bg-white">
+
+      <div class="mb-8">
+        <h2 class="font-['Syne'] text-[22px] font-bold text-[#1a202c] tracking-tight">Sign in</h2>
+        <p class="text-[#718096] text-[13px] mt-1">Welcome back! Enter your credentials below.</p>
       </div>
 
       @if (error) {
-        <div class="login-error">
-          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <circle cx="12" cy="12" r="10"/><path stroke-linecap="round" d="M12 8v4m0 4h.01"/>
-          </svg>
-          {{ error }}
+        <div class="mb-6 flex items-center gap-3 bg-red-50 border border-red-200 text-red-700 rounded-2xl p-4 text-sm">
+          <span class="text-xl">⚠️</span>
+          <span>{{ error }}</span>
         </div>
       }
 
       <form (ngSubmit)="submit()" #f="ngForm">
-        <div class="form-group">
-          <label class="form-label">Email address</label>
-          <div class="input-wrap">
-            <svg class="input-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-            </svg>
-            <input type="email" [(ngModel)]="email" name="email" required placeholder="you@example.com" class="form-input"/>
+
+        <div class="space-y-5">
+          <!-- Email -->
+          <div>
+            <label class="text-[11px] font-semibold text-[#718096] tracking-wider uppercase block mb-1.5">Email Address</label>
+            <div class="relative">
+              <input type="email" [(ngModel)]="email" name="email" required
+                     class="w-full border border-[#e2e8f0] rounded-2xl px-4 py-3.5 text-[13px] focus:border-[#7F77DD] outline-none pl-11"
+                     placeholder="you@example.com">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-[#a0aec0] absolute left-4 top-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Password -->
+          <div>
+            <label class="text-[11px] font-semibold text-[#718096] tracking-wider uppercase block mb-1.5">Password</label>
+            <div class="relative">
+              <input [type]="showPassword ? 'text' : 'password'" [(ngModel)]="password" name="password" required
+                     class="w-full border border-[#e2e8f0] rounded-2xl px-4 py-3.5 text-[13px] focus:border-[#7F77DD] outline-none pl-11"
+                     placeholder="••••••••">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-[#a0aec0] absolute left-4 top-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+              </svg>
+              <button type="button" (click)="showPassword = !showPassword" 
+                      class="absolute right-4 top-4 text-[#a0aec0] hover:text-[#534AB7]">
+                {{ showPassword ? '🙈' : '👁️' }}
+              </button>
+            </div>
           </div>
         </div>
 
-       <div class="form-group">
-  <label class="form-label">Password</label>
-  <div class="input-wrap">
-    <svg class="input-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-      <rect x="3" y="11" width="18" height="11" rx="2"/><path stroke-linecap="round" d="M7 11V7a5 5 0 0110 0v4"/>
-    </svg>
-    <input
-      [type]="showPassword ? 'text' : 'password'"
-      [(ngModel)]="password"
-      name="password"
-      required
-      placeholder="••••••••"
-      class="form-input"
-    />
-    <button type="button" class="toggle-pw" (click)="showPassword = !showPassword">
-      @if (showPassword) {
-        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>
-        </svg>
-      } @else {
-        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-          <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-        </svg>
-      }
-    </button>
-  </div>
-</div>
-
-        <button type="submit" [disabled]="loading" class="login-btn">
+        <button type="submit" [disabled]="loading"
+                class="mt-8 w-full bg-[#2C2C2A] hover:bg-[#1f1f1d] text-white font-medium py-3.5 rounded-2xl text-[13px] flex items-center justify-center gap-2 transition-all">
           @if (loading) {
-            <svg class="spin-icon" width="15" height="15" fill="none" viewBox="0 0 24 24">
-              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" style="opacity:0.25"/>
-              <path fill="currentColor" d="M4 12a8 8 0 018-8v8z" style="opacity:0.75"/>
-            </svg>
+            <span class="animate-spin">⟳</span>
             Signing in...
           } @else {
             Sign in
-            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
-            </svg>
+            <span>→</span>
           }
         </button>
       </form>
     </div>
-
   </div>
 </div>

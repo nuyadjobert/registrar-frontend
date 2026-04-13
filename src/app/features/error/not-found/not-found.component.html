@@ -1,50 +1,43 @@
-<div class="error-container">
-  <!-- Animated background elements -->
-  <div class="background-blur blur-1"></div>
-  <div class="background-blur blur-2"></div>
-  <div class="background-blur blur-3"></div>
+<div class="min-h-screen bg-gradient-to-br from-[#f5f7fb] to-[#e9ecf1] flex items-center justify-center p-6 font-['DM_Sans'] relative overflow-hidden">
 
-  <div class="error-content">
-    <!-- 404 Display with animation -->
-    <div class="error-code">
-      <span class="digit digit-1">4</span>
-      <span class="digit digit-2">0</span>
-      <span class="digit digit-3">4</span>
+  <!-- Background Blobs -->
+  <div class="absolute top-[-150px] right-[-150px] w-[500px] h-[500px] bg-indigo-500/10 rounded-full blur-[100px]"></div>
+  <div class="absolute bottom-[-150px] left-[-150px] w-[500px] h-[500px] bg-violet-500/10 rounded-full blur-[100px]"></div>
+  <div class="absolute top-1/2 right-[10%] w-[350px] h-[350px] bg-blue-500/10 rounded-full blur-[80px]"></div>
+
+  <div class="relative z-10 max-w-md w-full bg-white border border-[#e2e8f0] rounded-3xl shadow-xl p-10 text-center animate-in fade-in slide-in-from-bottom-2 duration-500">
+
+    <!-- 404 Code -->
+    <div class="flex justify-center items-center gap-3 mb-8">
+      <span class="text-[110px] font-bold leading-none tracking-[-4px] bg-gradient-to-br from-[#4f46e5] via-[#7c3aed] to-[#a855f7] bg-clip-text text-transparent">4</span>
+      <span class="text-[110px] font-bold leading-none tracking-[-4px] bg-gradient-to-br from-[#4f46e5] via-[#7c3aed] to-[#a855f7] bg-clip-text text-transparent">0</span>
+      <span class="text-[110px] font-bold leading-none tracking-[-4px] bg-gradient-to-br from-[#4f46e5] via-[#7c3aed] to-[#a855f7] bg-clip-text text-transparent">4</span>
     </div>
 
-    <!-- Separator -->
-    <div class="separator"></div>
+    <!-- Message -->
+    <h1 class="font-['Syne'] text-3xl font-bold text-[#1a202c] tracking-tight mb-3">Page Not Found</h1>
+    <p class="text-[#718096] text-[15px] leading-relaxed">
+      The page you're looking for doesn't exist or has been moved.
+    </p>
 
-    <!-- Error message -->
-    <div class="error-message">
-      <h1 class="error-title">Page not found</h1>
-      <p class="error-description">
-        The page you're looking for doesn't exist or has been moved.
-      </p>
-    </div>
-
-    <!-- Animated dots -->
-    <div class="dots-loader">
-      <span class="dot"></span>
-      <span class="dot"></span>
-      <span class="dot"></span>
-    </div>
-
-    <!-- Action buttons -->
-    <div class="button-group">
-      <button class="btn btn-primary" (click)="goHome()">
-        <span class="btn-icon">→</span>
-        Go to dashboard
+    <!-- Action Buttons -->
+    <div class="flex flex-col sm:flex-row gap-3 mt-10">
+      <button (click)="goHome()"
+              class="flex-1 bg-[#2C2C2A] hover:bg-[#1f1f1d] text-white font-medium py-4 rounded-2xl transition-all flex items-center justify-center gap-2 text-sm">
+        <span>Go to Dashboard</span>
+        <span class="text-lg">→</span>
       </button>
-      <button class="btn btn-secondary" (click)="goBack()">
-        <span class="btn-icon">←</span>
-        Go back
+
+      <button (click)="goBack()"
+              class="flex-1 border border-[#e2e8f0] hover:bg-[#f8fafc] font-medium py-4 rounded-2xl transition-all flex items-center justify-center gap-2 text-sm">
+        <span class="text-lg">←</span>
+        <span>Go Back</span>
       </button>
     </div>
 
     <!-- Footer -->
-    <div class="error-footer">
-      <p>Error code: 404 • Page not found</p>
+    <div class="mt-10 pt-6 border-t border-[#edf2f7] text-[#a0aec0] text-xs">
+      Error Code: <span class="font-mono">404</span> • Page Not Found
     </div>
   </div>
 </div>

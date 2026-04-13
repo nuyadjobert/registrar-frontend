@@ -1,98 +1,127 @@
-<div class="enrollments-container animate-fade-in">
+<div class="animate-in fade-in slide-in-from-bottom-2 duration-500 bg-white border border-[#edf2f7] rounded-2xl overflow-hidden font-['DM_Sans']">
 
   <!-- Header -->
-  <div class="page-header mb-4">
-    <div>
-      <h3 class="fw-bold">Enrollment Management</h3>
-      <p class="text-muted small mb-1">Review and process student enrollment requests.</p>
+  <div class="flex flex-wrap items-start justify-between gap-4 p-6 pb-4">
+    <div class="flex flex-col gap-1">
+      <h2 class="font-['Syne'] text-[18px] font-bold text-[#1a202c] tracking-tight m-0">Enrollment Management</h2>
+      <p class="text-[13px] text-[#718096] m-0">Review and process student enrollment requests</p>
     </div>
   </div>
 
-  <!-- Table Card -->
-  <div class="glass-card overflow-hidden">
-    @if (isLoading) {
-      <div class="loading-state">
-        <div class="spinner"></div>
-        <p class="text-muted small mt-3 mb-0">Retrieving enrollments...</p>
-      </div>
-    } @else {
-      <div class="table-responsive">
-        <table class="modern-table">
-          <thead>
-            <tr>
-              <th>Student</th>
-              <th>Program</th>
-              <th>Subject & Section</th>
-              <th>Payment</th>
-              <th>Status</th>
-              <th class="text-end">Actions</th>
+  <div class="h-[0.5px] bg-[#edf2f7] mx-6 my-4"></div>
+
+  <!-- Loading -->
+  @if (isLoading) {
+    <div class="text-center py-20">
+      <div class="w-8 h-8 border-4 border-[#e2e8f0] border-t-[#534AB7] rounded-full animate-spin mx-auto"></div>
+      <p class="text-[#718096] text-[13px] mt-4">Retrieving enrollments...</p>
+    </div>
+  } 
+  @else {
+    <div class="overflow-x-auto">
+      <table class="w-full border-collapse text-[13px]">
+        <thead class="bg-[#f7fafc]">
+          <tr>
+            <th class="p-4 px-6 text-left text-[11px] font-semibold tracking-wider uppercase text-[#718096] border-b border-[#edf2f7]">Student</th>
+            <th class="p-4 px-6 text-left text-[11px] font-semibold tracking-wider uppercase text-[#718096] border-b border-[#edf2f7]">Program</th>
+            <th class="p-4 px-6 text-left text-[11px] font-semibold tracking-wider uppercase text-[#718096] border-b border-[#edf2f7]">Subject & Section</th>
+            <th class="p-4 px-6 text-left text-[11px] font-semibold tracking-wider uppercase text-[#718096] border-b border-[#edf2f7]">Payment</th>
+            <th class="p-4 px-6 text-left text-[11px] font-semibold tracking-wider uppercase text-[#718096] border-b border-[#edf2f7]">Status</th>
+            <th class="p-4 px-6 text-right text-[11px] font-semibold tracking-wider uppercase text-[#718096] border-b border-[#edf2f7]">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of enrollments; track item.id) {
+            <tr class="border-b border-[#edf2f7] hover:bg-[#f8fafc] transition-colors">
+              
+              <!-- Student -->
+              <td class="p-4 px-6">
+                <div class="font-medium text-[#1a202c]">{{ item.student?.name }}</div>
+                <div class="text-[#a0aec0] text-xs">{{ item.student?.student_number }}</div>
+              </td>
+
+              <!-- Program -->
+              <td class="p-4 px-6 text-[#1a202c]">
+                {{ item.student?.program?.name || 'N/A' }}
+              </td>
+
+              <!-- Subject & Section -->
+              <td class="p-4 px-6">
+                <div class="font-medium text-[#1a202c]">{{ item.section?.subject?.subject_name }}</div>
+                <span class="inline-flex items-center px-3 py-1 mt-1 text-xs font-semibold bg-[#EEEDFE] text-[#534AB7] rounded-xl">
+                  {{ item.section?.section_name }}
+                </span>
+              </td>
+
+              <!-- Payment -->
+              <td class="p-4 px-6">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold"
+                      [class.bg-emerald-100]="item.payment_status === 'paid'"
+                      [class.text-emerald-700]="item.payment_status === 'paid'"
+                      [class.bg-amber-100]="item.payment_status === 'partial'"
+                      [class.text-amber-700]="item.payment_status === 'partial'"
+                      [class.bg-red-100]="item.payment_status === 'unpaid'"
+                      [class.text-red-700]="item.payment_status === 'unpaid'">
+                  <span class="w-2 h-2 rounded-full"
+                        [class.bg-emerald-500]="item.payment_status === 'paid'"
+                        [class.bg-amber-500]="item.payment_status === 'partial'"
+                        [class.bg-red-500]="item.payment_status === 'unpaid'"></span>
+                  {{ item.payment_status | uppercase }}
+                </span>
+              </td>
+
+              <!-- Status -->
+              <td class="p-4 px-6">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold"
+                      [class.bg-amber-100]="item.status === 'pending'"
+                      [class.text-amber-700]="item.status === 'pending'"
+                      [class.bg-emerald-100]="item.status === 'approved'"
+                      [class.text-emerald-700]="item.status === 'approved'"
+                      [class.bg-red-100]="item.status === 'rejected'"
+                      [class.text-red-700]="item.status === 'rejected'">
+                  <span class="w-2 h-2 rounded-full"
+                        [class.bg-amber-500]="item.status === 'pending'"
+                        [class.bg-emerald-500]="item.status === 'approved'"
+                        [class.bg-red-500]="item.status === 'rejected'"></span>
+                  {{ item.status | titlecase }}
+                </span>
+              </td>
+
+              <!-- Actions -->
+              <td class="p-4 px-6 text-right">
+                @if (item.status === 'pending') {
+                  <button 
+                    (click)="onApprove(item.id)"
+                    [disabled]="isApproveDisabled(item)"
+                    class="inline-flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-medium transition-all"
+                    [class.bg-emerald-600]="!isApproveDisabled(item)"
+                    [class.text-white]="!isApproveDisabled(item)"
+                    [class.bg-gray-200]="isApproveDisabled(item)"
+                    [class.text-gray-400]="isApproveDisabled(item)">
+                    @if (approvingId === item.id) {
+                      <span class="animate-spin">⟳</span> Approving...
+                    } @else {
+                      Approve
+                    }
+                  </button>
+                } @else {
+                  <span class="inline-flex items-center gap-2 text-[#a0aec0] text-xs font-medium">
+                    <span class="text-lg">✓</span> Processed
+                  </span>
+                }
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            @for (item of enrollments; track item.id) {
-              <tr class="hover-row">
-                <td>
-                  <span class="student-name">{{ item.student?.name }}</span>
-                  <span class="student-number">{{ item.student?.student_number }}</span>
-                </td>
-                <td>
-                  <span class="program-name">{{ item.student?.program?.name || 'N/A' }}</span>
-                </td>
-                <td>
-                  <span class="subject-name">{{ item.section?.subject?.subject_name }}</span>
-                  <span class="section-badge">{{ item.section?.section_name }}</span>
-                </td>
-                <td>
-                  <span class="payment-badge"
-                    [class.payment-paid]="item.payment_status === 'paid'"
-                    [class.payment-partial]="item.payment_status === 'partial'"
-                    [class.payment-unpaid]="item.payment_status === 'unpaid'">
-                    <span class="payment-dot"></span>
-                    {{ item.payment_status | uppercase }}
-                  </span>
-                </td>
-                <td>
-                  <span class="pill"
-                    [class.pill-pending]="item.status === 'pending'"
-                    [class.pill-approved]="item.status === 'approved'"
-                    [class.pill-rejected]="item.status === 'rejected'">
-                    {{ item.status | titlecase }}
-                  </span>
-                </td>
-                <td class="text-end">
-                  @if (item.status === 'pending') {
-                    <button 
-                      class="btn-approve" 
-                      (click)="onApprove(item.id)"
-                      [disabled]="isApproveDisabled(item)"
-                      [title]="getApproveTooltip(item)"
-                      [class.btn-disabled]="isApproveDisabled(item)">
-                      <i class="bi bi-check-lg"></i> 
-                      @if (approvingId === item.id) {
-                        <span>Approving...</span>
-                      } @else {
-                        <span>Approve</span>
-                      }
-                    </button>
-                  } @else {
-                    <span class="processed-label">
-                      <i class="bi bi-check2-circle"></i> Processed
-                    </span>
-                  }
-                </td>
-              </tr>
-            } @empty {
-              <tr>
-                <td colspan="6" class="empty-state">
-                  <i class="bi bi-person-x empty-icon"></i>
-                  <p class="text-muted mb-0 mt-2">No enrollment records available.</p>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-    }
-  </div>
+          } @empty {
+            <tr>
+              <td colspan="6" class="py-20 text-center text-[#a0aec0]">
+                <span class="text-5xl block mb-3">📋</span>
+                <p>No enrollment records available.</p>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
 
 </div>

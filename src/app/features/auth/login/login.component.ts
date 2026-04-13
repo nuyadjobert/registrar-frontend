@@ -9,7 +9,6 @@ import { AuthService } from '../../../core/services/auth.service';
   standalone: true,
   imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './login.component.html',
-    styleUrls: ['./login.component.css']
 
 })
 export class LoginComponent {

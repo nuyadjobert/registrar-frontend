@@ -10,7 +10,6 @@ import { StudentService, GradeRow } from '../../core/services/student.service';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './students.component.html',
-  styleUrls: ['./students.component.css']
 })
 export class StudentsComponent implements OnInit {
 

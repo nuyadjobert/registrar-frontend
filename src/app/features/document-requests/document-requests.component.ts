@@ -9,7 +9,6 @@ import { DocumentRequest } from '../../core/models/document-request.model';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './document-requests.component.html',
-  styleUrls: ['./document-requests.component.css']
 })
 export class DocumentRequestComponent implements OnInit {
   requests: DocumentRequest[] = [];

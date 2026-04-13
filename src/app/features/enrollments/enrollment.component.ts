@@ -8,7 +8,7 @@ import { Enrollment } from '../../core/models/enrollment.model';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './enrollment.component.html',
-  styleUrls: ['./enrollment.component.css']
+
 })
 export class EnrollmentComponent implements OnInit {
   enrollments: Enrollment[] = [];

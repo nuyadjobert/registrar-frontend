@@ -1,223 +1,166 @@
-<div class="programs-container animate-fade-in">
+<div class="animate-in fade-in slide-in-from-bottom-2 duration-500 bg-white border border-[#edf2f7] rounded-2xl overflow-hidden font-['DM_Sans']">
 
-  <div class="pm-header">
-    <div class="pm-title-block">
-      <h2 class="pm-title">Programs management</h2>
-      <p class="pm-subtitle">Configure degree programs and department affiliations</p>
+  <!-- Header -->
+  <div class="flex flex-wrap items-start justify-between gap-4 p-6 pb-4">
+    <div class="flex flex-col gap-1">
+      <h2 class="font-['Syne'] text-[18px] font-bold text-[#1a202c] tracking-tight m-0">Programs Management</h2>
+      <p class="text-[13px] text-[#718096] m-0">Configure degree programs and department affiliations</p>
     </div>
-    <button class="btn-add" (click)="toggleForm()">
-      <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+
+    <button 
+      (click)="toggleForm()"
+      class="inline-flex items-center gap-2 bg-[#2C2C2A] hover:bg-[#444441] text-white text-[13px] font-medium px-5 py-2.5 rounded-xl transition-all whitespace-nowrap">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" *ngIf="!showForm">
         <path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
       </svg>
-      {{ showForm ? 'Cancel' : 'Add program' }}
+      {{ showForm ? 'Cancel' : 'Add Program' }}
     </button>
   </div>
 
-    <div class="pm-divider"></div>
+  <div class="h-[0.5px] bg-[#edf2f7] mx-6 my-4"></div>
 
-  <!-- Inline Form Panel -->
+  <!-- Form -->
   @if (showForm) {
-    <div class="form-panel animate-fade-in">
-      <div class="form-panel-header">
-        <div class="form-panel-icon">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <rect x="2" y="2" width="12" height="12" rx="2" stroke="#534AB7" stroke-width="1.4"/>
-            <path d="M5 8h6M8 5v6" stroke="#534AB7" stroke-width="1.4" stroke-linecap="round"/>
+    <div class="mx-6 mb-8 bg-white border border-[#e2e8f0] rounded-2xl p-6">
+      <div class="flex items-center gap-3 mb-6">
+        <div class="w-9 h-9 rounded-xl bg-[#EEEDFE] flex items-center justify-center">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <rect x="2" y="3" width="14" height="12" rx="2" stroke="#534AB7" stroke-width="1.4"/>
+            <path d="M6 7h6M6 10h4" stroke="#534AB7" stroke-width="1.4" stroke-linecap="round"/>
           </svg>
         </div>
-        <span class="form-panel-title">
-          {{ isEditing ? 'Edit program' : 'Add new program' }}
-        </span>
+        <h3 class="font-['Syne'] text-[15px] font-bold text-[#1a202c]">
+          {{ isEditing ? 'Edit Program' : 'Add New Program' }}
+        </h3>
       </div>
 
-   <div class="form-panel-body">
-  <div class="form-row">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="space-y-1.5">
+          <label class="text-[11px] font-semibold text-[#718096] tracking-wider uppercase">Code <span class="text-red-500">*</span></label>
+          <input type="text" [(ngModel)]="form.code" 
+                 class="w-full border border-[#cbd5e0] rounded-xl px-4 py-3 text-[13px] focus:border-[#7F77DD] outline-none"
+                 placeholder="e.g. BSIT">
+        </div>
 
-    <div class="form-group">
-      <label>Code <span class="required">*</span></label>
-      <input
-        type="text"
-        [(ngModel)]="form.code"
-        placeholder="e.g. BSIT"
-        [class.input-error]="formErrors.code">
-      @if (formErrors.code) {
-        <span class="error-msg">{{ formErrors.code }}</span>
-      }
+        <div class="lg:col-span-2 space-y-1.5">
+          <label class="text-[11px] font-semibold text-[#718096] tracking-wider uppercase">Program Name <span class="text-red-500">*</span></label>
+          <input type="text" [(ngModel)]="form.name" 
+                 class="w-full border border-[#cbd5e0] rounded-xl px-4 py-3 text-[13px] focus:border-[#7F77DD] outline-none"
+                 placeholder="Bachelor of Science in Information Technology">
+        </div>
+
+        <div class="space-y-1.5">
+          <label class="text-[11px] font-semibold text-[#718096] tracking-wider uppercase">Department <span class="text-red-500">*</span></label>
+          <input type="text" [(ngModel)]="form.department" 
+                 class="w-full border border-[#cbd5e0] rounded-xl px-4 py-3 text-[13px] focus:border-[#7F77DD] outline-none"
+                 placeholder="College of Computing">
+        </div>
+
+        <div class="space-y-1.5">
+          <label class="text-[11px] font-semibold text-[#718096] tracking-wider uppercase">Status</label>
+          <select [(ngModel)]="form.status" class="w-full border border-[#cbd5e0] rounded-xl px-4 py-3 text-[13px] focus:border-[#7F77DD] outline-none">
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-3 mt-8">
+        <button (click)="resetForm()" class="px-5 py-2.5 border border-[#e2e8f0] text-[#718096] rounded-xl hover:bg-[#f7fafc] text-[13px] font-medium">
+          Cancel
+        </button>
+        <button (click)="onSubmit()" [disabled]="isSaving" 
+                class="px-5 py-2.5 bg-[#2C2C2A] text-white rounded-xl hover:bg-[#444441] text-[13px] font-medium">
+          {{ isSaving ? 'Saving...' : (isEditing ? 'Update Program' : 'Save Program') }}
+        </button>
+      </div>
     </div>
-
-    <div class="form-group">
-      <label>Program name <span class="required">*</span></label>
-      <input
-        type="text"
-        [(ngModel)]="form.name"
-        placeholder="e.g. Bachelor of Science in IT"
-        [class.input-error]="formErrors.name">
-      @if (formErrors.name) {
-        <span class="error-msg">{{ formErrors.name }}</span>
-      }
-    </div>
-
-    <div class="form-group">
-      <label>Department <span class="required">*</span></label>
-      <input
-        type="text"
-        [(ngModel)]="form.department"
-        placeholder="e.g. ICT Department"
-        [class.input-error]="formErrors.department">
-      @if (formErrors.department) {
-        <span class="error-msg">{{ formErrors.department }}</span>
-      }
-    </div>
-
-    <div class="form-group">
-      <label>Status</label>
-      <select [(ngModel)]="form.status">
-        <option value="active">Active</option>
-        <option value="inactive">Inactive</option>
-      </select>
-    </div>
-
-  </div>
-</div>
-
-<div class="form-panel-footer">
-  <button class="btn-cancel-sm" (click)="resetForm()">Cancel</button>
-  <button
-    class="btn-save-sm"
-    (click)="onSubmit()"
-    [disabled]="isSaving || isFormInvalid">
-    <svg width="12" height="12" viewBox="0 0 13 13" fill="none">
-      <path d="M2 6.5l3.5 3.5 5.5-6" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-    {{ isSaving ? 'Saving...' : (isEditing ? 'Update program' : 'Save program') }}
-  </button>
-</div>
-</div>
   }
-  
 
-  <!-- Loading State -->
-  <div *ngIf="isLoading" class="state-container">
-    <div class="spinner"></div>
-    <p>Retrieving programs...</p>
-  </div>
-
-  <!-- Empty State -->
-  <div *ngIf="!isLoading && programs.length === 0" class="state-container">
-    <svg class="empty-icon" viewBox="0 0 40 40" fill="none">
-      <rect x="6" y="10" width="28" height="22" rx="3" stroke="currentColor" stroke-width="1.5"/>
-      <path d="M13 18h14M13 23h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-    </svg>
-    <p>No programs found.</p>
-  </div>
-
-  <!-- Table -->
-  <div *ngIf="!isLoading && programs.length > 0" class="table-responsive">
-    <table class="pm-table">
-      <thead>
-        <tr>
-          <th>Code</th>
-          <th>Program name</th>
-          <th>Department</th>
-          <th>Status</th>
-          <th class="text-right">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (prog of getPaginatedPrograms(); track prog.id) {
+  <!-- Main Content Area -->
+  @if (isLoading) {
+    <div class="text-center py-16 px-6 text-[#a0aec0] text-[13px]">
+      <div class="w-6 h-6 border-2 border-[#e2e8f0] border-t-[#a0aec0] rounded-full animate-spin mx-auto mb-3"></div>
+      <p>Retrieving programs...</p>
+    </div>
+  } 
+  @else if (programs.length === 0) {
+    <div class="text-center py-16 px-6 text-[#a0aec0] text-[13px]">
+      <svg class="w-10 h-10 mx-auto mb-4 opacity-30" viewBox="0 0 40 40" fill="none">
+        <rect x="6" y="10" width="28" height="22" rx="3" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M13 18h14M13 23h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <p>No programs found.</p>
+    </div>
+  } 
+  @else {
+    <!-- Table -->
+    <div class="overflow-x-auto">
+      <table class="w-full border-collapse text-[13px]">
+        <thead class="bg-[#f7fafc]">
           <tr>
-            <td><span class="code-pill">{{ prog.code }}</span></td>
-            <td><span class="prog-name">{{ prog.name }}</span></td>
-            <td class="dept">{{ prog.department || 'Unassigned' }}</td>
-            <td>
-              <span class="status-pill" [ngClass]="prog.status === 'active' ? 'active' : 'inactive'">
-                <span class="status-dot"></span>
-                {{ prog.status }}
-              </span>
-            </td>
-            <td class="text-right">
-              <div class="action-btns">
-                <button class="btn-edit" (click)="editProgram(prog)">
-                  <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
-                    <path d="M11 2l3 3-9 9H2v-3L11 2z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
-                  </svg>
-                  Edit
-                </button>
-                <button class="btn-delete" (click)="deleteProgram(prog.id)">
-                  <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
-                    <path d="M3 4h10M5 4V3a1 1 0 011-1h4a1 1 0 011 1v1M6 7v5M10 7v5M4 4l.8 9a1 1 0 001 .9h4.4a1 1 0 001-.9L12 4"
-                      stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                  Delete
-                </button>
-              </div>
-            </td>
+            <th class="p-4 px-6 text-left text-[11px] font-semibold tracking-wider uppercase text-[#718096] border-b border-[#edf2f7]">Code</th>
+            <th class="p-4 px-6 text-left text-[11px] font-semibold tracking-wider uppercase text-[#718096] border-b border-[#edf2f7]">Program Name</th>
+            <th class="p-4 px-6 text-left text-[11px] font-semibold tracking-wider uppercase text-[#718096] border-b border-[#edf2f7]">Department</th>
+            <th class="p-4 px-6 text-left text-[11px] font-semibold tracking-wider uppercase text-[#718096] border-b border-[#edf2f7]">Status</th>
+            <th class="p-4 px-6 text-right text-[11px] font-semibold tracking-wider uppercase text-[#718096] border-b border-[#edf2f7]">Actions</th>
           </tr>
-        }
-      </tbody>
-    </table>
-  </div>
+        </thead>
+        <tbody>
+          @for (prog of getPaginatedPrograms(); track prog.id) {
+            <tr class="border-b border-[#edf2f7] hover:bg-[#f8fafc] transition-colors">
+              <td class="p-4 px-6">
+                <span class="inline-flex bg-[#EEEDFE] text-[#534AB7] text-xs font-bold px-3 py-1 rounded-lg uppercase tracking-wider">
+                  {{ prog.code }}
+                </span>
+              </td>
+              <td class="p-4 px-6 font-medium text-[#1a202c]">{{ prog.name }}</td>
+              <td class="p-4 px-6 text-[#1a202c]">{{ prog.department || 'Unassigned' }}</td>
+              <td class="p-4 px-6">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold"
+                      [class.bg-emerald-100]="prog.status === 'active'"
+                      [class.text-emerald-700]="prog.status === 'active'"
+                      [class.bg-red-100]="prog.status === 'inactive'"
+                      [class.text-red-700]="prog.status === 'inactive'">
+                  <span class="w-2 h-2 rounded-full"
+                        [class.bg-emerald-500]="prog.status === 'active'"
+                        [class.bg-red-500]="prog.status === 'inactive'"></span>
+                  {{ prog.status | titlecase }}
+                </span>
+              </td>
+              <td class="p-4 px-6 text-right">
+                <div class="inline-flex gap-2">
+                  <button (click)="editProgram(prog)" class="px-3 py-1.5 border border-[#e2e8f0] hover:bg-[#EEEDFE] text-[#3C3489] text-xs rounded-xl">Edit</button>
+                  <button (click)="deleteProgram(prog.id)" class="px-3 py-1.5 border border-[#e2e8f0] hover:bg-[#fff5f5] text-red-600 text-xs rounded-xl">Delete</button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
 
-  <!-- Footer with Pagination -->
-  <div class="pm-footer" *ngIf="!isLoading && programs.length > 0">
-    <span>
-      Showing {{ getPaginationStartIndex() }}-{{ getPaginationEndIndex() }} of {{ programs.length }} record{{ programs.length !== 1 ? 's' : '' }}
-    </span>
-    
-    <div class="pm-footer-pages">
-      <!-- Previous button with label -->
-      <button class="pg-btn" 
-              (click)="previousPage()"
-              [disabled]="currentPage === 1"
-              title="Previous page">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-          <path d="M10 12l-4-4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        <span>Previous</span>
-      </button>
+    <!-- Footer -->
+    <div class="p-4 px-6 border-t border-[#edf2f7] bg-[#f7fafc] text-[12px] text-[#718096]">
+      Showing {{ programs.length }} record{{ programs.length !== 1 ? 's' : '' }}
+    </div>
+  }
 
-      <!-- Page numbers -->
-      @for (p of getTotalPages(); track p) {
-        <button class="pg-btn" 
-                [class.active]="currentPage === p"
-                (click)="goToPage(p)">
-          {{ p }}
-        </button>
-      }
-      
-      <!-- Next button with label -->
-      <button class="pg-btn" 
-              (click)="nextPage()"
-              [disabled]="currentPage === getTotalPages().length"
-              title="Next page">
-        <span>Next</span>
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-          <path d="M6 12l4-4-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
+</div>
+
+<!-- Delete Progress -->
+@if (showDeleteProgress) {
+  <div class="fixed bottom-8 right-8 bg-gradient-to-br from-[#fff3cd] to-[#ffe8cc] border border-[#ffc107] rounded-2xl p-4 shadow-xl z-50 w-80">
+    <div class="flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <span class="text-xl">⚠️</span>
+        <span class="text-[#333] font-medium text-sm">Deleting in {{ deleteProgressTime }}s...</span>
+      </div>
+      <button (click)="undoDelete()" class="bg-red-500 text-white text-xs font-bold px-5 py-2 rounded-xl hover:bg-red-600">
+        UNDO
       </button>
     </div>
+    <div class="h-1 bg-red-500 mt-3 rounded-full transition-all" 
+         [style.width.%]="(deleteProgressTime / 5) * 100"></div>
   </div>
-
-<!-- Delete Progress Bar (at the bottom, outside containers) -->
-<div *ngIf="showDeleteProgress" class="delete-progress-container">
-  <div class="delete-progress-bar">
-    <div class="delete-progress-content">
-      <div class="delete-progress-left">
-        <span class="delete-icon">⚠️</span>
-        <span class="delete-message">Deleting in {{ deleteProgressTime }}s...</span>
-      </div>
-      <div class="delete-progress-right">
-        <button 
-          type="button" 
-          class="btn-undo" 
-          (click)="undoDelete()"
-          [disabled]="deleteProgressTime <= 0">
-          UNDO
-        </button>
-      </div>
-    </div>
-    <!-- Progress bar animation -->
-    <div class="progress-bar-fill" [style.width.%]="(deleteProgressTime / 5) * 100"></div>
-  </div>
-</div>
-</div>
+}

@@ -13,7 +13,6 @@ import { Subject } from '../../core/models/subject.model';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './curricula.component.html',
-  styleUrls: ['./curricula.component.css'],
 })
 export class CurriculaComponent implements OnInit {
   loading = signal(false);

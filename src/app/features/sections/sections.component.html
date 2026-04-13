@@ -1,267 +1,196 @@
-<div class="sections-container animate-fade-in">
+<div class="animate-in fade-in slide-in-from-bottom-2 duration-500 bg-white border border-[#edf2f7] rounded-2xl overflow-hidden font-['DM_Sans']">
 
   <!-- Header -->
-  <div class="page-header mb-4">
-    <div>
-      <h3 class="fw-bold mb-1">Section Scheduling</h3>
-      <p class="text-muted small mb-0">Manage class sections, rooms, and instructor assignments.</p>
+  <div class="flex flex-wrap items-start justify-between gap-4 p-6 pb-4">
+    <div class="flex flex-col gap-1">
+      <h2 class="font-['Syne'] text-[18px] font-bold text-[#1a202c] tracking-tight m-0">Section Scheduling</h2>
+      <p class="text-[13px] text-[#718096] m-0">Manage class sections, rooms, and instructor assignments</p>
     </div>
-    <button class="btn-main" (click)="showForm = !showForm">
-      <i class="bi" [class.bi-plus-lg]="!showForm" [class.bi-x-lg]="showForm"></i>
-      {{ showForm ? 'Cancel' : 'Create Section' }}
+
+    <button 
+      (click)="showForm = !showForm"
+      class="inline-flex items-center gap-2 bg-[#2C2C2A] hover:bg-[#444441] text-white text-[13px] font-medium px-5 py-2.5 rounded-xl transition-all">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" *ngIf="!showForm">
+        <path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <span>{{ showForm ? 'Cancel' : 'Create Section' }}</span>
     </button>
   </div>
 
-  <!-- Form Card -->
+  <div class="h-[0.5px] bg-[#edf2f7] mx-6 my-4"></div>
+
+  <!-- Form -->
   @if (showForm) {
-    <div class="glass-card p-4 mb-4 animate-fade-in">
-      <div class="form-section">
-        <h5 class="card-title">{{ isEditing ? 'Edit' : 'New' }} Class Section</h5>
-        <form (ngSubmit)="submitForm()">
-          <div class="form-grid">
+    <div class="mx-6 mb-8 bg-white border border-[#e2e8f0] rounded-2xl p-6">
+      <h3 class="font-['Syne'] text-[15px] font-bold text-[#1a202c] mb-6">
+        {{ isEditing ? 'Edit Class Section' : 'New Class Section' }}
+      </h3>
 
-            <!-- Section Name -->
-            <div class="form-group">
-              <label class="form-label">Section Name <span class="required">*</span></label>
-              <input type="text" name="section_name" [(ngModel)]="form.section_name"
-                class="form-control" placeholder="e.g. F1-A"
-                [class.is-invalid]="formErrors.section_name">
-              @if (formErrors.section_name) {
-                <span class="error-msg">{{ formErrors.section_name }}</span>
-              }
-            </div>
+      <form (ngSubmit)="submitForm()" class="space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
 
-            <!-- Subject -->
-            <div class="form-group">
-              <label class="form-label">Subject <span class="required">*</span></label>
-              <select name="subject_id" [(ngModel)]="form.subject_id" class="form-select"
-                [class.is-invalid]="formErrors.subject_id">
-                <option [value]="0" disabled>Select Subject</option>
-                @for (sub of subjects; track sub.id) {
-                  <option [value]="sub.id">{{ sub.subject_name }}</option>
-                }
-              </select>
-              @if (formErrors.subject_id) {
-                <span class="error-msg">{{ formErrors.subject_id }}</span>
-              }
-            </div>
-
-            <!-- Instructor -->
-            <div class="form-group">
-              <label class="form-label">Instructor <span class="required">*</span></label>
-              <select name="instructor_id" [(ngModel)]="form.instructor_id" class="form-select"
-                [class.is-invalid]="formErrors.instructor_id">
-                <option [value]="0" disabled>Select Instructor</option>
-                @for (inst of instructors; track inst.id) {
-                  <option [value]="inst.id">{{ inst.name }}</option>
-                }
-              </select>
-              @if (formErrors.instructor_id) {
-                <span class="error-msg">{{ formErrors.instructor_id }}</span>
-              }
-            </div>
-
-            <!-- Term -->
-            <div class="form-group">
-              <label class="form-label">Term <span class="required">*</span></label>
-              <select name="term_id" [(ngModel)]="form.term_id" class="form-select"
-                [class.is-invalid]="formErrors.term_id">
-                <option [value]="0" disabled>Select Term</option>
-                @for (t of terms; track t.id) {
-                  <option [value]="t.id">{{ t.name }}</option>
-                }
-              </select>
-              @if (formErrors.term_id) {
-                <span class="error-msg">{{ formErrors.term_id }}</span>
-              }
-            </div>
-
-            <!-- Schedule -->
-            <div class="form-group form-group--wide">
-              <label class="form-label">
-                Schedule (Day / Time) <span class="required">*</span>
-              </label>
-              <div class="schedule-grid" (mouseup)="onSlotMouseUp()"
-                [class.is-invalid]="formErrors.schedule">
-                <div class="schedule-header">
-                  <div class="time-col"></div>
-                  @for (d of days; track d) {
-                    <div class="day-col">{{ d }}</div>
-                  }
-                </div>
-                @for (t of times; track t; let ti = $index) {
-                  <div class="schedule-row">
-                    <div class="time-col">{{ t }}</div>
-                    @for (d of days; track d; let di = $index) {
-                      <div class="slot"
-                        [class.selected]="isSlotSelected(di, ti)"
-                        (mousedown)="onSlotMouseDown(di, ti)"
-                        (mouseover)="onSlotMouseOver(di, ti)">
-                      </div>
-                    }
-                  </div>
-                }
-              </div>
-              <div class="schedule-output">
-                <span class="schedule-preview">
-                  {{ form.schedule || 'No slots selected' }}
-                </span>
-                @if (form.schedule) {
-                  <button type="button" class="btn-clear-schedule"
-                    (click)="clearSchedule()">Clear</button>
-                }
-              </div>
-              @if (formErrors.schedule) {
-                <span class="error-msg">{{ formErrors.schedule }}</span>
-              }
-            </div>
-
-            <!-- Room -->
-            <div class="form-group">
-              <label class="form-label">Room / Venue <span class="required">*</span></label>
-              <input type="text" name="room" [(ngModel)]="form.room"
-                class="form-control" placeholder="Lab 1"
-                [class.is-invalid]="formErrors.room">
-              @if (formErrors.room) {
-                <span class="error-msg">{{ formErrors.room }}</span>
-              }
-            </div>
-
-            <!-- Capacity -->
-            <div class="form-group">
-              <label class="form-label">Capacity <span class="required">*</span></label>
-              <input type="number" name="capacity" [(ngModel)]="form.capacity"
-                class="form-control" placeholder="40" min="1" max="200"
-                [class.is-invalid]="formErrors.capacity">
-              @if (formErrors.capacity) {
-                <span class="error-msg">{{ formErrors.capacity }}</span>
-              }
-            </div>
-
-            <!-- Status -->
-            <div class="form-group">
-              <label class="form-label">Status</label>
-              <select name="status" [(ngModel)]="form.status" class="form-select">
-                <option value="open">Open</option>
-                <option value="closed">Closed</option>
-              </select>
-            </div>
-
+          <!-- Section Name -->
+          <div class="space-y-1.5">
+            <label class="text-[11px] font-semibold text-[#718096] tracking-wider uppercase">Section Name <span class="text-red-500">*</span></label>
+            <input type="text" [(ngModel)]="form.section_name" name="section_name"
+                   class="w-full border border-[#cbd5e0] rounded-xl px-4 py-3 text-[13px] focus:border-[#7F77DD] outline-none"
+                   placeholder="e.g. F1-A"
+                   [class.border-red-500]="formErrors.section_name">
+            @if (formErrors.section_name) {
+              <p class="text-red-500 text-xs">{{ formErrors.section_name }}</p>
+            }
           </div>
 
-          <div class="form-actions">
-            <button type="button" class="btn-reset" (click)="resetForm()">Cancel</button>
-            <button type="submit" class="btn-main" [disabled]="isFormInvalid">
-              {{ isEditing ? 'Update Section' : 'Save Section' }}
-            </button>
+          <!-- Subject -->
+          <div class="space-y-1.5">
+            <label class="text-[11px] font-semibold text-[#718096] tracking-wider uppercase">Subject <span class="text-red-500">*</span></label>
+            <select [(ngModel)]="form.subject_id" name="subject_id"
+                    class="w-full border border-[#cbd5e0] rounded-xl px-4 py-3 text-[13px] focus:border-[#7F77DD] outline-none">
+              <option [value]="0" disabled>Select Subject</option>
+              @for (sub of subjects; track sub.id) {
+                <option [value]="sub.id">{{ sub.subject_name }}</option>
+              }
+            </select>
           </div>
 
-        </form>
-      </div>
+          <!-- Instructor -->
+          <div class="space-y-1.5">
+            <label class="text-[11px] font-semibold text-[#718096] tracking-wider uppercase">Instructor <span class="text-red-500">*</span></label>
+            <select [(ngModel)]="form.instructor_id" name="instructor_id"
+                    class="w-full border border-[#cbd5e0] rounded-xl px-4 py-3 text-[13px] focus:border-[#7F77DD] outline-none">
+              <option [value]="0" disabled>Select Instructor</option>
+              @for (inst of instructors; track inst.id) {
+                <option [value]="inst.id">{{ inst.name }}</option>
+              }
+            </select>
+          </div>
+
+          <!-- Term -->
+          <div class="space-y-1.5">
+            <label class="text-[11px] font-semibold text-[#718096] tracking-wider uppercase">Term <span class="text-red-500">*</span></label>
+            <select [(ngModel)]="form.term_id" name="term_id"
+                    class="w-full border border-[#cbd5e0] rounded-xl px-4 py-3 text-[13px] focus:border-[#7F77DD] outline-none">
+              <option [value]="0" disabled>Select Term</option>
+              @for (t of terms; track t.id) {
+                <option [value]="t.id">{{ t.name }}</option>
+              }
+            </select>
+          </div>
+
+          <!-- Room & Capacity -->
+          <div class="space-y-1.5">
+            <label class="text-[11px] font-semibold text-[#718096] tracking-wider uppercase">Room / Venue <span class="text-red-500">*</span></label>
+            <input type="text" [(ngModel)]="form.room" name="room"
+                   class="w-full border border-[#cbd5e0] rounded-xl px-4 py-3 text-[13px] focus:border-[#7F77DD] outline-none"
+                   placeholder="Lab 1">
+          </div>
+
+          <div class="space-y-1.5">
+            <label class="text-[11px] font-semibold text-[#718096] tracking-wider uppercase">Capacity <span class="text-red-500">*</span></label>
+            <input type="number" [(ngModel)]="form.capacity" name="capacity" min="1"
+                   class="w-full border border-[#cbd5e0] rounded-xl px-4 py-3 text-[13px] focus:border-[#7F77DD] outline-none"
+                   placeholder="40">
+          </div>
+
+        </div>
+
+        <!-- Form Buttons -->
+        <div class="flex justify-end gap-3 pt-4">
+          <button type="button" (click)="resetForm()"
+                  class="px-5 py-2.5 border border-[#e2e8f0] text-[#718096] rounded-xl hover:bg-[#f7fafc] text-[13px] font-medium">
+            Cancel
+          </button>
+          <button type="submit"
+                  class="px-5 py-2.5 bg-[#2C2C2A] text-white rounded-xl hover:bg-[#444441] text-[13px] font-medium">
+            {{ isEditing ? 'Update Section' : 'Save Section' }}
+          </button>
+        </div>
+      </form>
     </div>
   }
 
-  <!-- Table Card -->
-  <div class="glass-card overflow-hidden">
-    @if (isLoading) {
-      <div class="loading-state">
-        <div class="spinner"></div>
-        <p class="text-muted small mt-3 mb-0">Retrieving sections...</p>
-      </div>
-    } @else {
-      <div class="table-responsive">
-        <table class="modern-table">
-          <thead>
-            <tr>
-              <th>Section & Subject</th>
-              <th>Instructor</th>
-              <th>Schedule & Room</th>
-              <th>Capacity</th>
-              <th>Status</th>
-              <th class="text-end">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (sec of sections; track sec.id) {
-              <tr class="hover-row">
-                <td>
-                  <span class="section-name">{{ sec.section_name }}</span>
-                  <span class="subject-label">{{ sec.subject?.subject_name }}</span>
-                </td>
-                <td>
-                  <span class="instructor-name">
-                    {{ sec.instructor?.name || 'Unassigned' }}
-                  </span>
-                </td>
-                <td>
-                  <span class="schedule-text">{{ sec.schedule || 'TBA' }}</span>
-                  <span class="room-text">{{ sec.room || 'No Room' }}</span>
-                </td>
-                <td>
-                  <span class="capacity-text">{{ sec.capacity }} seats</span>
-                </td>
-                <td>
-                  <span class="pill"
-                    [class.pill-open]="sec.status === 'open'"
-                    [class.pill-closed]="sec.status === 'closed'">
-                    {{ sec.status | titlecase }}
-                  </span>
-                </td>
-                <td class="text-end">
-                  <div class="action-buttons">
-                    <button class="btn-edit" (click)="editSection(sec)" title="Edit">
-                      <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
-                        <path d="M11 2a2 2 0 112.8 2.8L5 13.6 2 14.5l.9-3L11 2z"
-                          stroke="currentColor" stroke-width="1.4"
-                          stroke-linecap="round" stroke-linejoin="round"/>
-                      </svg>
-                      <span>Edit</span>
-                    </button>
-                    <button class="btn-delete" (click)="deleteSection(sec.id)" title="Delete">
-                      <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
-                        <path d="M3 4h10M5 4V3a1 1 0 011-1h4a1 1 0 011 1v1M6 7v5M10 7v5M4 4l.8 9a1 1 0 001 .9h4.4a1 1 0 001-.9L12 4"
-                          stroke="currentColor" stroke-width="1.4"
-                          stroke-linecap="round" stroke-linejoin="round"/>
-                      </svg>
-                      <span>Delete</span>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            } @empty {
-              <tr>
-                <td colspan="6" class="empty-state">
-                  <i class="bi bi-calendar2-x empty-icon"></i>
-                  <p class="text-muted mb-0 mt-2">No sections have been created yet.</p>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-    }
+  <!-- Table -->
+  <div class="overflow-x-auto">
+    <table class="w-full border-collapse text-[13px]">
+      <thead class="bg-[#f7fafc]">
+        <tr>
+          <th class="p-4 px-6 text-left text-[11px] font-semibold tracking-wider uppercase text-[#718096] border-b border-[#edf2f7]">Section & Subject</th>
+          <th class="p-4 px-6 text-left text-[11px] font-semibold tracking-wider uppercase text-[#718096] border-b border-[#edf2f7]">Instructor</th>
+          <th class="p-4 px-6 text-left text-[11px] font-semibold tracking-wider uppercase text-[#718096] border-b border-[#edf2f7]">Schedule & Room</th>
+          <th class="p-4 px-6 text-left text-[11px] font-semibold tracking-wider uppercase text-[#718096] border-b border-[#edf2f7]">Capacity</th>
+          <th class="p-4 px-6 text-left text-[11px] font-semibold tracking-wider uppercase text-[#718096] border-b border-[#edf2f7]">Status</th>
+          <th class="p-4 px-6 text-right text-[11px] font-semibold tracking-wider uppercase text-[#718096] border-b border-[#edf2f7]">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (sec of sections; track sec.id) {
+          <tr class="border-b border-[#edf2f7] hover:bg-[#f8fafc] transition-colors">
+            <td class="p-4 px-6">
+              <div class="font-medium text-[#1a202c]">{{ sec.section_name }}</div>
+              <div class="text-[#534AB7] text-sm">{{ sec.subject?.subject_name }}</div>
+            </td>
+            <td class="p-4 px-6 text-[#1a202c]">{{ sec.instructor?.name || 'Unassigned' }}</td>
+            <td class="p-4 px-6">
+              <div class="font-medium">{{ sec.schedule || 'TBA' }}</div>
+              <div class="text-[#718096] text-sm">{{ sec.room || 'No Room' }}</div>
+            </td>
+            <td class="p-4 px-6 text-[#1a202c]">{{ sec.capacity }} seats</td>
+            <td class="p-4 px-6">
+              <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold"
+                    [class.bg-emerald-100]="sec.status === 'open'"
+                    [class.text-emerald-700]="sec.status === 'open'"
+                    [class.bg-red-100]="sec.status === 'closed'"
+                    [class.text-red-700]="sec.status === 'closed'">
+                <span class="w-2 h-2 rounded-full"
+                      [class.bg-emerald-500]="sec.status === 'open'"
+                      [class.bg-red-500]="sec.status === 'closed'"></span>
+                {{ sec.status | titlecase }}
+              </span>
+            </td>
+            <td class="p-4 px-6 text-right">
+              <div class="inline-flex gap-2">
+                <button (click)="editSection(sec)"
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 border border-[#e2e8f0] hover:bg-[#EEEDFE] text-[#3C3489] text-xs rounded-xl">
+                  Edit
+                </button>
+                <button (click)="deleteSection(sec.id)"
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 border border-[#e2e8f0] hover:bg-[#fff5f5] text-red-600 text-xs rounded-xl">
+                  Delete
+                </button>
+              </div>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="6" class="py-20 text-center text-[#a0aec0]">
+              <p>No sections found.</p>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
   </div>
 
-  <!-- Delete Progress Bar (outside main container for proper positioning) -->
-<div *ngIf="showDeleteProgress" class="delete-progress-container">
-  <div class="delete-progress-bar">
-    <div class="delete-progress-content">
-      <div class="delete-progress-left">
-        <span class="delete-icon">⚠️</span>
-        <span class="delete-message">Deleting in {{ deleteProgressTime }}s...</span>
-      </div>
-      <div class="delete-progress-right">
-        <button 
-          type="button" 
-          class="btn-undo" 
-          (click)="undoDelete()"
-          [disabled]="deleteProgressTime <= 0">
-          UNDO
-        </button>
-      </div>
-    </div>
-    <!-- Progress bar animation -->
-    <div class="progress-bar-fill" [style.width.%]="(deleteProgressTime / 5) * 100"></div>
+  <!-- Footer -->
+  <div class="p-4 px-6 border-t border-[#edf2f7] bg-[#f7fafc] text-[12px] text-[#718096]">
+    Showing {{ sections.length }} record{{ sections.length !== 1 ? 's' : '' }}
   </div>
 </div>
-</div>
+
+<!-- Delete Progress -->
+@if (showDeleteProgress) {
+  <div class="fixed bottom-8 right-8 bg-gradient-to-br from-[#fff3cd] to-[#ffe8cc] border border-[#ffc107] rounded-2xl p-4 shadow-xl z-50 w-80">
+    <div class="flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <span class="text-xl">⚠️</span>
+        <span class="text-[#333] font-medium text-sm">Deleting in {{ deleteProgressTime }}s...</span>
+      </div>
+      <button (click)="undoDelete()" 
+              class="bg-red-500 text-white text-xs font-bold px-5 py-2 rounded-xl hover:bg-red-600">
+        UNDO
+      </button>
+    </div>
+    <div class="h-1 bg-red-500 mt-3 rounded-full transition-all"
+         [style.width.%]="(deleteProgressTime / 5) * 100"></div>
+  </div>
+}

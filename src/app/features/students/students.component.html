@@ -1,137 +1,99 @@
-<div class="programs-container animate-fade-in">
+<div class="animate-in fade-in slide-in-from-bottom-2 duration-500 bg-white border border-[#edf2f7] rounded-2xl overflow-hidden font-['DM_Sans']">
 
   <!-- Header -->
-  <div class="pm-header">
-    <div class="pm-title-block">
-      <h2 class="pm-title">Student Registry</h2>
-      <p class="pm-subtitle">Manage academic records and student profiles</p>
+  <div class="flex flex-wrap items-start justify-between gap-4 p-6 pb-4">
+    <div class="flex flex-col gap-1">
+      <h2 class="font-['Syne'] text-[18px] font-bold text-[#1a202c] tracking-tight m-0">Student Registry</h2>
+      <p class="text-[13px] text-[#718096] m-0">Manage academic records and student profiles</p>
     </div>
 
-    <div class="header-controls">
+    <div class="flex flex-wrap items-center gap-3">
+      <select class="border border-[#e2e8f0] bg-white rounded-xl px-4 py-2.5 text-[13px] focus:border-[#7F77DD] min-w-[200px]"
+              [value]="activeProgram" (change)="filterByProgram($event)">
+        @for (prog of programs; track prog) {
+          <option [value]="prog">{{ prog === 'All' ? 'All Programs' : prog }}</option>
+        }
+      </select>
 
-      <!-- Program Dropdown -->
-      <div class="select-wrapper">
-        <svg class="select-icon" width="13" height="13" viewBox="0 0 24 24" fill="none">
-          <path d="M3 21h18M3 7v14M21 7v14M12 3l9 4H3l9-4z"
-            stroke="#a0aec0" stroke-width="1.5"
-            stroke-linecap="round" stroke-linejoin="round"/>
+      <div class="flex items-center gap-2 bg-[#f7fafc] border border-[#e2e8f0] rounded-xl px-4 py-2 min-w-[260px] focus-within:border-[#7F77DD]">
+        <svg class="shrink-0 opacity-40" width="14" height="14" viewBox="0 0 16 16" fill="none">
+          <circle cx="6.5" cy="6.5" r="5" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
         </svg>
-        <select
-          class="program-select"
-          [value]="activeProgram"
-          (change)="filterByProgram($event)">
-          @for (prog of programs; track prog) {
-            <option [value]="prog">
-              {{ prog === 'All' ? 'All Programs' : prog }}
-            </option>
-          }
-        </select>
-        <svg class="select-chevron" width="12" height="12" viewBox="0 0 16 16" fill="none">
-          <path d="M4 6l4 4 4-4"
-            stroke="#718096" stroke-width="1.5"
-            stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
+        <input type="text" placeholder="Search by name or ID..." 
+               class="border-none bg-transparent text-[13px] text-[#1a202c] py-2 outline-none w-full placeholder:text-[#a0aec0]"
+               [(ngModel)]="searchQuery" (input)="applyFilters()">
       </div>
-
-      <!-- Search -->
-      <div class="search-box">
-        <svg class="search-icon" width="13" height="13" viewBox="0 0 16 16" fill="none">
-          <circle cx="6.5" cy="6.5" r="5" stroke="#a0aec0" stroke-width="1.5"/>
-          <path d="M10.5 10.5L14 14" stroke="#a0aec0" stroke-width="1.5" stroke-linecap="round"/>
-        </svg>
-        <input
-          type="text"
-          class="search-input"
-          placeholder="Search by name or ID..."
-          [(ngModel)]="searchQuery"
-          (input)="applyFilters()">
-      </div>
-
     </div>
   </div>
 
-  <div class="pm-divider"></div>
+  <div class="h-[0.5px] bg-[#edf2f7] mx-6 my-4"></div>
 
-  <!-- Active filter pill (shown when a program is selected) -->
+  <!-- Active Filter -->
   @if (activeProgram !== 'All') {
-    <div class="active-filter-bar">
-      <span class="active-filter-pill">
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none">
-          <path d="M3 21h18M3 7v14M21 7v14M12 3l9 4H3l9-4z"
-            stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
+    <div class="px-6 py-3 bg-[#f8fafc] border-b border-[#edf2f7]">
+      <span class="inline-flex items-center gap-2 bg-white border border-[#e2e8f0] text-[#3C3489] text-xs font-semibold px-4 py-1.5 rounded-3xl">
         {{ activeProgram }}
-        <button class="pill-clear" (click)="clearFilter()">✕</button>
-      </span>
-      <span class="active-filter-count">
-        {{ filteredStudents.length }} student(s) found
+        <button class="text-[#a0aec0] hover:text-red-500" (click)="clearFilter()">×</button>
       </span>
     </div>
   }
 
-  <!-- Table -->
-  <div class="table-responsive">
-    @if (isLoading) {
-      <div class="loading-state">
-        <div class="spinner"></div>
-        <p>Loading student records...</p>
-      </div>
-
-    } @else if (filteredStudents.length === 0) {
-      <div class="empty-state">
-        <svg width="36" height="36" viewBox="0 0 24 24" fill="none"
-          style="opacity:0.25;margin-bottom:10px">
-          <circle cx="11" cy="11" r="8" stroke="#718096" stroke-width="1.5"/>
-          <path d="M21 21l-4.35-4.35" stroke="#718096"
-            stroke-width="1.5" stroke-linecap="round"/>
-        </svg>
-        <p>No students found.</p>
-        @if (activeProgram !== 'All' || searchQuery) {
-          <button class="btn-clear-all" (click)="clearFilter(); searchQuery = ''; applyFilters()">
-            Clear filters
-          </button>
-        }
-      </div>
-
-    } @else {
-      <table class="pm-table">
-        <thead>
+  <!-- Main Content -->
+  @if (isLoading) {
+    <div class="text-center py-16 px-6 text-[#a0aec0] text-[13px]">
+      <div class="w-6 h-6 border-2 border-[#e2e8f0] border-t-[#a0aec0] rounded-full animate-spin mx-auto mb-3"></div>
+      <p>Loading student records...</p>
+    </div>
+  } 
+  @else if (filteredStudents.length === 0) {
+    <div class="text-center py-16 px-6 text-[#a0aec0] text-[13px]">
+      <svg class="w-10 h-10 mx-auto mb-4 opacity-30" viewBox="0 0 40 40" fill="none">
+        <circle cx="20" cy="20" r="15" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M15 15L25 25M25 15L15 25" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <p>No students found.</p>
+      @if (activeProgram !== 'All' || searchQuery) {
+        <button (click)="clearFilter(); searchQuery = ''; applyFilters()" 
+                class="mt-4 text-[#534AB7] hover:underline text-sm">
+          Clear filters
+        </button>
+      }
+    </div>
+  } 
+  @else {
+    <div class="overflow-x-auto">
+      <table class="w-full border-collapse text-[13px]">
+        <thead class="bg-[#f7fafc]">
           <tr>
-            <th>Student ID</th>
-            <th>Full Name</th>
-            <th>Program</th>
-            <th>Department</th>
-            <th class="text-right">Actions</th>
+            <th class="p-4 px-6 text-left text-[11px] font-semibold tracking-wider uppercase text-[#718096] border-b border-[#edf2f7]">Student ID</th>
+            <th class="p-4 px-6 text-left text-[11px] font-semibold tracking-wider uppercase text-[#718096] border-b border-[#edf2f7]">Full Name</th>
+            <th class="p-4 px-6 text-left text-[11px] font-semibold tracking-wider uppercase text-[#718096] border-b border-[#edf2f7]">Program</th>
+            <th class="p-4 px-6 text-left text-[11px] font-semibold tracking-wider uppercase text-[#718096] border-b border-[#edf2f7]">Department</th>
+            <th class="p-4 px-6 text-right text-[11px] font-semibold tracking-wider uppercase text-[#718096] border-b border-[#edf2f7]">Actions</th>
           </tr>
         </thead>
         <tbody>
           @for (s of filteredStudents; track s.id) {
-            <tr>
-              <td>
-                <span class="code-pill">{{ s.student_number }}</span>
+            <tr class="border-b border-[#edf2f7] last:border-none hover:bg-[#f8fafc] transition-colors">
+              <td class="p-4 px-6">
+                <span class="inline-block bg-[#EEEDFE] text-[#3C3489] font-bold text-xs px-3 py-1 rounded-lg">{{ s.student_number }}</span>
               </td>
-              <td>
-                <span class="prog-name">{{ s.name }}</span>
-              </td>
-              <td>
-                <div class="program-cell">
-                  <span class="program-badge">{{ s.program?.code || 'N/A' }}</span>
-                  <span class="program-name-text">{{ s.program?.name || '' }}</span>
+              <td class="p-4 px-6 font-medium text-[#1a202c]">{{ s.name }}</td>
+              <td class="p-4 px-6">
+                <div class="flex items-center gap-2">
+                  <span class="bg-[#EEEDFE] text-[#534AB7] text-xs font-semibold px-3 py-1 rounded-lg">{{ s.program?.code || 'N/A' }}</span>
+                  <span class="text-xs text-[#1a202c]">{{ s.program?.name }}</span>
                 </div>
               </td>
-              <td>
-                <span class="dept-tag">{{ s.program?.department || 'N/A' }}</span>
+              <td class="p-4 px-6">
+                <span class="inline-flex items-center px-3 py-1 rounded-full bg-[#f1f5f9] text-[#4a5568] text-xs font-medium">
+                  {{ s.program?.department || 'N/A' }}
+                </span>
               </td>
-              <td class="text-right">
-                <button class="btn-edit" (click)="viewDetails(s)">
-                  <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
-                    <path d="M1 8s3-5.5 7-5.5S15 8 15 8s-3 5.5-7 5.5S1 8 1 8z"
-                      stroke="currentColor" stroke-width="1.5"
-                      stroke-linecap="round" stroke-linejoin="round"/>
-                    <circle cx="8" cy="8" r="2.5"
-                      stroke="currentColor" stroke-width="1.5"/>
-                  </svg>
+              <td class="p-4 px-6 text-right">
+                <button (click)="viewDetails(s)" 
+                        class="inline-flex items-center gap-2 border border-[#e2e8f0] hover:bg-[#EEEDFE] hover:border-[#AFA9EC] text-[#3C3489] px-4 py-2 rounded-xl text-xs font-medium transition-all">
                   View Profile
                 </button>
               </td>
@@ -139,193 +101,12 @@
           }
         </tbody>
       </table>
-    }
-  </div>
+    </div>
 
-  <!-- Footer -->
-  <div class="pm-footer">
-    <span>Showing {{ filteredStudents.length }} record(s)</span>
-    @if (activeProgram !== 'All') {
-      <span class="active-filter-label">
-        Program: <strong>{{ activeProgram }}</strong>
-        <button class="clear-filter" (click)="clearFilter()">✕ Clear</button>
-      </span>
-    }
-  </div>
+    <!-- Footer -->
+    <div class="flex items-center justify-between p-4 px-6 border-t border-[#edf2f7] bg-[#f7fafc] text-[12px] text-[#718096]">
+      <span>Showing {{ filteredStudents.length }} record{{ filteredStudents.length !== 1 ? 's' : '' }}</span>
+    </div>
+  }
 
 </div>
-
-<!-- ── Modal ── -->
-@if (showModal && selectedStudent) {
-  <div class="modal-overlay" (click)="closeModal()"></div>
-  <div class="modal-wrapper">
-    <div class="modal-panel animate-fade-in">
-
-      <!-- Modal Header -->
-      <div class="modal-head">
-        <div class="student-avatar">
-          {{ selectedStudent.name?.charAt(0)?.toUpperCase() }}
-        </div>
-        <div style="flex:1">
-          <h4 class="modal-student-name">{{ selectedStudent.name }}</h4>
-          <p class="modal-student-id">{{ selectedStudent.student_number }}</p>
-        </div>
-        <button class="modal-close" (click)="closeModal()">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <path d="M3 3l10 10M13 3L3 13"
-              stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-          </svg>
-        </button>
-      </div>
-
-      <!-- Tabs -->
-      <div class="tab-bar">
-        <button class="tab-btn"
-          [class.active]="activeTab === 'info'"
-          (click)="activeTab = 'info'">Overview</button>
-        <button class="tab-btn"
-          [class.active]="activeTab === 'grades'"
-          (click)="activeTab = 'grades'">Grades</button>
-        <button class="tab-btn"
-          [class.active]="activeTab === 'documents'"
-          (click)="activeTab = 'documents'">Docs</button>
-      </div>
-
-      <!-- Tab Content -->
-      <div class="tab-content">
-
-        <!-- Overview -->
-        @if (activeTab === 'info') {
-          <div class="info-grid">
-            <div class="info-row">
-              <span class="info-label">Program</span>
-              <span class="info-value">{{ selectedStudent.program?.name || 'N/A' }}</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">Department</span>
-              <span class="info-value">{{ selectedStudent.program?.department || 'N/A' }}</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">Program Code</span>
-              <span class="info-value">
-                <span class="program-badge">{{ selectedStudent.program?.code || 'N/A' }}</span>
-              </span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">Email</span>
-              <span class="info-value">{{ selectedStudent.email || 'No email provided' }}</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">Status</span>
-              <span class="status-pill"
-                [class.active-status]="selectedStudent.status === 'active'">
-                {{ selectedStudent.status || 'Enrolled' }}
-              </span>
-            </div>
-          </div>
-        }
-
-        <!-- Grades -->
-        @if (activeTab === 'grades') {
-          <div class="grade-list">
-
-            <div class="grade-list-header">
-              <span class="grade-list-title">Subject Grades</span>
-              <button class="btn-edit btn-sm" (click)="toggleGradeForm()">
-                {{ showGradeForm ? '✕ Cancel' : '+ Add Grade' }}
-              </button>
-            </div>
-@if (showGradeForm) {
-  <div class="grade-form">
-    @for (row of gradeList; track i; let i = $index) {
-      <div class="grade-form-row">
-        @if (row.subject) {
-          <span class="grade-prefill-label">{{ row.subject }}</span>
-        } @else {
-          <input
-            type="text"
-            class="grade-input"
-            placeholder="Section ID"
-            [(ngModel)]="row.section_id">
-        }
-        <input
-          type="text"
-          class="grade-input"
-          placeholder="Grade (e.g. 1.25)"
-          [(ngModel)]="row.grade">
-        <input
-          type="text"
-          class="grade-input"
-          placeholder="Remarks"
-          [(ngModel)]="row.remarks">
-        <button
-          class="btn-remove-row"
-          (click)="removeGradeRow(i)"
-          title="Remove">✕</button>
-      </div>
-    }
-    <div class="grade-form-actions">
-      <button class="btn-add-row" (click)="addGradeRow()">+ Add Row</button>
-      <button class="btn-save" (click)="submitAllGrades()">Save All</button>
-    </div>
-  </div>
-}
-@else {
-              @if (grades.length === 0) {
-                <p class="no-grades">No grades recorded yet.</p>
-              }
-              @for (g of grades; track g.section_id) {
-                <div class="grade-item">
-                  <div>
-                    <span class="grade-subject">{{ g.subject || 'N/A' }}</span>
-                    <span class="grade-section-name">{{ g.section_name }}</span>
-                  </div>
-                  <div style="display:flex;align-items:center;gap:8px">
-                    @if (g.grade) {
-                      <span class="code-pill">{{ g.grade }}</span>
-                    } @else {
-                      <span class="no-grade-pill">No grade</span>
-                    }
-                    @if (g.remarks) {
-                      <span class="grade-remark">{{ g.remarks }}</span>
-                    }
-                  </div>
-                </div>
-              }
-            }
-
-          </div>
-        }
-
-        <!-- Documents -->
-        @if (activeTab === 'documents') {
-          <div class="doc-grid">
-            <button class="doc-btn" (click)="generateCOR(selectedStudent.id)">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"
-                  stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
-                <path d="M14 2v6h6M12 18v-6M9 15l3 3 3-3"
-                  stroke="currentColor" stroke-width="1.5"
-                  stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-              Download COR
-              <span class="doc-hint">Certificate of Registration</span>
-            </button>
-            <button class="doc-btn" (click)="generateTOR(selectedStudent.id)">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"
-                  stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
-                <path d="M14 2v6h6M12 18v-6M9 15l3 3 3-3"
-                  stroke="currentColor" stroke-width="1.5"
-                  stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-              Download TOR
-              <span class="doc-hint">Transcript of Records</span>
-            </button>
-          </div>
-        }
-
-      </div>
-    </div>
-  </div>
-}

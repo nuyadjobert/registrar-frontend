@@ -15,7 +15,6 @@ import { Term } from '../../core/models/term.model';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './sections.component.html',
-  styleUrls: ['./sections.component.css']
 })
 export class SectionsComponent implements OnInit {
   sections: Section[] = [];

@@ -10,7 +10,6 @@ import { Subject, SubjectPayload, Program } from '../../core/models/subject.mode
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './subjects.component.html',
-  styleUrls: ['./subjects.component.css']
 })
 export class SubjectsComponent implements OnInit {
   subjects: Subject[] = [];

@@ -1,254 +1,218 @@
-<div class="course-catalog-container animate-fade-in">
+<div class="animate-in fade-in slide-in-from-bottom-2 duration-500 bg-white border border-[#edf2f7] rounded-2xl overflow-hidden font-['DM_Sans']">
 
   <!-- Header -->
-  <div class="page-header mb-4">
-    <div>
-      <h3 class="fw-bold mb-1">Subject Management</h3>
-      <p class="text-muted small mb-0">Configure degree requirements and course metadata.</p>
+  <div class="flex flex-wrap items-start justify-between gap-4 p-6 pb-4">
+    <div class="flex flex-col gap-1">
+      <h2 class="font-['Syne'] text-[18px] font-bold text-[#1a202c] tracking-tight m-0">Subject Management</h2>
+      <p class="text-[13px] text-[#718096] m-0">Configure degree requirements and course metadata</p>
     </div>
-    <button class="btn-main" (click)="showForm = !showForm">
-      <i class="bi" [class.bi-plus-lg]="!showForm" [class.bi-x-lg]="showForm"></i>
+
+    <button 
+      (click)="showForm = !showForm"
+      class="inline-flex items-center gap-2 bg-[#2C2C2A] hover:bg-[#444441] text-white text-[13px] font-medium px-5 py-2.5 rounded-xl transition-all whitespace-nowrap">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" *ngIf="!showForm">
+        <path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
       {{ showForm ? 'Cancel' : 'Add Subject' }}
     </button>
   </div>
 
-  <!-- Form Card -->
+  <div class="h-[0.5px] bg-[#edf2f7] mx-6 my-4"></div>
+
+  <!-- Form -->
   @if (showForm) {
-  <div class="glass-card p-4 mb-4 animate-fade-in">
-    <div class="form-section">
-      <h5 class="card-title">{{ isEditing ? 'Edit Existing' : 'Register New' }} Subject</h5>
+    <div class="mx-6 mb-8 bg-white border border-[#e2e8f0] rounded-2xl p-6">
+      <h3 class="font-['Syne'] text-[15px] font-bold text-[#1a202c] mb-6">
+        {{ isEditing ? 'Edit Subject' : 'Register New Subject' }}
+      </h3>
 
-      <form (ngSubmit)="submitForm()" #subjectForm="ngForm">
-        <div class="form-grid">
+      <form (ngSubmit)="submitForm()" #subjectForm="ngForm" class="space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
-          <div class="form-group col-code">
-            <label class="form-label">Code</label>
+          <!-- Code -->
+          <div class="space-y-1.5">
+            <label class="text-[11px] font-semibold text-[#718096] tracking-wider uppercase">Code <span class="text-red-500">*</span></label>
             <input type="text" name="subject_code" [(ngModel)]="form.subject_code" #subjCode="ngModel" required
-              [class.is-invalid]="subjCode.invalid && subjCode.touched" class="form-control" placeholder="IT101">
+                   class="w-full border border-[#cbd5e0] rounded-xl px-4 py-3 text-[13px] focus:border-[#7F77DD] outline-none"
+                   placeholder="IT101"
+                   [class.border-red-500]="subjCode.invalid && subjCode.touched">
             @if (subjCode.invalid && subjCode.touched) {
-            <div class="error-hint"><i class="bi bi-exclamation-circle-fill"></i> Required</div>
+              <p class="text-red-500 text-xs">Code is required</p>
             }
           </div>
 
-          <div class="form-group col-name">
-            <label class="form-label">Subject Name</label>
+          <!-- Subject Name -->
+          <div class="lg:col-span-2 space-y-1.5">
+            <label class="text-[11px] font-semibold text-[#718096] tracking-wider uppercase">Subject Name <span class="text-red-500">*</span></label>
             <input type="text" name="subject_name" [(ngModel)]="form.subject_name" #subjName="ngModel" required
-              [class.is-invalid]="subjName.invalid && subjName.touched" class="form-control"
-              placeholder="Object Oriented Programming">
+                   class="w-full border border-[#cbd5e0] rounded-xl px-4 py-3 text-[13px] focus:border-[#7F77DD] outline-none"
+                   placeholder="Object Oriented Programming"
+                   [class.border-red-500]="subjName.invalid && subjName.touched">
             @if (subjName.invalid && subjName.touched) {
-            <div class="error-hint"><i class="bi bi-exclamation-circle-fill"></i> Name required</div>
+              <p class="text-red-500 text-xs">Subject name is required</p>
             }
           </div>
 
-          <div class="form-group col-program">
-            <label class="form-label">Program</label>
+          <!-- Program -->
+          <div class="space-y-1.5">
+            <label class="text-[11px] font-semibold text-[#718096] tracking-wider uppercase">Program <span class="text-red-500">*</span></label>
             <select name="program_id" [(ngModel)]="form.program_id" #progSelect="ngModel" required
-              [class.is-invalid]="progSelect.invalid && progSelect.touched" class="form-select">
+                    class="w-full border border-[#cbd5e0] rounded-xl px-4 py-3 text-[13px] focus:border-[#7F77DD] outline-none">
               <option value="" disabled selected>Select Program</option>
               @for (prog of programs; track prog.id) {
-              <option [value]="prog.id">{{ prog.name }}</option>
+                <option [value]="prog.id">{{ prog.name }}</option>
               }
             </select>
-            @if (progSelect.invalid && progSelect.touched) {
-            <div class="error-hint"><i class="bi bi-exclamation-circle-fill"></i> Program required</div>
-            }
           </div>
 
-          <div class="form-group col-units">
-            <label class="form-label">Units</label>
-            <input type="number" name="units" [(ngModel)]="form.units" class="form-control" min="0" required>
+          <!-- Units -->
+          <div class="space-y-1.5">
+            <label class="text-[11px] font-semibold text-[#718096] tracking-wider uppercase">Units</label>
+            <input type="number" name="units" [(ngModel)]="form.units" min="0"
+                   class="w-full border border-[#cbd5e0] rounded-xl px-4 py-3 text-[13px] focus:border-[#7F77DD] outline-none">
           </div>
 
-          <div class="form-group col-type">
-            <label class="form-label">Type</label>
-            <select name="type" [(ngModel)]="form.type" class="form-select">
+          <!-- Type -->
+          <div class="space-y-1.5">
+            <label class="text-[11px] font-semibold text-[#718096] tracking-wider uppercase">Type</label>
+            <select name="type" [(ngModel)]="form.type"
+                    class="w-full border border-[#cbd5e0] rounded-xl px-4 py-3 text-[13px] focus:border-[#7F77DD] outline-none">
               <option value="lecture">Lecture Only</option>
               <option value="lab">Laboratory</option>
               <option value="internship">Internship/OJT</option>
             </select>
           </div>
 
-          <div class="form-group col-status">
-            <label class="form-label">Status</label>
-            <select name="status" [(ngModel)]="form.status" class="form-select">
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-            </select>
+          <!-- Year Level -->
+          <div class="space-y-1.5">
+            <label class="text-[11px] font-semibold text-[#718096] tracking-wider uppercase">Year Level</label>
+            <input type="number" name="year_level" [(ngModel)]="form.year_level" min="1" max="4"
+                   class="w-full border border-[#cbd5e0] rounded-xl px-4 py-3 text-[13px] focus:border-[#7F77DD] outline-none">
           </div>
 
-          <div class="form-group col-year">
-            <label class="form-label">Year Level</label>
-            <input type="number" name="year_level" [(ngModel)]="form.year_level" #yearLevel="ngModel"
-              class="form-control" min="1" max="4" required
-              [class.is-invalid]="yearLevel.invalid && yearLevel.touched">
-            @if (yearLevel.invalid && yearLevel.touched) {
-            <div class="error-hint"><i class="bi bi-exclamation-circle-fill"></i> Year level required</div>
-            }
-          </div>
-
-          <div class="form-group col-semester">
-            <label class="form-label">Semester</label>
-            <select name="semester" [(ngModel)]="form.semester" #semesterSelect="ngModel" required
-              class="form-select" [class.is-invalid]="semesterSelect.invalid && semesterSelect.touched">
-              <option value="" disabled selected>Select Semester</option>
+          <!-- Semester -->
+          <div class="space-y-1.5">
+            <label class="text-[11px] font-semibold text-[#718096] tracking-wider uppercase">Semester</label>
+            <select name="semester" [(ngModel)]="form.semester"
+                    class="w-full border border-[#cbd5e0] rounded-xl px-4 py-3 text-[13px] focus:border-[#7F77DD] outline-none">
               <option value="first">First</option>
               <option value="second">Second</option>
               <option value="summer">Summer</option>
             </select>
-            @if (semesterSelect.invalid && semesterSelect.touched) {
-            <div class="error-hint"><i class="bi bi-exclamation-circle-fill"></i> Semester required</div>
-            }
           </div>
 
-          <div class="form-group col-year">
-            <label class="form-label">School Year</label>
-            <input type="text" name="school_year" [(ngModel)]="form.school_year" #schoolYear="ngModel"
-              class="form-control" placeholder="2026" required
-              [class.is-invalid]="schoolYear.invalid && schoolYear.touched">
-            @if (schoolYear.invalid && schoolYear.touched) {
-            <div class="error-hint"><i class="bi bi-exclamation-circle-fill"></i> School year required</div>
-            }
+          <!-- School Year -->
+          <div class="space-y-1.5">
+            <label class="text-[11px] font-semibold text-[#718096] tracking-wider uppercase">School Year</label>
+            <input type="text" name="school_year" [(ngModel)]="form.school_year"
+                   class="w-full border border-[#cbd5e0] rounded-xl px-4 py-3 text-[13px] focus:border-[#7F77DD] outline-none"
+                   placeholder="2025-2026">
           </div>
+
         </div>
 
-        <!-- Duplicate Error Message -->
         @if (isDuplicate()) {
-        <div class="duplicate-error-message mt-3">
-          <i class="bi bi-exclamation-triangle-fill"></i>
-          <span>A subject with this code or name already exists!</span>
-        </div>
+          <div class="p-3 bg-amber-50 border border-amber-300 rounded-xl text-amber-700 text-sm flex items-center gap-3">
+            ⚠️ A subject with this code or name already exists!
+          </div>
         }
 
-        <div class="form-actions mt-4">
-          <button type="button" class="btn-reset" (click)="resetForm()">Cancel</button>
-          <button type="submit" class="btn-main" [disabled]="!isFormValid()">
+        <!-- Form Buttons -->
+        <div class="flex justify-end gap-3 pt-4">
+          <button type="button" (click)="resetForm()"
+                  class="px-5 py-2.5 border border-[#e2e8f0] text-[#718096] rounded-xl hover:bg-[#f7fafc] text-[13px] font-medium">
+            Cancel
+          </button>
+          <button type="submit" [disabled]="!isFormValid()"
+                  class="px-5 py-2.5 bg-[#2C2C2A] text-white rounded-xl hover:bg-[#444441] text-[13px] font-medium">
             {{ isEditing ? 'Update Subject' : 'Save Subject' }}
           </button>
         </div>
       </form>
     </div>
-  </div>
   }
 
-  <!-- Table Card -->
-  <div class="glass-card overflow-hidden">
-    @if (isLoading) {
-    <div class="loading-state">
-      <div class="spinner"></div>
-      <p class="text-muted small mt-3 mb-0">Retrieving subjects...</p>
-    </div>
-    } @else {
-    <div class="table-responsive">
-      <table class="modern-table">
-        <thead>
-          <tr>
-            <th>Code</th>
-            <th>Description</th>
-            <th>Units</th>
-            <th>Program</th>
-            <th>Classification</th>
-            <th>Status</th>
-            <th class="text-end">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (sub of paginatedSubjects; track sub.id) {
-          <tr class="hover-row">
-            <td><span class="subject-code">{{ sub.subject_code }}</span></td>
-            <td><span class="fw-medium">{{ sub.subject_name }}</span></td>
-            <td><span class="units-badge">{{ sub.units }} units</span></td>
-            <td><span class="type-label">{{ sub.program?.name || 'N/A' }}</span></td>
-            <td><span class="type-label">{{ sub.type || 'General' }}</span></td>
-            <td>
-              <span [class]="sub.status === 'active' ? 'pill pill-active' : 'pill pill-inactive'">
-                {{ sub.status | uppercase }}
+  <!-- Table -->
+  <div class="overflow-x-auto">
+    <table class="w-full border-collapse text-[13px]">
+      <thead class="bg-[#f7fafc]">
+        <tr>
+          <th class="p-4 px-6 text-left text-[11px] font-semibold tracking-wider uppercase text-[#718096] border-b border-[#edf2f7]">Code</th>
+          <th class="p-4 px-6 text-left text-[11px] font-semibold tracking-wider uppercase text-[#718096] border-b border-[#edf2f7]">Subject Name</th>
+          <th class="p-4 px-6 text-left text-[11px] font-semibold tracking-wider uppercase text-[#718096] border-b border-[#edf2f7]">Units</th>
+          <th class="p-4 px-6 text-left text-[11px] font-semibold tracking-wider uppercase text-[#718096] border-b border-[#edf2f7]">Program</th>
+          <th class="p-4 px-6 text-left text-[11px] font-semibold tracking-wider uppercase text-[#718096] border-b border-[#edf2f7]">Type</th>
+          <th class="p-4 px-6 text-left text-[11px] font-semibold tracking-wider uppercase text-[#718096] border-b border-[#edf2f7]">Status</th>
+          <th class="p-4 px-6 text-right text-[11px] font-semibold tracking-wider uppercase text-[#718096] border-b border-[#edf2f7]">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (sub of paginatedSubjects; track sub.id) {
+          <tr class="border-b border-[#edf2f7] hover:bg-[#f8fafc] transition-colors">
+            <td class="p-4 px-6">
+              <span class="font-bold text-[#534AB7]">{{ sub.subject_code }}</span>
+            </td>
+            <td class="p-4 px-6 font-medium text-[#1a202c]">{{ sub.subject_name }}</td>
+            <td class="p-4 px-6 text-[#1a202c]">{{ sub.units }} units</td>
+            <td class="p-4 px-6 text-[#1a202c]">{{ sub.program?.name || 'N/A' }}</td>
+            <td class="p-4 px-6 text-[#718096]">{{ sub.type || 'General' }}</td>
+            <td class="p-4 px-6">
+              <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold"
+                    [class.bg-emerald-100]="sub.status === 'active'"
+                    [class.text-emerald-700]="sub.status === 'active'"
+                    [class.bg-red-100]="sub.status === 'inactive'"
+                    [class.text-red-700]="sub.status === 'inactive'">
+                <span class="w-2 h-2 rounded-full"
+                      [class.bg-emerald-500]="sub.status === 'active'"
+                      [class.bg-red-500]="sub.status === 'inactive'"></span>
+                {{ sub.status | titlecase }}
               </span>
             </td>
-            <td class="text-end action-buttons">
-              <button class="btn-edit" (click)="editSubject(sub)" title="Edit">
-                <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
-                  <path d="M11 2a2 2 0 112.8 2.8L5 13.6 2 14.5l.9-3L11 2z" stroke="currentColor" stroke-width="1.4"
-                    stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
-                <span>Edit</span>
-              </button>
-              <button class="btn-delete" (click)="deleteSubject(sub.id)" title="Delete">
-                <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
-                  <path
-                    d="M3 4h10M5 4V3a1 1 0 011-1h4a1 1 0 011 1v1M6 7v5M10 7v5M4 4l.8 9a1 1 0 001 .9h4.4a1 1 0 001-.9L12 4"
-                    stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
-                <span>Delete</span>
-              </button>
+            <td class="p-4 px-6 text-right">
+              <div class="inline-flex gap-2">
+                <button (click)="editSubject(sub)"
+                        class="inline-flex items-center gap-1 px-3 py-1.5 border border-[#e2e8f0] hover:bg-[#EEEDFE] text-[#3C3489] text-xs rounded-xl">
+                  Edit
+                </button>
+                <button (click)="deleteSubject(sub.id)"
+                        class="inline-flex items-center gap-1 px-3 py-1.5 border border-[#e2e8f0] hover:bg-[#fff5f5] text-red-600 text-xs rounded-xl">
+                  Delete
+                </button>
+              </div>
             </td>
           </tr>
-          } @empty {
+        } @empty {
           <tr>
-            <td colspan="7" class="empty-state">
-              <i class="bi bi-journal-x empty-icon"></i>
-              <p class="text-muted mb-0 mt-2">No subject records available.</p>
+            <td colspan="7" class="py-20 text-center text-[#a0aec0]">
+              No subject records available.
             </td>
           </tr>
-          }
-        </tbody>
-      </table>
-    </div>
-
-    <!-- Pagination Controls -->
-    <div class="pagination-container">
-      <span class="pagination-info">{{ paginationInfo }}</span>
-      
-      <div class="pagination-controls">
-        <button 
-          class="pagination-btn pagination-prev"
-          (click)="previousPage()"
-          [disabled]="currentPage === 1">
-          <span class="pagination-arrow">‹</span> Previous
-        </button>
-
-        <div class="pagination-numbers">
-          @for (page of pageNumbers; track page) {
-            <button 
-              class="pagination-number"
-              [class.active]="page === currentPage"
-              (click)="goToPage(page)">
-              {{ page }}
-            </button>
-          }
-        </div>
-
-        <button 
-          class="pagination-btn pagination-next"
-          (click)="nextPage()"
-          [disabled]="currentPage === totalPages">
-          Next <span class="pagination-arrow">›</span>
-        </button>
-      </div>
-    </div>
-    }
+        }
+      </tbody>
+    </table>
   </div>
 
-</div>
-
-<!-- Delete Progress Bar (outside main container for proper positioning) -->
-<div *ngIf="showDeleteProgress" class="delete-progress-container">
-  <div class="delete-progress-bar">
-    <div class="delete-progress-content">
-      <div class="delete-progress-left">
-        <span class="delete-icon">⚠️</span>
-        <span class="delete-message">Deleting in {{ deleteProgressTime }}s...</span>
-      </div>
-      <div class="delete-progress-right">
-        <button 
-          type="button" 
-          class="btn-undo" 
-          (click)="undoDelete()"
-          [disabled]="deleteProgressTime <= 0">
-          UNDO
-        </button>
-      </div>
-    </div>
-    <!-- Progress bar animation -->
-    <div class="progress-bar-fill" [style.width.%]="(deleteProgressTime / 5) * 100"></div>
+  <!-- Footer -->
+  <div class="flex items-center justify-between p-4 px-6 border-t border-[#edf2f7] bg-[#f7fafc] text-[12px] text-[#718096]">
+    <span>Showing {{ paginatedSubjects.length }} record(s)</span>
+    <!-- Pagination can be added here if needed -->
   </div>
 </div>
+
+<!-- Delete Progress -->
+@if (showDeleteProgress) {
+  <div class="fixed bottom-8 right-8 bg-gradient-to-br from-[#fff3cd] to-[#ffe8cc] border border-[#ffc107] rounded-2xl p-4 shadow-xl z-50 w-80">
+    <div class="flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <span class="text-xl">⚠️</span>
+        <span class="text-[#333] font-medium text-sm">Deleting in {{ deleteProgressTime }}s...</span>
+      </div>
+      <button (click)="undoDelete()" 
+              class="bg-red-500 text-white text-xs font-bold px-5 py-2 rounded-xl hover:bg-red-600">
+        UNDO
+      </button>
+    </div>
+    <div class="h-1 bg-red-500 mt-3 rounded-full transition-all"
+         [style.width.%]="(deleteProgressTime / 5) * 100"></div>
+  </div>
+}

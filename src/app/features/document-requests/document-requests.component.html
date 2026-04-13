@@ -1,119 +1,135 @@
-<div class="doc-requests-container animate-fade-in">
+<div class="animate-in fade-in slide-in-from-bottom-2 duration-500 bg-white border border-[#edf2f7] rounded-2xl overflow-hidden font-['DM_Sans']">
 
   <!-- Header -->
-  <div class="page-header mb-4">
-    <div>
-      <h3 class="fw-bold mb-1">Document Requests</h3>
-      <p class="text-muted small mb-0">Review and process student COR / TOR requests.</p>
+  <div class="flex flex-wrap items-start justify-between gap-4 p-6 pb-4">
+    <div class="flex flex-col gap-1">
+      <h2 class="font-['Syne'] text-[18px] font-bold text-[#1a202c] tracking-tight m-0">Document Requests</h2>
+      <p class="text-[13px] text-[#718096] m-0">Review and process student COR / TOR requests</p>
     </div>
-    <button class="btn-main" (click)="loadRequests()">
-      <i class="bi bi-arrow-clockwise"></i> Refresh
+
+    <button (click)="loadRequests()"
+            class="inline-flex items-center gap-2 bg-[#2C2C2A] hover:bg-[#444441] text-white text-[13px] font-medium px-5 py-2.5 rounded-xl transition-all">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+        <path d="M13 8L3 8M8 3L8 13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      Refresh
     </button>
   </div>
 
+  <div class="h-[0.5px] bg-[#edf2f7] mx-6 my-4"></div>
+
   <!-- Error Banner -->
   @if (errorMessage) {
-    <div class="error-banner mb-4">
-      <i class="bi bi-exclamation-triangle-fill"></i>
-      {{ errorMessage }}
+    <div class="mx-6 mb-6 flex items-center gap-3 bg-red-50 border border-red-200 text-red-700 rounded-2xl p-4 text-sm">
+      <span class="text-xl">⚠️</span>
+      <span>{{ errorMessage }}</span>
     </div>
   }
 
-  <!-- Card -->
-  <div class="glass-card overflow-hidden">
-
-    @if (loading) {
-      <div class="loading-state">
-        <div class="spinner"></div>
-        <p class="text-muted small mt-3 mb-0">Retrieving document requests...</p>
-      </div>
-
-    } @else {
-      <div class="table-responsive">
-        <table class="modern-table">
-          <thead>
-            <tr>
-              <th>Ref #</th>
-              <th>Student</th>
-              <th>Document Type</th>
-              <th>Payment</th>
-              <th>Status</th>
-              <th class="text-end">Actions</th>
+  <!-- Main Content -->
+  @if (loading) {
+    <div class="text-center py-20">
+      <div class="w-8 h-8 border-4 border-[#e2e8f0] border-t-[#534AB7] rounded-full animate-spin mx-auto"></div>
+      <p class="text-[#718096] text-[13px] mt-4">Retrieving document requests...</p>
+    </div>
+  } 
+  @else {
+    <div class="overflow-x-auto">
+      <table class="w-full border-collapse text-[13px]">
+        <thead class="bg-[#f7fafc]">
+          <tr>
+            <th class="p-4 px-6 text-left text-[11px] font-semibold tracking-wider uppercase text-[#718096] border-b border-[#edf2f7]">Ref #</th>
+            <th class="p-4 px-6 text-left text-[11px] font-semibold tracking-wider uppercase text-[#718096] border-b border-[#edf2f7]">Student</th>
+            <th class="p-4 px-6 text-left text-[11px] font-semibold tracking-wider uppercase text-[#718096] border-b border-[#edf2f7]">Document Type</th>
+            <th class="p-4 px-6 text-left text-[11px] font-semibold tracking-wider uppercase text-[#718096] border-b border-[#edf2f7]">Payment</th>
+            <th class="p-4 px-6 text-left text-[11px] font-semibold tracking-wider uppercase text-[#718096] border-b border-[#edf2f7]">Status</th>
+            <th class="p-4 px-6 text-right text-[11px] font-semibold tracking-wider uppercase text-[#718096] border-b border-[#edf2f7]">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (req of requests; track req.id) {
+            <tr class="border-b border-[#edf2f7] hover:bg-[#f8fafc] transition-colors">
+              <td class="p-4 px-6">
+                <span class="font-mono text-[#a0aec0] font-bold">#{{ req.id }}</span>
+              </td>
+              <td class="p-4 px-6">
+                <div class="font-medium text-[#1a202c]">{{ req.student?.name }}</div>
+              </td>
+              <td class="p-4 px-6">
+                <span class="inline-flex items-center gap-2 px-3 py-1 rounded-xl text-xs font-semibold"
+                      [class.bg-amber-100]="req.type === 'COR' || req.type === 'cor'"
+                      [class.text-amber-700]="req.type === 'COR' || req.type === 'cor'"
+                      [class.bg-indigo-100]="req.type === 'TOR' || req.type === 'tor'"
+                      [class.text-indigo-700]="req.type === 'TOR' || req.type === 'tor'">
+                  {{ req.type | uppercase }}
+                </span>
+              </td>
+              <td class="p-4 px-6">
+                <span class="inline-flex items-center gap-1.5 text-xs font-semibold"
+                      [class.text-emerald-700]="req.payment_status === 'paid'"
+                      [class.text-red-600]="req.payment_status !== 'paid'">
+                  <span class="w-2 h-2 rounded-full"
+                        [class.bg-emerald-500]="req.payment_status === 'paid'"
+                        [class.bg-red-500]="req.payment_status !== 'paid'"></span>
+                  {{ (req.payment_status || 'unpaid') | uppercase }}
+                </span>
+              </td>
+              <td class="p-4 px-6">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold"
+                      [class.bg-emerald-100]="req.status === 'approved'"
+                      [class.text-emerald-700]="req.status === 'approved'"
+                      [class.bg-amber-100]="req.status === 'pending'"
+                      [class.text-amber-700]="req.status === 'pending'"
+                      [class.bg-red-100]="req.status === 'rejected'"
+                      [class.text-red-700]="req.status === 'rejected'">
+                  <span class="w-2 h-2 rounded-full"
+                        [class.bg-emerald-500]="req.status === 'approved'"
+                        [class.bg-amber-500]="req.status === 'pending'"
+                        [class.bg-red-500]="req.status === 'rejected'"></span>
+                  {{ req.status | titlecase }}
+                </span>
+              </td>
+              <td class="p-4 px-6 text-right">
+                @if (req.status === 'pending') {
+                  <button 
+                    (click)="handleApprove(req.id)"
+                    [disabled]="req.payment_status !== 'paid'"
+                    class="inline-flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-medium transition-all"
+                    [class.bg-emerald-600]="req.payment_status === 'paid'"
+                    [class.text-white]="req.payment_status === 'paid'"
+                    [class.bg-gray-200]="req.payment_status !== 'paid'"
+                    [class.text-gray-400]="req.payment_status !== 'paid'">
+                    Approve
+                  </button>
+                } @else if (req.status === 'approved') {
+                  <button 
+                    (click)="handleDownload(req)"
+                    [disabled]="generatingId === req.id"
+                    class="inline-flex items-center gap-2 bg-[#2C2C2A] hover:bg-[#444441] text-white px-5 py-2 rounded-xl text-xs font-medium">
+                    @if (generatingId === req.id) {
+                      <span class="animate-spin">⟳</span> Generating...
+                    } @else {
+                      Download {{ req.type | uppercase }}
+                    }
+                  </button>
+                } @else {
+                  <span class="inline-flex items-center gap-2 text-[#a0aec0] text-xs font-medium">
+                    <span class="text-lg">✓</span> Processed
+                  </span>
+                }
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            @for (req of requests; track req.id) {
-              <tr class="hover-row">
-                <td>
-                  <span class="ref-id">#{{ req.id }}</span>
-                </td>
-                <td>
-                  <span class="student-name">{{ req.student?.name }}</span>
-                </td>
-                <td>
-                  <span class="doc-type-chip"
-                    [class.chip-cor]="req.type === 'COR' || req.type === 'cor'"
-                    [class.chip-tor]="req.type === 'TOR' || req.type === 'tor'">
-                    <i class="bi"
-                      [class.bi-file-earmark-text]="req.type === 'COR' || req.type === 'cor'"
-                      [class.bi-mortarboard]="req.type === 'TOR' || req.type === 'tor'">
-                    </i>
-                    {{ req.type | uppercase }}
-                  </span>
-                </td>
-                <td>
-                  <span class="payment-badge"
-                    [class.payment-paid]="req.payment_status === 'paid'"
-                    [class.payment-unpaid]="req.payment_status !== 'paid'">
-                    <span class="payment-dot"></span>
-                    {{ (req.payment_status || 'unpaid') | uppercase }}
-                  </span>
-                </td>
-                <td>
-                  <span class="pill" [ngClass]="getStatusClass(req.status)">
-                    {{ req.status | titlecase }}
-                  </span>
-                </td>
-                <td class="text-end">
-                  @if (req.status === 'pending') {
-                    <button 
-                      class="btn-approve" 
-                      (click)="handleApprove(req.id)"
-                      [disabled]="req.payment_status !== 'paid'"
-                      [ngClass]="{'btn-disabled': req.payment_status !== 'paid'}"
-                      [title]="req.payment_status !== 'paid' ? 'Payment must be completed before approval' : ''">
-                      Approve
-                    </button>
-                  } @else if (req.status === 'approved') {
-                    <button
-                      class="btn-main"
-                      (click)="handleDownload(req)"
-                      [disabled]="generatingId === req.id">
-                      @if (generatingId === req.id) {
-                        <i class="bi bi-hourglass-split"></i> Generating...
-                      } @else {
-                        <i class="bi bi-download"></i> Download {{ req.type | uppercase }}
-                      }
-                    </button>
-                  } @else {
-                    <span class="processed-label">
-                      <i class="bi bi-check2-circle"></i> Processed
-                    </span>
-                  }
-                </td>
-              </tr>
-            } @empty {
-              <tr>
-                <td colspan="6" class="empty-state">
-                  <i class="bi bi-file-earmark-x empty-icon"></i>
-                  <p class="text-muted mb-0 mt-2">No document requests found.</p>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-    }
+          } @empty {
+            <tr>
+              <td colspan="6" class="py-20 text-center text-[#a0aec0]">
+                <span class="text-4xl mb-3 block">📄</span>
+                <p>No document requests found.</p>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
 
-  </div>
 </div>
