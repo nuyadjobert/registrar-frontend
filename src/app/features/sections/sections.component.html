@@ -7,13 +7,12 @@
       <p class="text-[13px] text-[#718096] m-0">Manage class sections, rooms, and instructor assignments</p>
     </div>
 
-    <button 
-      (click)="showForm = !showForm"
-      class="inline-flex items-center gap-2 bg-[#2C2C2A] hover:bg-[#444441] text-white text-[13px] font-medium px-5 py-2.5 rounded-xl transition-all">
+    <button (click)="toggleForm()"
+            class="inline-flex items-center gap-2 bg-[#2C2C2A] hover:bg-[#444441] text-white text-[13px] font-medium px-5 py-2.5 rounded-xl transition-all">
       <svg width="14" height="14" viewBox="0 0 16 16" fill="none" *ngIf="!showForm">
         <path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
       </svg>
-      <span>{{ showForm ? 'Cancel' : 'Create Section' }}</span>
+      {{ showForm ? 'Cancel' : 'Create Section' }}
     </button>
   </div>
 
@@ -26,155 +25,259 @@
         {{ isEditing ? 'Edit Class Section' : 'New Class Section' }}
       </h3>
 
-      <form (ngSubmit)="submitForm()" class="space-y-6">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Section Name -->
+        <div class="space-y-1.5">
+          <label class="text-[11px] font-semibold text-[#718096] tracking-wider uppercase">Section Name <span class="text-red-500">*</span></label>
+          <input type="text" [(ngModel)]="form.section_name" (input)="validateForm()"
+                 class="w-full border border-[#cbd5e0] rounded-xl px-4 py-3 text-[13px] focus:border-[#7F77DD] outline-none"
+                 [class.border-red-500]="formErrors.section_name"
+                 placeholder="e.g. BSIT-3A">
+          @if (formErrors.section_name) {
+            <p class="text-red-500 text-xs">{{ formErrors.section_name }}</p>
+          }
+        </div>
 
-          <!-- Section Name -->
-          <div class="space-y-1.5">
-            <label class="text-[11px] font-semibold text-[#718096] tracking-wider uppercase">Section Name <span class="text-red-500">*</span></label>
-            <input type="text" [(ngModel)]="form.section_name" name="section_name"
-                   class="w-full border border-[#cbd5e0] rounded-xl px-4 py-3 text-[13px] focus:border-[#7F77DD] outline-none"
-                   placeholder="e.g. F1-A"
-                   [class.border-red-500]="formErrors.section_name">
-            @if (formErrors.section_name) {
-              <p class="text-red-500 text-xs">{{ formErrors.section_name }}</p>
+        <!-- Subject -->
+        <div class="space-y-1.5">
+          <label class="text-[11px] font-semibold text-[#718096] tracking-wider uppercase">Subject <span class="text-red-500">*</span></label>
+          <select [(ngModel)]="form.subject_id" (change)="validateForm()"
+                  class="w-full border border-[#cbd5e0] rounded-xl px-4 py-3 text-[13px] focus:border-[#7F77DD] outline-none"
+                  [class.border-red-500]="formErrors.subject_id">
+            <option [value]="0" disabled>Select Subject</option>
+            @for (sub of subjects; track sub.id) {
+              <option [value]="sub.id">{{ sub.subject_name }}</option>
             }
-          </div>
-
-          <!-- Subject -->
-          <div class="space-y-1.5">
-            <label class="text-[11px] font-semibold text-[#718096] tracking-wider uppercase">Subject <span class="text-red-500">*</span></label>
-            <select [(ngModel)]="form.subject_id" name="subject_id"
-                    class="w-full border border-[#cbd5e0] rounded-xl px-4 py-3 text-[13px] focus:border-[#7F77DD] outline-none">
-              <option [value]="0" disabled>Select Subject</option>
-              @for (sub of subjects; track sub.id) {
-                <option [value]="sub.id">{{ sub.subject_name }}</option>
-              }
-            </select>
-          </div>
-
-          <!-- Instructor -->
-          <div class="space-y-1.5">
-            <label class="text-[11px] font-semibold text-[#718096] tracking-wider uppercase">Instructor <span class="text-red-500">*</span></label>
-            <select [(ngModel)]="form.instructor_id" name="instructor_id"
-                    class="w-full border border-[#cbd5e0] rounded-xl px-4 py-3 text-[13px] focus:border-[#7F77DD] outline-none">
-              <option [value]="0" disabled>Select Instructor</option>
-              @for (inst of instructors; track inst.id) {
-                <option [value]="inst.id">{{ inst.name }}</option>
-              }
-            </select>
-          </div>
-
-          <!-- Term -->
-          <div class="space-y-1.5">
-            <label class="text-[11px] font-semibold text-[#718096] tracking-wider uppercase">Term <span class="text-red-500">*</span></label>
-            <select [(ngModel)]="form.term_id" name="term_id"
-                    class="w-full border border-[#cbd5e0] rounded-xl px-4 py-3 text-[13px] focus:border-[#7F77DD] outline-none">
-              <option [value]="0" disabled>Select Term</option>
-              @for (t of terms; track t.id) {
-                <option [value]="t.id">{{ t.name }}</option>
-              }
-            </select>
-          </div>
-
-          <!-- Room & Capacity -->
-          <div class="space-y-1.5">
-            <label class="text-[11px] font-semibold text-[#718096] tracking-wider uppercase">Room / Venue <span class="text-red-500">*</span></label>
-            <input type="text" [(ngModel)]="form.room" name="room"
-                   class="w-full border border-[#cbd5e0] rounded-xl px-4 py-3 text-[13px] focus:border-[#7F77DD] outline-none"
-                   placeholder="Lab 1">
-          </div>
-
-          <div class="space-y-1.5">
-            <label class="text-[11px] font-semibold text-[#718096] tracking-wider uppercase">Capacity <span class="text-red-500">*</span></label>
-            <input type="number" [(ngModel)]="form.capacity" name="capacity" min="1"
-                   class="w-full border border-[#cbd5e0] rounded-xl px-4 py-3 text-[13px] focus:border-[#7F77DD] outline-none"
-                   placeholder="40">
-          </div>
-
+          </select>
+          @if (formErrors.subject_id) {
+            <p class="text-red-500 text-xs">{{ formErrors.subject_id }}</p>
+          }
         </div>
 
-        <!-- Form Buttons -->
-        <div class="flex justify-end gap-3 pt-4">
-          <button type="button" (click)="resetForm()"
-                  class="px-5 py-2.5 border border-[#e2e8f0] text-[#718096] rounded-xl hover:bg-[#f7fafc] text-[13px] font-medium">
-            Cancel
-          </button>
-          <button type="submit"
-                  class="px-5 py-2.5 bg-[#2C2C2A] text-white rounded-xl hover:bg-[#444441] text-[13px] font-medium">
-            {{ isEditing ? 'Update Section' : 'Save Section' }}
+        <!-- Instructor -->
+        <div class="space-y-1.5">
+          <label class="text-[11px] font-semibold text-[#718096] tracking-wider uppercase">Instructor <span class="text-red-500">*</span></label>
+          <select [(ngModel)]="form.instructor_id" (change)="validateForm()"
+                  class="w-full border border-[#cbd5e0] rounded-xl px-4 py-3 text-[13px] focus:border-[#7F77DD] outline-none"
+                  [class.border-red-500]="formErrors.instructor_id">
+            <option [value]="0" disabled>Select Instructor</option>
+            @for (inst of instructors; track inst.id) {
+              <option [value]="inst.id">{{ inst.name }}</option>
+            }
+          </select>
+          @if (formErrors.instructor_id) {
+            <p class="text-red-500 text-xs">{{ formErrors.instructor_id }}</p>
+          }
+        </div>
+
+        <!-- Term -->
+        <div class="space-y-1.5">
+          <label class="text-[11px] font-semibold text-[#718096] tracking-wider uppercase">Term <span class="text-red-500">*</span></label>
+          <select [(ngModel)]="form.term_id" (change)="validateForm()"
+                  class="w-full border border-[#cbd5e0] rounded-xl px-4 py-3 text-[13px] focus:border-[#7F77DD] outline-none"
+                  [class.border-red-500]="formErrors.term_id">
+            <option [value]="0" disabled>Select Term</option>
+            @for (t of terms; track t.id) {
+              <option [value]="t.id">{{ t.name }}</option>
+            }
+          </select>
+          @if (formErrors.term_id) {
+            <p class="text-red-500 text-xs">{{ formErrors.term_id }}</p>
+          }
+        </div>
+
+        <!-- Room -->
+        <div class="space-y-1.5">
+          <label class="text-[11px] font-semibold text-[#718096] tracking-wider uppercase">Room / Venue <span class="text-red-500">*</span></label>
+          <input type="text" [(ngModel)]="form.room" (input)="validateForm()"
+                 class="w-full border border-[#cbd5e0] rounded-xl px-4 py-3 text-[13px] focus:border-[#7F77DD] outline-none"
+                 [class.border-red-500]="formErrors.room"
+                 placeholder="Lab 101">
+          @if (formErrors.room) {
+            <p class="text-red-500 text-xs">{{ formErrors.room }}</p>
+          }
+        </div>
+
+        <!-- Capacity -->
+        <div class="space-y-1.5">
+          <label class="text-[11px] font-semibold text-[#718096] tracking-wider uppercase">Capacity <span class="text-red-500">*</span></label>
+          <input type="number" [(ngModel)]="form.capacity" (input)="validateForm()" min="1"
+                 class="w-full border border-[#cbd5e0] rounded-xl px-4 py-3 text-[13px] focus:border-[#7F77DD] outline-none"
+                 [class.border-red-500]="formErrors.capacity"
+                 placeholder="40">
+          @if (formErrors.capacity) {
+            <p class="text-red-500 text-xs">{{ formErrors.capacity }}</p>
+          }
+        </div>
+      </div>
+
+      <!-- Time Slot Picker -->
+      <div class="mt-8 space-y-3">
+        <div class="flex items-center justify-between">
+          <label class="text-[11px] font-semibold text-[#718096] tracking-wider uppercase">Schedule <span class="text-red-500">*</span></label>
+          <button type="button" (click)="clearSchedule()" 
+                  class="text-xs text-red-500 hover:text-red-600 font-medium">
+            Clear All
           </button>
         </div>
-      </form>
+
+        <div class="border border-[#cbd5e0] rounded-2xl p-4 bg-white max-h-[420px] overflow-auto">
+          <table class="w-full border-collapse text-xs">
+            <thead class="sticky top-0 bg-white z-10">
+              <tr>
+                <th class="p-3 text-left font-medium text-[#718096]">Time</th>
+                @for (day of days; track day; let i = $index) {
+                  <th class="p-3 text-center font-medium text-[#718096]">{{ day }}</th>
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @for (time of times; track time; let ti = $index) {
+                <tr class="border-t border-[#f1f5f9]">
+                  <td class="p-3 font-medium text-[#1a202c] whitespace-nowrap">{{ time }}</td>
+                  @for (day of days; track day; let di = $index) {
+                    <td class="p-2">
+                      <div 
+                        (mousedown)="onSlotMouseDown(di, ti)"
+                        (mouseover)="onSlotMouseOver(di, ti)"
+                        (mouseup)="onSlotMouseUp()"
+                        [class.bg-[#7F77DD]]="isSlotSelected(di, ti)"
+                        [class.text-white]="isSlotSelected(di, ti)"
+                        class="h-9 rounded-xl border border-[#e2e8f0] flex items-center justify-center text-[11px] font-medium cursor-pointer hover:border-[#7F77DD] transition-all select-none">
+                        {{ isSlotSelected(di, ti) ? '✓' : '' }}
+                      </div>
+                    </td>
+                  }
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        @if (form.schedule) {
+          <div class="p-4 bg-[#f8fafc] border border-[#e2e8f0] rounded-2xl text-sm">
+            <strong>Selected Schedule:</strong> {{ form.schedule }}
+          </div>
+        }
+        @if (formErrors.schedule) {
+          <p class="text-red-500 text-xs">{{ formErrors.schedule }}</p>
+        }
+      </div>
+
+      <!-- Buttons -->
+      <div class="flex justify-end gap-3 mt-8">
+        <button type="button" (click)="resetForm()"
+                class="px-6 py-3 border border-[#e2e8f0] text-[#718096] rounded-xl hover:bg-[#f7fafc] text-[13px] font-medium">
+          Cancel
+        </button>
+        <button type="button" (click)="submitForm()" 
+                [disabled]="!isFormValid || isSaving"
+                class="px-6 py-3 bg-[#2C2C2A] text-white rounded-xl hover:bg-[#444441] disabled:bg-gray-300 disabled:cursor-not-allowed text-[13px] font-medium">
+          {{ isSaving ? 'Saving...' : (isEditing ? 'Update Section' : 'Save Section') }}
+        </button>
+      </div>
     </div>
   }
 
-  <!-- Table -->
-  <div class="overflow-x-auto">
-    <table class="w-full border-collapse text-[13px]">
-      <thead class="bg-[#f7fafc]">
-        <tr>
-          <th class="p-4 px-6 text-left text-[11px] font-semibold tracking-wider uppercase text-[#718096] border-b border-[#edf2f7]">Section & Subject</th>
-          <th class="p-4 px-6 text-left text-[11px] font-semibold tracking-wider uppercase text-[#718096] border-b border-[#edf2f7]">Instructor</th>
-          <th class="p-4 px-6 text-left text-[11px] font-semibold tracking-wider uppercase text-[#718096] border-b border-[#edf2f7]">Schedule & Room</th>
-          <th class="p-4 px-6 text-left text-[11px] font-semibold tracking-wider uppercase text-[#718096] border-b border-[#edf2f7]">Capacity</th>
-          <th class="p-4 px-6 text-left text-[11px] font-semibold tracking-wider uppercase text-[#718096] border-b border-[#edf2f7]">Status</th>
-          <th class="p-4 px-6 text-right text-[11px] font-semibold tracking-wider uppercase text-[#718096] border-b border-[#edf2f7]">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (sec of sections; track sec.id) {
-          <tr class="border-b border-[#edf2f7] hover:bg-[#f8fafc] transition-colors">
-            <td class="p-4 px-6">
-              <div class="font-medium text-[#1a202c]">{{ sec.section_name }}</div>
-              <div class="text-[#534AB7] text-sm">{{ sec.subject?.subject_name }}</div>
-            </td>
-            <td class="p-4 px-6 text-[#1a202c]">{{ sec.instructor?.name || 'Unassigned' }}</td>
-            <td class="p-4 px-6">
-              <div class="font-medium">{{ sec.schedule || 'TBA' }}</div>
-              <div class="text-[#718096] text-sm">{{ sec.room || 'No Room' }}</div>
-            </td>
-            <td class="p-4 px-6 text-[#1a202c]">{{ sec.capacity }} seats</td>
-            <td class="p-4 px-6">
-              <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold"
-                    [class.bg-emerald-100]="sec.status === 'open'"
-                    [class.text-emerald-700]="sec.status === 'open'"
-                    [class.bg-red-100]="sec.status === 'closed'"
-                    [class.text-red-700]="sec.status === 'closed'">
-                <span class="w-2 h-2 rounded-full"
-                      [class.bg-emerald-500]="sec.status === 'open'"
-                      [class.bg-red-500]="sec.status === 'closed'"></span>
-                {{ sec.status | titlecase }}
-              </span>
-            </td>
-            <td class="p-4 px-6 text-right">
-              <div class="inline-flex gap-2">
-                <button (click)="editSection(sec)"
-                        class="inline-flex items-center gap-1.5 px-3 py-1.5 border border-[#e2e8f0] hover:bg-[#EEEDFE] text-[#3C3489] text-xs rounded-xl">
-                  Edit
-                </button>
-                <button (click)="deleteSection(sec.id)"
-                        class="inline-flex items-center gap-1.5 px-3 py-1.5 border border-[#e2e8f0] hover:bg-[#fff5f5] text-red-600 text-xs rounded-xl">
-                  Delete
-                </button>
-              </div>
-            </td>
-          </tr>
-        } @empty {
+  <!-- Table & Footer (same as before) -->
+    <!-- Table -->
+  @if (isLoading) {
+    <div class="p-6 space-y-3">
+      @for (i of [1,2,3,4,5,6]; track i) {
+        <div class="h-14 bg-[#f8fafc] rounded-xl animate-pulse"></div>
+      }
+    </div>
+  } 
+  @else {
+    <div class="overflow-x-auto">
+      <table class="w-full border-collapse text-[13px]">
+        <thead class="bg-[#f7fafc]">
           <tr>
-            <td colspan="6" class="py-20 text-center text-[#a0aec0]">
-              <p>No sections found.</p>
-            </td>
+            <th class="p-4 px-6 text-left text-[11px] font-semibold tracking-wider uppercase text-[#718096] border-b border-[#edf2f7]">Section & Subject</th>
+            <th class="p-4 px-6 text-left text-[11px] font-semibold tracking-wider uppercase text-[#718096] border-b border-[#edf2f7]">Instructor</th>
+            <th class="p-4 px-6 text-left text-[11px] font-semibold tracking-wider uppercase text-[#718096] border-b border-[#edf2f7]">Schedule & Room</th>
+            <th class="p-4 px-6 text-left text-[11px] font-semibold tracking-wider uppercase text-[#718096] border-b border-[#edf2f7]">Capacity</th>
+            <th class="p-4 px-6 text-left text-[11px] font-semibold tracking-wider uppercase text-[#718096] border-b border-[#edf2f7]">Status</th>
+            <th class="p-4 px-6 text-right text-[11px] font-semibold tracking-wider uppercase text-[#718096] border-b border-[#edf2f7]">Actions</th>
           </tr>
-        }
-      </tbody>
-    </table>
-  </div>
+        </thead>
+        <tbody>
+          @for (sec of paginatedSections; track sec.id) {
+            <tr class="border-b border-[#edf2f7] hover:bg-[#f8fafc] transition-colors">
+              <td class="p-4 px-6">
+                <div class="font-medium text-[#1a202c]">{{ sec.section_name }}</div>
+                <div class="text-[#534AB7] text-sm">{{ sec.subject?.subject_name || 'N/A' }}</div>
+              </td>
+              <td class="p-4 px-6 text-[#1a202c]">{{ sec.instructor?.name || 'Unassigned' }}</td>
+              <td class="p-4 px-6">
+                <div class="font-medium">{{ sec.schedule || 'TBA' }}</div>
+                <div class="text-[#718096] text-sm">{{ sec.room || 'No Room' }}</div>
+              </td>
+              <td class="p-4 px-6 text-[#1a202c]">{{ sec.capacity }} seats</td>
+              <td class="p-4 px-6">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold"
+                      [class.bg-emerald-100]="sec.status === 'open'"
+                      [class.text-emerald-700]="sec.status === 'open'"
+                      [class.bg-red-100]="sec.status === 'closed'"
+                      [class.text-red-700]="sec.status === 'closed'">
+                  <span class="w-2 h-2 rounded-full"
+                        [class.bg-emerald-500]="sec.status === 'open'"
+                        [class.bg-red-500]="sec.status === 'closed'"></span>
+                  {{ sec.status | titlecase }}
+                </span>
+              </td>
+              <td class="p-4 px-6 text-right">
+                <div class="inline-flex gap-2">
+                  <button (click)="editSection(sec)"
+                          class="px-3 py-1.5 border border-[#e2e8f0] hover:bg-[#EEEDFE] text-[#3C3489] text-xs rounded-xl">
+                    Edit
+                  </button>
+                  <button (click)="deleteSection(sec.id)"
+                          class="px-3 py-1.5 border border-[#e2e8f0] hover:bg-[#fff5f5] text-red-600 text-xs rounded-xl">
+                    Delete
+                  </button>
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6" class="py-20 text-center text-[#a0aec0]">
+                No sections found.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
 
-  <!-- Footer -->
-  <div class="p-4 px-6 border-t border-[#edf2f7] bg-[#f7fafc] text-[12px] text-[#718096]">
-    Showing {{ sections.length }} record{{ sections.length !== 1 ? 's' : '' }}
-  </div>
+    <!-- Pagination Footer -->
+    <div class="flex items-center justify-between p-4 px-6 border-t border-[#edf2f7] bg-[#f7fafc] text-[12px] text-[#718096]">
+      <span>{{ paginationInfo }}</span>
+
+      <div class="flex items-center gap-2">
+        <button (click)="previousPage()" 
+                [disabled]="currentPage === 1"
+                class="px-4 py-2 border border-[#e2e8f0] rounded-xl hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed">
+          Previous
+        </button>
+
+        @for (page of totalPages; track page) {
+          <button (click)="goToPage(page)"
+                  [class.bg-[#2C2C2A]]="page === currentPage"
+                  [class.text-white]="page === currentPage"
+                  class="w-9 h-9 flex items-center justify-center rounded-xl border border-[#e2e8f0] hover:bg-white transition-colors">
+            {{ page }}
+          </button>
+        }
+
+        <button (click)="nextPage()" 
+                [disabled]="currentPage === totalPages.length"
+                class="px-4 py-2 border border-[#e2e8f0] rounded-xl hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed">
+          Next
+        </button>
+      </div>
+    </div>
+  }
 </div>
 
 <!-- Delete Progress -->
@@ -185,12 +288,11 @@
         <span class="text-xl">⚠️</span>
         <span class="text-[#333] font-medium text-sm">Deleting in {{ deleteProgressTime }}s...</span>
       </div>
-      <button (click)="undoDelete()" 
-              class="bg-red-500 text-white text-xs font-bold px-5 py-2 rounded-xl hover:bg-red-600">
+      <button (click)="undoDelete()" class="bg-red-500 text-white text-xs font-bold px-5 py-2 rounded-xl hover:bg-red-600">
         UNDO
       </button>
     </div>
-    <div class="h-1 bg-red-500 mt-3 rounded-full transition-all"
+    <div class="h-1 bg-red-500 mt-3 rounded-full transition-all" 
          [style.width.%]="(deleteProgressTime / 5) * 100"></div>
   </div>
 }

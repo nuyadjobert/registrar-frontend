@@ -41,17 +41,15 @@
 
   <!-- Main Content -->
   @if (isLoading) {
-    <div class="text-center py-16 px-6 text-[#a0aec0] text-[13px]">
-      <div class="w-6 h-6 border-2 border-[#e2e8f0] border-t-[#a0aec0] rounded-full animate-spin mx-auto mb-3"></div>
-      <p>Loading student records...</p>
+    <div class="p-6 space-y-3">
+      @for (i of [1,2,3,4,5,6]; track i) {
+        <div class="h-16 bg-[#f8fafc] rounded-2xl animate-pulse"></div>
+      }
     </div>
   } 
-  @else if (filteredStudents.length === 0) {
-    <div class="text-center py-16 px-6 text-[#a0aec0] text-[13px]">
-      <svg class="w-10 h-10 mx-auto mb-4 opacity-30" viewBox="0 0 40 40" fill="none">
-        <circle cx="20" cy="20" r="15" stroke="currentColor" stroke-width="1.5"/>
-        <path d="M15 15L25 25M25 15L15 25" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-      </svg>
+  @else if (paginatedStudents.length === 0) {
+    <div class="text-center py-20 text-[#a0aec0]">
+      <span class="text-5xl block mb-4">📋</span>
       <p>No students found.</p>
       @if (activeProgram !== 'All' || searchQuery) {
         <button (click)="clearFilter(); searchQuery = ''; applyFilters()" 
@@ -74,8 +72,8 @@
           </tr>
         </thead>
         <tbody>
-          @for (s of filteredStudents; track s.id) {
-            <tr class="border-b border-[#edf2f7] last:border-none hover:bg-[#f8fafc] transition-colors">
+          @for (s of paginatedStudents; track s.id) {
+            <tr class="border-b border-[#edf2f7] hover:bg-[#f8fafc] transition-colors">
               <td class="p-4 px-6">
                 <span class="inline-block bg-[#EEEDFE] text-[#3C3489] font-bold text-xs px-3 py-1 rounded-lg">{{ s.student_number }}</span>
               </td>
@@ -93,7 +91,7 @@
               </td>
               <td class="p-4 px-6 text-right">
                 <button (click)="viewDetails(s)" 
-                        class="inline-flex items-center gap-2 border border-[#e2e8f0] hover:bg-[#EEEDFE] hover:border-[#AFA9EC] text-[#3C3489] px-4 py-2 rounded-xl text-xs font-medium transition-all">
+                        class="inline-flex items-center gap-2 border border-[#e2e8f0] hover:bg-[#EEEDFE] text-[#3C3489] px-4 py-2 rounded-xl text-xs font-medium transition-all">
                   View Profile
                 </button>
               </td>
@@ -103,10 +101,132 @@
       </table>
     </div>
 
-    <!-- Footer -->
+    <!-- Pagination Footer -->
     <div class="flex items-center justify-between p-4 px-6 border-t border-[#edf2f7] bg-[#f7fafc] text-[12px] text-[#718096]">
-      <span>Showing {{ filteredStudents.length }} record{{ filteredStudents.length !== 1 ? 's' : '' }}</span>
+      <span>{{ paginationInfo }}</span>
+      <div class="flex items-center gap-2">
+        <button (click)="previousPage()" [disabled]="currentPage === 1"
+                class="px-4 py-2 border border-[#e2e8f0] rounded-xl hover:bg-white disabled:opacity-50">Previous</button>
+
+        @for (page of totalPages; track page) {
+          <button (click)="goToPage(page)"
+                  [class.bg-[#2C2C2A]]="page === currentPage"
+                  [class.text-white]="page === currentPage"
+                  class="w-9 h-9 flex items-center justify-center rounded-xl border border-[#e2e8f0]">
+            {{ page }}
+          </button>
+        }
+
+        <button (click)="nextPage()" [disabled]="currentPage === totalPages.length"
+                class="px-4 py-2 border border-[#e2e8f0] rounded-xl hover:bg-white disabled:opacity-50">Next</button>
+      </div>
     </div>
   }
-
 </div>
+
+<!-- Student Profile Modal -->
+@if (showModal && selectedStudent) {
+  <div class="fixed inset-0 bg-black/70 flex items-center justify-center z-[1000] p-4" (click)="closeModal()">
+    <div class="bg-white rounded-3xl w-full max-w-4xl max-h-[92vh] overflow-hidden shadow-2xl" (click)="$event.stopPropagation()">
+      
+      <!-- Header -->
+      <div class="px-8 py-6 border-b flex items-center justify-between">
+        <div>
+          <h2 class="text-2xl font-bold text-[#1a202c]">{{ selectedStudent.name }}</h2>
+          <p class="text-[#718096]">{{ selectedStudent.student_number }}</p>
+        </div>
+        <button (click)="closeModal()" class="text-4xl leading-none text-[#a0aec0] hover:text-[#1a202c]">×</button>
+      </div>
+
+      <!-- Tabs -->
+      <div class="flex border-b px-8 bg-[#f8fafc]">
+        <button (click)="activeTab = 'info'" 
+                [class.border-b-2]="activeTab === 'info'"
+                [class.border-[#534AB7]]="activeTab === 'info'"
+                class="py-4 px-8 font-medium text-sm">Student Information</button>
+        
+        <button (click)="activeTab = 'grades'" 
+                [class.border-b-2]="activeTab === 'grades'"
+                [class.border-[#534AB7]]="activeTab === 'grades'"
+                class="py-4 px-8 font-medium text-sm">Grades</button>
+        
+        <button (click)="activeTab = 'documents'" 
+                [class.border-b-2]="activeTab === 'documents'"
+                [class.border-[#534AB7]]="activeTab === 'documents'"
+                class="py-4 px-8 font-medium text-sm">Documents</button>
+      </div>
+
+      <!-- Content -->
+      <div class="p-8 overflow-auto" style="max-height: calc(92vh - 140px);">
+
+        @if (activeTab === 'info') {
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div>
+              <p class="text-xs uppercase tracking-wider text-[#718096] mb-1">Program</p>
+              <p class="font-medium">{{ selectedStudent.program?.name || 'N/A' }}</p>
+            </div>
+            <div>
+              <p class="text-xs uppercase tracking-wider text-[#718096] mb-1">Department</p>
+              <p class="font-medium">{{ selectedStudent.program?.department || 'N/A' }}</p>
+            </div>
+          </div>
+        }
+
+        @if (activeTab === 'grades') {
+          <div>
+            <h3 class="font-semibold mb-6 text-lg">Uploaded Grades</h3>
+            @if (grades.length === 0) {
+              <div class="text-center py-16 border border-dashed border-[#e2e8f0] rounded-2xl">
+                <span class="text-5xl block mb-4">📊</span>
+                <p class="text-[#a0aec0]">No grades uploaded yet for this student.</p>
+              </div>
+            } @else {
+              <div class="border border-[#e2e8f0] rounded-2xl overflow-hidden">
+                <table class="w-full">
+                  <thead class="bg-[#f8fafc]">
+                    <tr>
+                      <th class="p-4 text-left">Subject</th>
+                      <th class="p-4 text-left">Section</th>
+                      <th class="p-4 text-center">Grade</th>
+                      <th class="p-4 text-center">Remarks</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (g of grades; track g.id || g.section_id) {
+                      <tr class="border-t hover:bg-[#f8fafc]">
+                        <td class="p-4">{{ g.subject || 'N/A' }}</td>
+                        <td class="p-4">{{ g.section_name || 'N/A' }}</td>
+                        <td class="p-4 text-center font-semibold">{{ g.grade || '-' }}</td>
+                        <td class="p-4 text-center text-[#718096]">{{ g.remarks || '-' }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          </div>
+        }
+
+        @if (activeTab === 'documents') {
+          <div class="p-6 border border-[#e2e8f0] rounded-2xl">
+            <h4 class="font-semibold mb-4">Admission Documents</h4>
+            <p class="text-[#718096] mb-8">Documents submitted during admission.</p>
+            
+            <div class="text-center py-16 text-[#a0aec0]">
+              <span class="text-6xl block mb-4">📁</span>
+              <p>Document viewer will be available here once routes are connected.</p>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Footer -->
+      <div class="px-8 py-5 border-t bg-white flex justify-end">
+        <button (click)="closeModal()" 
+                class="px-8 py-3 border border-[#e2e8f0] rounded-2xl text-[#718096] hover:bg-[#f8fafc]">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+}

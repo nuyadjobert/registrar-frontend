@@ -1,9 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { forkJoin } from 'rxjs';
-
-import { StudentService, GradeRow } from '../../core/services/student.service';
+import { StudentService } from '../../core/services/student.service';
 
 @Component({
   selector: 'app-students',
@@ -13,29 +11,33 @@ import { StudentService, GradeRow } from '../../core/services/student.service';
 })
 export class StudentsComponent implements OnInit {
 
-  students: any[]         = [];
+  students: any[] = [];
   filteredStudents: any[] = [];
-  grades: GradeRow[]      = [];
-  gradeList: any[]        = [];
+  paginatedStudents: any[] = [];
 
-  programs: string[]      = [];
-  activeProgram           = 'All';
+  programs: string[] = [];
+  activeProgram = 'All';
 
-  isLoading               = false;
-  searchQuery             = '';
+  isLoading = false;
+  searchQuery = '';
 
-  selectedStudent: any    = null;
-  showModal               = false;
+  // Modal
+  selectedStudent: any = null;
+  showModal = false;
   activeTab: 'info' | 'grades' | 'documents' = 'info';
-  showGradeForm           = false;
+
+  // Grades
+  grades: any[] = [];
+
+  // Pagination
+  currentPage = 1;
+  itemsPerPage = 10;
 
   constructor(private studentService: StudentService) {}
 
   ngOnInit(): void {
     this.loadStudents();
   }
-
-  // ── Load ────────────────────────────────────────────────────
 
   loadStudents() {
     this.isLoading = true;
@@ -47,7 +49,7 @@ export class StudentsComponent implements OnInit {
         this.isLoading = false;
       },
       error: (err) => {
-        console.error(err);
+        console.error('Failed to load students', err);
         this.isLoading = false;
       }
     });
@@ -55,23 +57,20 @@ export class StudentsComponent implements OnInit {
 
   extractPrograms() {
     const set = new Set<string>(
-      this.students
-        .map(s => s.program?.name)
-        .filter(Boolean)
+      this.students.map(s => s.program?.name).filter(Boolean)
     );
     this.programs = ['All', ...Array.from(set).sort()];
   }
 
-  // ── Filter ──────────────────────────────────────────────────
-
   filterByProgram(event: Event) {
     this.activeProgram = (event.target as HTMLSelectElement).value;
+    this.currentPage = 1;
     this.applyFilters();
   }
 
   applyFilters() {
-    const q = this.searchQuery.toLowerCase().trim();
     let result = [...this.students];
+    const q = this.searchQuery.toLowerCase().trim();
 
     if (this.activeProgram !== 'All') {
       result = result.filter(s => s.program?.name === this.activeProgram);
@@ -79,127 +78,82 @@ export class StudentsComponent implements OnInit {
 
     if (q) {
       result = result.filter(s =>
-        s.name?.toLowerCase().includes(q) ||
-        s.student_number?.toLowerCase().includes(q)
+        (s.name || '').toLowerCase().includes(q) ||
+        (s.student_number || '').toLowerCase().includes(q)
       );
     }
 
     this.filteredStudents = result;
+    this.currentPage = 1;
+    this.updatePaginatedStudents();
+  }
+
+  updatePaginatedStudents() {
+    const start = (this.currentPage - 1) * this.itemsPerPage;
+    this.paginatedStudents = this.filteredStudents.slice(start, start + this.itemsPerPage);
   }
 
   clearFilter() {
     this.activeProgram = 'All';
+    this.searchQuery = '';
     this.applyFilters();
   }
 
-  // ── Modal ───────────────────────────────────────────────────
+  // Pagination Methods
+  previousPage() {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+      this.updatePaginatedStudents();
+    }
+  }
 
+  nextPage() {
+    if (this.currentPage < this.totalPages.length) {
+      this.currentPage++;
+      this.updatePaginatedStudents();
+    }
+  }
+
+  goToPage(page: number) {
+    if (page >= 1 && page <= this.totalPages.length) {
+      this.currentPage = page;
+      this.updatePaginatedStudents();
+    }
+  }
+
+  get totalPages(): number[] {
+    const total = Math.ceil(this.filteredStudents.length / this.itemsPerPage);
+    return Array.from({ length: total }, (_, i) => i + 1);
+  }
+
+  get paginationInfo(): string {
+    const start = (this.currentPage - 1) * this.itemsPerPage + 1;
+    const end = Math.min(this.currentPage * this.itemsPerPage, this.filteredStudents.length);
+    return `Showing ${start}–${end} of ${this.filteredStudents.length} records`;
+  }
+
+  // View Details
   viewDetails(student: any) {
-    this.studentService.getById(student.id).subscribe({
-      next: (res) => {
-        this.selectedStudent = res;
-        this.showModal       = true;
-        this.activeTab       = 'info';
-        this.showGradeForm   = false;
-        this.gradeList       = [];
-        this.grades          = [];
-        this.loadGrades(student.id);
-      },
-      error: (err) => console.error('Failed to load student details', err)
-    });
+    this.selectedStudent = student;
+    this.showModal = true;
+    this.activeTab = 'info';
+    this.grades = [];
+    this.loadGrades(student.id);
   }
 
   closeModal() {
-    this.showModal       = false;
+    this.showModal = false;
     this.selectedStudent = null;
-    this.activeTab       = 'info';
-    this.showGradeForm   = false;
-    this.gradeList       = [];
-    this.grades          = [];
+    this.grades = [];
   }
-
-  // ── Grades ──────────────────────────────────────────────────
 
   loadGrades(studentId: number) {
     this.studentService.getGrades(studentId).subscribe({
-      next:  (res) => { this.grades = res || []; },
-      error: (err) => console.error('Failed to load grades', err)
-    });
-  }
-
-  toggleGradeForm() {
-    this.showGradeForm = !this.showGradeForm;
-    if (this.showGradeForm && this.gradeList.length === 0) {
-      const ungraded = this.grades.filter(g => !g.grade);
-      this.gradeList = ungraded.length
-        ? ungraded.map(g => ({
-            section_id:   g.section_id,
-            section_name: g.section_name,
-            subject:      g.subject,
-            grade:        '',
-            remarks:      ''
-          }))
-        : [{ section_id: '', section_name: '', subject: '', grade: '', remarks: '' }];
-    }
-  }
-
-  addGradeRow() {
-    this.gradeList.push({
-      section_id: '', section_name: '', subject: '', grade: '', remarks: ''
-    });
-  }
-
-  removeGradeRow(index: number) {
-    this.gradeList.splice(index, 1);
-  }
-
-  submitAllGrades() {
-    if (!this.gradeList.length) {
-      alert('No grades to save.');
-      return;
-    }
-    const hasEmpty = this.gradeList.some(g => !g.section_id || !g.grade);
-    if (hasEmpty) {
-      alert('Please fill in Section ID and Grade for all rows.');
-      return;
-    }
-
-    const requests = this.gradeList.map(g =>
-      this.studentService.addGrade({
-        student_id: this.selectedStudent.id,
-        section_id: g.section_id,
-        grade:      g.grade,
-        remarks:    g.remarks
-      })
-    );
-
-    forkJoin(requests).subscribe({
-      next: () => {
-        alert('All grades saved successfully!');
-        this.showGradeForm = false;
-        this.gradeList     = [];
-        this.loadGrades(this.selectedStudent.id);
-      },
+      next: (res) => this.grades = res || [],
       error: (err) => {
         console.error(err);
-        alert('Some grades failed to save. Please try again.');
+        this.grades = [];
       }
-    });
-  }
-
-  // ── Documents ───────────────────────────────────────────────
-
-  generateCOR(id: number) {
-    this.studentService.getCor(id).subscribe({
-      next:  (res) => alert(res?.message || 'COR generated successfully'),
-      error: (err) => alert(err?.error?.message || 'Failed to generate COR.')
-    });
-  }
-
-  generateTOR(id: number) {
-    this.studentService.getTor(id).subscribe({
-      next:  (res) => alert(res?.message || 'TOR generated successfully'),
-      error: (err) => alert(err?.error?.message || 'Failed to generate TOR.')
     });
   }
 }

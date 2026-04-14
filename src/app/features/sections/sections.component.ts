@@ -22,16 +22,21 @@ export class SectionsComponent implements OnInit {
   instructors: Instructor[] = [];
   terms: Term[] = [];
   isLoading = false;
+  isSaving = false;
 
-  // Delete progress state
+  // Pagination
+  currentPage = 1;
+  itemsPerPage = 10;
+
+  // Delete progress
   showDeleteProgress = false;
   deleteProgressTime = 5;
   pendingDeleteId: number | null = null;
   private deleteTimer: ReturnType<typeof setInterval> | null = null;
 
   // Schedule Picker
-  days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  dayAbbr = ['M', 'T', 'W', 'Th', 'F', 'Sa', 'Su'];
+  days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  dayAbbr = ['M', 'T', 'W', 'Th', 'F', 'Sa'];
   times: string[] = [];
   selectedSlots = new Set<string>();
   isDragging = false;
@@ -90,6 +95,7 @@ export class SectionsComponent implements OnInit {
       next: (data) => {
         this.sections = data;
         this.isLoading = false;
+        this.currentPage = 1;
       },
       error: () => this.isLoading = false
     });
@@ -102,6 +108,7 @@ export class SectionsComponent implements OnInit {
   }
 
   initTimes(): void {
+    this.times = [];
     for (let h = 7; h <= 20; h++) {
       const h12 = h <= 12 ? h : h - 12;
       const ampm = h < 12 ? 'AM' : 'PM';
@@ -110,60 +117,40 @@ export class SectionsComponent implements OnInit {
     }
   }
 
-  // ─── Validation ───────────────────────────────────────────
-
+  // ── Validation ──
   validateForm(): boolean {
     this.formErrors = {
-      section_name: '',
-      subject_id: '',
-      instructor_id: '',
-      term_id: '',
-      room: '',
-      capacity: '',
-      schedule: ''
+      section_name: '', subject_id: '', instructor_id: '', term_id: '',
+      room: '', capacity: '', schedule: ''
     };
     let valid = true;
 
-    // Section name — required + duplicate check
     if (!this.form.section_name.trim()) {
       this.formErrors.section_name = 'Section name is required.';
       valid = false;
-    } else {
-      const duplicate = this.sections.some(s =>
-        s.section_name.toLowerCase() === this.form.section_name.trim().toLowerCase() &&
-        s.id !== this.currentId
-      );
-      if (duplicate) {
-        this.formErrors.section_name = 'A section with this name already exists.';
-        valid = false;
-      }
+    } else if (this.sections.some(s =>
+      s.section_name.toLowerCase() === this.form.section_name.trim().toLowerCase() &&
+      s.id !== this.currentId)) {
+      this.formErrors.section_name = 'A section with this name already exists.';
+      valid = false;
     }
 
-    // Subject — required
     if (!this.form.subject_id || this.form.subject_id === 0) {
       this.formErrors.subject_id = 'Please select a subject.';
       valid = false;
     }
-
-    // Instructor — required
     if (!this.form.instructor_id || this.form.instructor_id === 0) {
       this.formErrors.instructor_id = 'Please select an instructor.';
       valid = false;
     }
-
-    // Term — required
     if (!this.form.term_id || this.form.term_id === 0) {
       this.formErrors.term_id = 'Please select a term.';
       valid = false;
     }
-
-    // Room — required
     if (!this.form.room?.trim()) {
       this.formErrors.room = 'Room is required.';
       valid = false;
     }
-
-    // Capacity — required + range
     if (!this.form.capacity || this.form.capacity <= 0) {
       this.formErrors.capacity = 'Capacity must be greater than 0.';
       valid = false;
@@ -171,44 +158,39 @@ export class SectionsComponent implements OnInit {
       this.formErrors.capacity = 'Capacity cannot exceed 200.';
       valid = false;
     }
-
-    // Schedule — required
-    if (!this.form.schedule) {
+    if (!this.form.schedule?.trim()) {
       this.formErrors.schedule = 'Please select at least one schedule slot.';
       valid = false;
     }
 
-    // ─── Conflict detection (runs unconditionally) ───────────
-    for (const sec of this.sections) {
-      if (sec.id === this.currentId) continue;
-      if (!sec.schedule) continue;
+    // Conflict Check
+    if (this.form.schedule) {
+      for (const sec of this.sections) {
+        if (sec.id === this.currentId || !sec.schedule) continue;
 
-const overlap = this.form.schedule && sec.schedule
-  ? this.hasScheduleOverlap(this.form.schedule, sec.schedule)
-  : false;
-  
-      // Instructor conflict
-      if (overlap && sec.instructor_id === this.form.instructor_id) {
-        this.formErrors.instructor_id =
-          `Instructor already has a class at this time (${sec.section_name}).`;
-        valid = false;
-      }
-
-      // Room conflict
-      if (
-        overlap &&
-        sec.room?.trim().toLowerCase() === this.form.room?.trim().toLowerCase()
-      ) {
-        this.formErrors.room =
-          `Room already occupied at this time (${sec.section_name}).`;
-        valid = false;
+        if (this.hasScheduleOverlap(this.form.schedule, sec.schedule)) {
+          if (sec.instructor_id === this.form.instructor_id) {
+            this.formErrors.instructor_id = `Instructor conflict with ${sec.section_name}`;
+            valid = false;
+          }
+          if ((sec.room || '').trim().toLowerCase() === (this.form.room || '').trim().toLowerCase()) {
+            this.formErrors.room = `Room conflict with ${sec.section_name}`;
+            valid = false;
+          }
+        }
       }
     }
 
     return valid;
   }
 
+  get isFormValid(): boolean {
+    return this.validateForm();
+  }
+
   hasScheduleOverlap(scheduleA: string, scheduleB: string): boolean {
+    if (!scheduleA || !scheduleB) return false;
+
     const normalize = (s: string) => s
       .replace(/\u2013|\u2014|–|—/g, '-')
       .replace(/\s*-\s*/g, ' - ')
@@ -224,15 +206,11 @@ const overlap = this.form.schedule && sec.schedule
       for (const slotB of slotsB) {
         const dayA = slotA.split(' ')[0];
         const dayB = slotB.split(' ')[0];
-
         if (dayA === dayB) {
           const timeA = this.parseTimeRange(slotA);
           const timeB = this.parseTimeRange(slotB);
-
-          if (timeA && timeB) {
-            if (timeA.start < timeB.end && timeA.end > timeB.start) {
-              return true;
-            }
+          if (timeA && timeB && timeA.start < timeB.end && timeA.end > timeB.start) {
+            return true;
           }
         }
       }
@@ -246,10 +224,7 @@ const overlap = this.form.schedule && sec.schedule
         .replace(/\u2013|\u2014|–|—/g, '-')
         .replace(/\s*-\s*/g, ' - ');
 
-      const match = normalized.match(
-        /^([\w]+)\s+(\d+):(\d+)\s*(AM|PM)\s*-\s*(\d+):(\d+)\s*(AM|PM)/i
-      );
-
+      const match = normalized.match(/^([\w]+)\s+(\d+):(\d+)\s*(AM|PM)\s*-\s*(\d+):(\d+)\s*(AM|PM)/i);
       if (!match) return null;
 
       const toMinutes = (h: number, m: number, ampm: string): number => {
@@ -261,43 +236,33 @@ const overlap = this.form.schedule && sec.schedule
 
       return {
         start: toMinutes(+match[2], +match[3], match[4]),
-        end:   toMinutes(+match[5], +match[6], match[7]),
+        end: toMinutes(+match[5], +match[6], match[7]),
       };
     } catch {
       return null;
     }
   }
 
-  get isFormInvalid(): boolean {
-    return (
-      !this.form.section_name.trim() ||
-      !this.form.subject_id ||
-      this.form.subject_id === 0 ||
-      !this.form.instructor_id ||
-      this.form.instructor_id === 0 ||
-      !this.form.term_id ||
-      this.form.term_id === 0 ||
-      !this.form.room?.trim() ||
-      !this.form.capacity ||
-      this.form.capacity <= 0 ||
-      !this.form.schedule
-    );
-  }
-
-  // ─── Form Actions ──────────────────────────────────────────
-
   submitForm(): void {
     if (!this.validateForm()) return;
+
+    this.isSaving = true;
 
     if (this.isEditing && this.currentId) {
       this.sectionService.update(this.currentId, this.form).subscribe({
         next: () => this.handleSuccess(),
-        error: () => alert('Failed to update section.')
+        error: () => {
+          alert('Failed to update section.');
+          this.isSaving = false;
+        }
       });
     } else {
       this.sectionService.create(this.form).subscribe({
         next: () => this.handleSuccess(),
-        error: () => alert('Failed to create section.')
+        error: () => {
+          alert('Failed to create section.');
+          this.isSaving = false;
+        }
       });
     }
   }
@@ -305,131 +270,14 @@ const overlap = this.form.schedule && sec.schedule
   editSection(sec: Section): void {
     this.isEditing = true;
     this.currentId = sec.id;
-    this.form = {
-      section_name: sec.section_name,
-      subject_id: sec.subject_id,
-      instructor_id: sec.instructor_id,
-      term_id: sec.term_id,
-      capacity: sec.capacity,
-      schedule: sec.schedule,
-      room: sec.room,
-      status: sec.status
-    };
+    this.form = { ...sec };
     this.showForm = true;
+    this.formErrors = { section_name: '', subject_id: '', instructor_id: '', term_id: '', room: '', capacity: '', schedule: '' };
   }
 
-  /**
-   * Initiate delete with confirmation dialog
-   */
-  deleteSection(id: number): void {
-    const confirmDelete = window.confirm(
-      'Delete this section? This may affect active enrollments.'
-    );
-
-    if (confirmDelete) {
-      this.startDeleteProgress(id);
-    }
-  }
-
-  /**
-   * Start the delete progress timer
-   */
-  private startDeleteProgress(id: number): void {
-    this.pendingDeleteId = id;
-    this.showDeleteProgress = true;
-    this.deleteProgressTime = 5;
-
-    // Clear any existing timer
-    if (this.deleteTimer) {
-      clearInterval(this.deleteTimer);
-    }
-
-    // Start countdown
-    this.deleteTimer = setInterval(() => {
-      this.deleteProgressTime--;
-
-      // When timer reaches 0, execute delete
-      if (this.deleteProgressTime <= 0) {
-        this.executeDelete();
-      }
-    }, 1000);
-  }
-
-  /**
-   * Execute the actual delete operation
-   */
-  private executeDelete(): void {
-    const id = this.pendingDeleteId;
-
-    if (!id) return;
-
-    // Clear timer
-    if (this.deleteTimer) {
-      clearInterval(this.deleteTimer);
-      this.deleteTimer = null;
-    }
-
-    this.sectionService.delete(id).subscribe({
-      next: () => {
-        // Only remove from UI after successful deletion
-        this.sections = this.sections.filter((s) => s.id !== id);
-        this.resetDeleteProgress();
-      },
-      error: (err: unknown): void => {
-        console.error('Failed to delete section', err);
-        alert('Failed to delete section. Please try again.');
-        this.resetDeleteProgress();
-      },
-    });
-  }
-
-  /**
-   * Undo the delete operation - prevents the API call from happening
-   */
-  undoDelete(): void {
-    // Clear timer
-    if (this.deleteTimer) {
-      clearInterval(this.deleteTimer);
-      this.deleteTimer = null;
-    }
-
-    // Show undo success message (toast/snackbar)
-    const undoMessage = document.createElement('div');
-    undoMessage.className = 'undo-toast';
-    undoMessage.innerHTML = `
-      <span class="undo-icon">✓</span>
-      <span class="undo-text">Deletion cancelled</span>
-    `;
-    document.body.appendChild(undoMessage);
-
-    // Trigger animation
-    setTimeout(() => {
-      undoMessage.classList.add('show');
-    }, 10);
-
-    // Remove the message after 3 seconds
-    setTimeout(() => {
-      undoMessage.classList.remove('show');
-      setTimeout(() => {
-        undoMessage.remove();
-      }, 300);
-    }, 3000);
-
-    this.resetDeleteProgress();
-  }
-
-  /**
-   * Reset delete progress state
-   */
-  private resetDeleteProgress(): void {
-    this.showDeleteProgress = false;
-    this.deleteProgressTime = 5;
-    this.pendingDeleteId = null;
-  }
-
-  handleSuccess(): void {
-    this.resetForm();
-    this.loadData();
+  toggleForm(): void {
+    this.showForm = !this.showForm;
+    if (!this.showForm) this.resetForm();
   }
 
   resetForm(): void {
@@ -437,29 +285,112 @@ const overlap = this.form.schedule && sec.schedule
     this.isEditing = false;
     this.currentId = undefined;
     this.selectedSlots.clear();
-    this.formErrors = {
-      section_name: '',
-      subject_id: '',
-      instructor_id: '',
-      term_id: '',
-      room: '',
-      capacity: '',
-      schedule: ''
-    };
     this.form = {
-      section_name: '',
-      subject_id: 0,
-      instructor_id: 0,
-      term_id: 0,
-      capacity: 40,
-      schedule: '',
-      room: '',
-      status: 'open'
+      section_name: '', subject_id: 0, instructor_id: 0, term_id: 0,
+      capacity: 40, schedule: '', room: '', status: 'open'
     };
+    this.formErrors = { section_name: '', subject_id: '', instructor_id: '', term_id: '', room: '', capacity: '', schedule: '' };
   }
 
-  // ─── Schedule Picker ───────────────────────────────────────
+  handleSuccess(): void {
+    this.isSaving = false;
+    this.resetForm();
+    this.loadData();
+  }
 
+  // Pagination
+  get paginatedSections(): Section[] {
+    const start = (this.currentPage - 1) * this.itemsPerPage;
+    return this.sections.slice(start, start + this.itemsPerPage);
+  }
+
+  get totalPages(): number[] {
+    const total = Math.ceil(this.sections.length / this.itemsPerPage);
+    return Array.from({ length: total }, (_, i) => i + 1);
+  }
+
+  previousPage(): void {
+    if (this.currentPage > 1) this.currentPage--;
+  }
+
+  nextPage(): void {
+    if (this.currentPage < this.totalPages.length) this.currentPage++;
+  }
+
+  goToPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages.length) this.currentPage = page;
+  }
+
+  get paginationInfo(): string {
+    const start = (this.currentPage - 1) * this.itemsPerPage + 1;
+    const end = Math.min(this.currentPage * this.itemsPerPage, this.sections.length);
+    return `Showing ${start}–${end} of ${this.sections.length} records`;
+  }
+
+  // Delete Methods
+  deleteSection(id: number): void {
+    if (!window.confirm('Delete this section? This may affect active enrollments.')) return;
+    this.startDeleteProgress(id);
+  }
+
+  private startDeleteProgress(id: number): void {
+    this.pendingDeleteId = id;
+    this.showDeleteProgress = true;
+    this.deleteProgressTime = 5;
+
+    if (this.deleteTimer) clearInterval(this.deleteTimer);
+
+    this.deleteTimer = setInterval(() => {
+      this.deleteProgressTime--;
+      if (this.deleteProgressTime <= 0) this.executeDelete();
+    }, 1000);
+  }
+
+  private executeDelete(): void {
+    const id = this.pendingDeleteId;
+    if (!id) return;
+
+    if (this.deleteTimer) {
+      clearInterval(this.deleteTimer);
+      this.deleteTimer = null;
+    }
+
+    this.sectionService.delete(id).subscribe({
+      next: () => {
+        this.sections = this.sections.filter(s => s.id !== id);
+        this.resetDeleteProgress();
+      },
+      error: () => {
+        alert('Failed to delete section.');
+        this.resetDeleteProgress();
+      }
+    });
+  }
+
+  undoDelete(): void {
+    if (this.deleteTimer) {
+      clearInterval(this.deleteTimer);
+      this.deleteTimer = null;
+    }
+    this.showUndoToast('Deletion cancelled');
+    this.resetDeleteProgress();
+  }
+
+  private showUndoToast(msg: string): void {
+    const toast = document.createElement('div');
+    toast.className = 'fixed bottom-20 right-8 bg-gray-800 text-white px-6 py-3 rounded-2xl shadow-2xl z-50';
+    toast.textContent = msg;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+  }
+
+  private resetDeleteProgress(): void {
+    this.showDeleteProgress = false;
+    this.deleteProgressTime = 5;
+    this.pendingDeleteId = null;
+  }
+
+  // Schedule Picker Methods
   slotKey(di: number, ti: number): string { return `${di}-${ti}`; }
 
   isSlotSelected(di: number, ti: number): boolean {
@@ -509,10 +440,9 @@ const overlap = this.form.schedule && sec.schedule
           const e = this.times[prev + 1] ?? '9:00 PM';
           parts.push(`${this.dayAbbr[di]} ${s} – ${e}`);
           if (i < tis.length) { runStart = tis[i]; prev = tis[i]; }
-        } else { prev = tis[i]; }
+        } else prev = tis[i];
       }
     });
-
     return parts.join(', ');
   }
 }

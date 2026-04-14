@@ -11,13 +11,13 @@ import { Program, ProgramPayload } from '../../core/models/program.model';
   templateUrl: './programs.component.html',
 })
 export class ProgramsComponent implements OnInit {
-  Math = Math; // Expose Math object to template
-  
+  Math = Math;
+
   programs: Program[] = [];
   isLoading = false;
   isSaving = false;
 
-  // Delete progress state
+  // Delete progress
   showDeleteProgress = false;
   deleteProgressTime = 5;
   pendingDeleteId: number | null = null;
@@ -27,45 +27,7 @@ export class ProgramsComponent implements OnInit {
   currentPage: number = 1;
   itemsPerPage: number = 10;
 
-  formErrors: { code: string; name: string; department: string } = {
-    code: '',
-    name: '',
-    department: ''
-  };
-
-  validateForm(): boolean {
-    this.formErrors = { code: '', name: '', department: '' };
-    let valid = true;
-
-    if (!this.form.code.trim()) {
-      this.formErrors.code = 'Program code is required.';
-      valid = false;
-    } else if (this.form.code.trim().length > 10) {
-      this.formErrors.code = 'Code must be 10 characters or less.';
-      valid = false;
-    }
-
-    if (!this.form.name.trim()) {
-      this.formErrors.name = 'Program name is required.';
-      valid = false;
-    }
-
-    if (!this.form.department?.trim()) {
-      this.formErrors.department = 'Department is required.';
-      valid = false;
-    }
-
-    return valid;
-  }
-
-  get isFormInvalid(): boolean {
-    return (
-      !this.form.code.trim() ||
-      !this.form.name.trim() ||
-      !this.form.department?.trim()
-    );
-  }
-
+  // Form
   showForm = false;
   isEditing = false;
   selectedProgramId?: number;
@@ -77,16 +39,73 @@ export class ProgramsComponent implements OnInit {
     status: 'active',
   };
 
+  formErrors: { code: string; name: string; department: string } = {
+    code: '',
+    name: '',
+    department: ''
+  };
+
   constructor(private programService: ProgramService) {}
 
   ngOnInit(): void {
     this.loadPrograms();
   }
 
-  // ── Computed stats ──
+  // ── Computed Properties ──
   get activeCount()     { return this.programs.filter(p => p.status === 'active').length; }
   get inactiveCount()   { return this.programs.filter(p => p.status === 'inactive').length; }
   get departmentCount() { return new Set(this.programs.map(p => p.department).filter(Boolean)).size; }
+
+  /** Real-time form validation */
+  get isFormValid(): boolean {
+    return !!(
+      this.form.code?.trim() &&
+      this.form.name?.trim() &&
+      this.form.department?.trim() &&
+      this.form.code.trim().length <= 10 &&
+      !this.hasDuplicateCode()
+    );
+  }
+
+  private hasDuplicateCode(): boolean {
+    const currentCode = this.form.code.trim().toUpperCase();
+    return this.programs.some(program => {
+      if (this.isEditing && program.id === this.selectedProgramId) return false;
+      return program.code.toUpperCase() === currentCode;
+    });
+  }
+
+  validateForm(): boolean {
+    this.formErrors = { code: '', name: '', department: '' };
+    let isValid = true;
+
+    const trimmedCode = this.form.code.trim();
+    const trimmedName = this.form.name.trim();
+    const trimmedDept = this.form.department?.trim() ?? '';
+
+    if (!trimmedCode) {
+      this.formErrors.code = 'Program code is required.';
+      isValid = false;
+    } else if (trimmedCode.length > 10) {
+      this.formErrors.code = 'Code must be 10 characters or less.';
+      isValid = false;
+    } else if (this.hasDuplicateCode()) {
+      this.formErrors.code = 'A program with this code already exists.';
+      isValid = false;
+    }
+
+    if (!trimmedName) {
+      this.formErrors.name = 'Program name is required.';
+      isValid = false;
+    }
+
+    if (!trimmedDept) {
+      this.formErrors.department = 'Department is required.';
+      isValid = false;
+    }
+
+    return isValid;
+  }
 
   loadPrograms(): void {
     this.isLoading = true;
@@ -94,10 +113,9 @@ export class ProgramsComponent implements OnInit {
       next: (data: Program[]) => {
         this.programs = data;
         this.isLoading = false;
-        // Reset to first page when data reloads
         this.currentPage = 1;
       },
-      error: (err: unknown) => {
+      error: (err) => {
         console.error('Failed to load programs', err);
         this.isLoading = false;
       },
@@ -111,6 +129,9 @@ export class ProgramsComponent implements OnInit {
 
   onSubmit(): void {
     if (!this.validateForm()) return;
+
+    this.isSaving = true;
+
     const payload: ProgramPayload = {
       code: this.form.code.trim(),
       name: this.form.name.trim(),
@@ -118,24 +139,22 @@ export class ProgramsComponent implements OnInit {
       status: this.form.status ?? 'active',
     };
 
-    this.isSaving = true;
-
     if (this.isEditing && this.selectedProgramId) {
-      // PUT /api/programs/:id
       this.programService.update(this.selectedProgramId, payload).subscribe({
         next: () => this.handleSuccess(),
-        error: (err: unknown) => {
+        error: (err) => {
           console.error('Update failed', err);
           this.isSaving = false;
+          alert('Failed to update program.');
         },
       });
     } else {
-      // POST /api/programs
       this.programService.create(payload).subscribe({
         next: () => this.handleSuccess(),
-        error: (err: unknown) => {
+        error: (err) => {
           console.error('Create failed', err);
           this.isSaving = false;
+          alert('Failed to create program.');
         },
       });
     }
@@ -151,114 +170,66 @@ export class ProgramsComponent implements OnInit {
       status: program.status,
     };
     this.showForm = true;
+    this.formErrors = { code: '', name: '', department: '' };
   }
 
-  /**
-   * Get paginated programs for the current page
-   */
+  // ── Pagination Methods ──
   getPaginatedPrograms(): Program[] {
-    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-    const endIndex = startIndex + this.itemsPerPage;
-    return this.programs.slice(startIndex, endIndex);
+    const start = (this.currentPage - 1) * this.itemsPerPage;
+    return this.programs.slice(start, start + this.itemsPerPage);
   }
 
-  /**
-   * Get the end index for displaying pagination info
-   */
-  getPaginationEndIndex(): number {
-    return Math.min(this.currentPage * this.itemsPerPage, this.programs.length);
-  }
-
-  /**
-   * Get the start index for displaying pagination info
-   */
   getPaginationStartIndex(): number {
     return (this.currentPage - 1) * this.itemsPerPage + 1;
   }
 
-  /**
-   * Get all available page numbers
-   */
+  getPaginationEndIndex(): number {
+    return Math.min(this.currentPage * this.itemsPerPage, this.programs.length);
+  }
+
+  /** Returns array of page numbers for display */
   getTotalPages(): number[] {
     const total = Math.ceil(this.programs.length / this.itemsPerPage);
     return Array.from({ length: total }, (_, i) => i + 1);
   }
 
-  /**
-   * Navigate to next page
-   */
+  previousPage(): void {
+    if (this.currentPage > 1) this.currentPage--;
+  }
+
   nextPage(): void {
     const total = this.getTotalPages().length;
-    if (this.currentPage < total) {
-      this.currentPage++;
-    }
+    if (this.currentPage < total) this.currentPage++;
   }
 
-  /**
-   * Navigate to previous page
-   */
-  previousPage(): void {
-    if (this.currentPage > 1) {
-      this.currentPage--;
-    }
-  }
-
-  /**
-   * Go to a specific page
-   */
   goToPage(page: number): void {
     const total = this.getTotalPages().length;
-    if (page >= 1 && page <= total) {
-      this.currentPage = page;
-    }
+    if (page >= 1 && page <= total) this.currentPage = page;
   }
 
-  /**
-   * Initiate delete with confirmation dialog
-   */
+  // Delete methods
   deleteProgram(id: number): void {
-    const confirmDelete = window.confirm(
-      'Are you sure you want to delete this program?'
-    );
-
-    if (confirmDelete) {
-      this.startDeleteProgress(id);
-    }
+    if (!window.confirm('Are you sure you want to delete this program?')) return;
+    this.startDeleteProgress(id);
   }
 
-  /**
-   * Start the delete progress timer
-   */
   private startDeleteProgress(id: number): void {
     this.pendingDeleteId = id;
     this.showDeleteProgress = true;
     this.deleteProgressTime = 5;
 
-    // Clear any existing timer
-    if (this.deleteTimer) {
-      clearInterval(this.deleteTimer);
-    }
+    if (this.deleteTimer) clearInterval(this.deleteTimer);
 
-    // Start countdown
     this.deleteTimer = setInterval(() => {
       this.deleteProgressTime--;
-
-      // When timer reaches 0, execute delete
-      if (this.deleteProgressTime <= 0) {
-        this.executeDelete();
-      }
+      if (this.deleteProgressTime <= 0) this.executeDelete();
     }, 1000);
   }
 
-  /**
-   * Execute the actual delete operation
-   */
   private executeDelete(): void {
     const id = this.pendingDeleteId;
-
     if (!id) return;
 
-    // Clear timer
     if (this.deleteTimer) {
       clearInterval(this.deleteTimer);
       this.deleteTimer = null;
@@ -266,62 +237,44 @@ export class ProgramsComponent implements OnInit {
 
     this.programService.delete(id).subscribe({
       next: () => {
-        // Only remove from UI after successful deletion
-        this.programs = this.programs.filter((p) => p.id !== id);
+        this.programs = this.programs.filter(p => p.id !== id);
         this.resetDeleteProgress();
-        
-        // Adjust current page if needed (if we deleted the last item on the page)
-        const total = this.getTotalPages().length;
-        if (this.currentPage > total && total > 0) {
-          this.currentPage = total;
+
+        const totalPages = this.getTotalPages().length;
+        if (this.currentPage > totalPages && totalPages > 0) {
+          this.currentPage = totalPages;
         }
       },
-      error: (err: unknown): void => {
-        console.error('Failed to delete program', err);
+      error: (err) => {
+        console.error('Delete failed', err);
         alert('Could not delete program.');
         this.resetDeleteProgress();
       },
     });
   }
 
-  /**
-   * Undo the delete operation - prevents the API call from happening
-   */
   undoDelete(): void {
-    // Clear timer
     if (this.deleteTimer) {
       clearInterval(this.deleteTimer);
       this.deleteTimer = null;
     }
-
-    // Show undo success message (toast/snackbar)
-    const undoMessage = document.createElement('div');
-    undoMessage.className = 'undo-toast';
-    undoMessage.innerHTML = `
-      <span class="undo-icon">✓</span>
-      <span class="undo-text">Deletion cancelled</span>
-    `;
-    document.body.appendChild(undoMessage);
-
-    // Trigger animation
-    setTimeout(() => {
-      undoMessage.classList.add('show');
-    }, 10);
-
-    // Remove the message after 3 seconds
-    setTimeout(() => {
-      undoMessage.classList.remove('show');
-      setTimeout(() => {
-        undoMessage.remove();
-      }, 300);
-    }, 3000);
-
+    this.showUndoToast('Deletion cancelled');
     this.resetDeleteProgress();
   }
 
-  /**
-   * Reset delete progress state
-   */
+  private showUndoToast(message: string): void {
+    const toast = document.createElement('div');
+    toast.className = 'fixed bottom-20 right-8 bg-gray-800 text-white text-sm px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3 z-50';
+    toast.innerHTML = `<span>${message}</span>`;
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+      toast.style.transition = 'opacity 0.3s';
+      toast.style.opacity = '0';
+      setTimeout(() => toast.remove(), 300);
+    }, 2500);
+  }
+
   private resetDeleteProgress(): void {
     this.showDeleteProgress = false;
     this.deleteProgressTime = 5;
@@ -331,11 +284,10 @@ export class ProgramsComponent implements OnInit {
   handleSuccess(): void {
     this.isSaving = false;
     this.resetForm();
-    this.loadPrograms(); // GET /api/programs
-    
-    // Auto-navigate to next page when item count reaches itemsPerPage
+    this.loadPrograms();
+
     setTimeout(() => {
-      if (this.programs.length >= this.itemsPerPage && this.programs.length % this.itemsPerPage === 1) {
+      if (this.programs.length % this.itemsPerPage === 1 && this.programs.length > this.itemsPerPage) {
         this.nextPage();
       }
     }, 300);

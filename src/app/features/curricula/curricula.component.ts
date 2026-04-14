@@ -24,7 +24,7 @@ export class CurriculaComponent implements OnInit {
   isEditing = false;
   currentEditId?: number;
 
-  // Delete progress state
+  // Delete progress
   showDeleteProgress = signal(false);
   deleteProgressTime = signal(5);
   pendingDeleteId = signal<number | null>(null);
@@ -32,28 +32,28 @@ export class CurriculaComponent implements OnInit {
 
   programs: Program[] = [];
   subjects: Subject[] = [];
-  
-  // Added: Predefined School Years for the dropdown
-  schoolYears: string[] = [
-    '2023-2024',
-    '2024-2025',
-    '2025-2026',
-    '2026-2027'
-  ];
 
-  // Added: Year levels 1-4 (Year 5 removed)
+  schoolYears: string[] = ['2023-2024', '2024-2025', '2025-2026', '2026-2027'];
   yearLevels = [1, 2, 3, 4];
 
   form: CurriculumPayload = {
     program_id: 0,
     subject_id: 0,
     year_level: 1,
-    semester: '1', // Updated to full string to match Laravel validation
-    school_year: '2024-2025', // Set a default from the array
+    semester: '1',
+    school_year: '2024-2025',
     status: 'active',
   };
 
-  private _curricula = signal<Curriculum[]>([]);
+  formErrors = {
+    program_id: '',
+    subject_id: '',
+    year_level: '',
+    semester: '',
+    school_year: ''
+  };
+
+   curricula = signal<Curriculum[]>([]);
 
   constructor(
     private curriculumService: CurriculumService,
@@ -70,31 +70,88 @@ export class CurriculaComponent implements OnInit {
   fetchAll(): void {
     this.loading.set(true);
     this.curriculumService.getAll().subscribe({
-      next: (data: Curriculum[]) => {
-        this._curricula.set(data);
+      next: (data) => {
+        this.curricula.set(data);
         this.loading.set(false);
       },
-      error: (err: unknown): void => {
-        console.error('Failed to load curricula', err);
-        this.loading.set(false);
-      },
+      error: () => this.loading.set(false)
     });
   }
 
   fetchPrograms(): void {
     this.programService.getActive().subscribe({
-      next: (data: Program[]) => (this.programs = data),
-      error: (err: unknown) => console.error('Failed to load programs', err),
+      next: (data) => this.programs = data,
+      error: (err) => console.error(err)
     });
   }
 
   fetchSubjects(): void {
     this.subjectService.getActive().subscribe({
-      next: (data: Subject[]) => (this.subjects = data),
-      error: (err: unknown) => console.error('Failed to load subjects', err),
+      next: (data) => this.subjects = data,
+      error: (err) => console.error(err)
     });
   }
 
+  // ── Validation ──
+  private isValidSchoolYear(): boolean {
+    return /^\d{4}-\d{4}$/.test(this.form.school_year.trim());
+  }
+
+  private isDuplicateCurriculum(): boolean {
+    return this.curricula().some(curr =>
+      curr.program_id === Number(this.form.program_id) &&
+      curr.subject_id === Number(this.form.subject_id) &&
+      curr.year_level === Number(this.form.year_level) &&
+      curr.semester === this.form.semester &&
+      curr.school_year === this.form.school_year &&
+      curr.id !== this.currentEditId
+    );
+  }
+
+  validateForm(): boolean {
+    this.formErrors = { program_id: '', subject_id: '', year_level: '', semester: '', school_year: '' };
+    let valid = true;
+
+    if (Number(this.form.program_id) <= 0) {
+      this.formErrors.program_id = 'Please select a program';
+      valid = false;
+    }
+    if (Number(this.form.subject_id) <= 0) {
+      this.formErrors.subject_id = 'Please select a subject';
+      valid = false;
+    }
+    if (Number(this.form.year_level) <= 0) {
+      this.formErrors.year_level = 'Please select year level';
+      valid = false;
+    }
+    if (!this.form.semester?.trim()) {
+      this.formErrors.semester = 'Please select semester';
+      valid = false;
+    }
+    if (!this.isValidSchoolYear()) {
+      this.formErrors.school_year = 'Invalid format. Use YYYY-YYYY (e.g. 2024-2025)';
+      valid = false;
+    }
+    if (this.isDuplicateCurriculum()) {
+      this.formErrors.program_id = 'This curriculum entry already exists';
+      valid = false;
+    }
+
+    return valid;
+  }
+
+  get isFormValid(): boolean {
+    return (
+      Number(this.form.program_id) > 0 &&
+      Number(this.form.subject_id) > 0 &&
+      Number(this.form.year_level) > 0 &&
+      this.form.semester?.trim() !== '' &&
+      this.isValidSchoolYear() &&
+      !this.isDuplicateCurriculum()
+    );
+  }
+
+  // ── Form Actions ──
   openModal(): void {
     this.isEditing = false;
     this.currentEditId = undefined;
@@ -106,6 +163,7 @@ export class CurriculaComponent implements OnInit {
       school_year: '2024-2025',
       status: 'active',
     };
+    this.formErrors = { program_id: '', subject_id: '', year_level: '', semester: '', school_year: '' };
     this.showModal = true;
   }
 
@@ -120,6 +178,7 @@ export class CurriculaComponent implements OnInit {
       school_year: curriculum.school_year,
       status: curriculum.status,
     };
+    this.formErrors = { program_id: '', subject_id: '', year_level: '', semester: '', school_year: '' };
     this.showModal = true;
   }
 
@@ -129,142 +188,78 @@ export class CurriculaComponent implements OnInit {
     this.currentEditId = undefined;
   }
 
-  /**
-   * Validate school year format (YYYY-YYYY)
-   */
-  isValidSchoolYear(): boolean {
-    const pattern = /^\d{4}-\d{4}$/;
-    return pattern.test(this.form.school_year.trim());
-  }
-
-  /**
-   * Check if the curriculum entry already exists (duplicate)
-   */
-  isDuplicateCurriculum(): boolean {
-    return this._curricula().some(
-      (curr) =>
-        curr.program_id === Number(this.form.program_id) &&
-        curr.subject_id === Number(this.form.subject_id) &&
-        curr.year_level === Number(this.form.year_level) &&
-        curr.semester === this.form.semester &&
-        curr.school_year === this.form.school_year &&
-        // When editing, exclude the current record from duplicate check
-        curr.id !== this.currentEditId
-    );
-  }
-
-  /**
-   * Validate entire form
-   */
-  isFormValid(): boolean {
-    return (
-      Number(this.form.program_id) > 0 &&
-      Number(this.form.subject_id) > 0 &&
-      Number(this.form.year_level) > 0 &&
-      this.form.semester.trim() !== '' &&
-      this.isValidSchoolYear() &&
-      !this.isDuplicateCurriculum()
-    );
-  }
-
   save(): void {
-    // Validate before saving
-    if (!this.isFormValid()) {
-      if (this.isDuplicateCurriculum()) {
-        alert('This curriculum entry already exists!');
-      } else if (!this.isValidSchoolYear()) {
-        alert('Invalid school year format. Use YYYY-YYYY (e.g., 2024-2025)');
-      } else {
-        alert('Please fill in all required fields correctly');
-      }
-      return;
-    }
+    if (!this.validateForm()) return;
 
+    this.saving.set(true);
     const payload: CurriculumPayload = {
       program_id: Number(this.form.program_id),
       subject_id: Number(this.form.subject_id),
       year_level: Number(this.form.year_level),
       semester: this.form.semester,
-      school_year: this.form.school_year,
+      school_year: this.form.school_year.trim(),
       status: this.form.status ?? 'active',
     };
 
-    this.saving.set(true);
-
     if (this.isEditing && this.currentEditId) {
-      // Update existing curriculum
       this.curriculumService.update(this.currentEditId, payload).subscribe({
-        next: (updated: Curriculum) => {
+        next: () => {
           this.fetchAll();
           this.saving.set(false);
           this.closeModal();
         },
-        error: (err: unknown): void => {
-          console.error('Failed to update curriculum', err);
+        error: (err) => {
+          console.error(err);
+          alert('Failed to update curriculum');
           this.saving.set(false);
-          alert('Failed to update curriculum. Please try again.');
-        },
+        }
       });
     } else {
-      // Create new curriculum
       this.curriculumService.create(payload).subscribe({
-        next: (created: Curriculum) => {
+        next: () => {
           this.fetchAll();
           this.saving.set(false);
           this.closeModal();
         },
-        error: (err: unknown): void => {
-          console.error('Failed to create curriculum', err);
+        error: (err) => {
+          console.error(err);
+          alert('Failed to create curriculum');
           this.saving.set(false);
-          alert('Failed to create curriculum. Please try again.');
-        },
+        }
       });
     }
   }
 
-  curricula = computed(() => this._curricula());
-
+  // ── Computed Values ──
   filteredCurricula = computed(() => {
     const q = this.searchQuery.toLowerCase().trim();
-    const all = this._curricula();
+    let filtered = this.curricula();
 
-    const filtered = !q
-      ? all
-      : all.filter(
-          (item) =>
-            item.program?.name.toLowerCase().includes(q) ||
-            item.subject?.subject_name.toLowerCase().includes(q) ||
-            item.subject?.subject_code.toLowerCase().includes(q) ||
-            item.school_year.toLowerCase().includes(q)
-        );
+    if (q) {
+      filtered = filtered.filter(item =>
+        item.program?.name.toLowerCase().includes(q) ||
+        item.subject?.subject_name.toLowerCase().includes(q) ||
+        item.subject?.subject_code.toLowerCase().includes(q) ||
+        item.school_year.toLowerCase().includes(q)
+      );
+    }
 
     const start = (this.currentPage - 1) * this.pageSize;
     return filtered.slice(start, start + this.pageSize);
   });
 
-  activeCount = computed(() =>
-    this._curricula().filter((c) => c.status === 'active').length
-  );
-
-  inactiveCount = computed(() =>
-    this._curricula().filter((c) => c.status === 'inactive').length
-  );
-
-  programCount = computed(
-    () => new Set(this._curricula().map((c) => c.program?.name)).size
-  );
-
   totalPages = computed(() => {
     const q = this.searchQuery.toLowerCase().trim();
-    const total = !q
-      ? this._curricula().length
-      : this._curricula().filter(
-          (item) =>
-            item.program?.name.toLowerCase().includes(q) ||
-            item.subject?.subject_name.toLowerCase().includes(q) ||
-            item.subject?.subject_code.toLowerCase().includes(q) ||
-            item.school_year.toLowerCase().includes(q)
-        ).length;
+    let total = this.curricula().length;
+
+    if (q) {
+      total = this.curricula().filter(item =>
+        item.program?.name.toLowerCase().includes(q) ||
+        item.subject?.subject_name.toLowerCase().includes(q) ||
+        item.subject?.subject_code.toLowerCase().includes(q) ||
+        item.school_year.toLowerCase().includes(q)
+      ).length;
+    }
 
     const count = Math.ceil(total / this.pageSize);
     return Array.from({ length: count }, (_, i) => i + 1);
@@ -274,57 +269,55 @@ export class CurriculaComponent implements OnInit {
     this.currentPage = 1;
   }
 
-  nextPage(): void {
-    const last = this.totalPages().at(-1) ?? 1;
-    if (this.currentPage < last) this.currentPage++;
+  previousPage(): void {
+    if (this.currentPage > 1) this.currentPage--;
   }
 
-  /**
-   * Initiate delete with confirmation dialog
-   */
-  delete(id: number): void {
-    const confirmDelete = window.confirm(
-      'Are you sure you want to delete this curriculum entry? This action cannot be undone.'
-    );
+  nextPage(): void {
+    if (this.currentPage < this.totalPages().length) this.currentPage++;
+  }
 
-    if (confirmDelete) {
-      this.startDeleteProgress(id);
+  goToPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages().length) {
+      this.currentPage = page;
     }
   }
 
-  /**
-   * Start the delete progress timer
-   */
+  // ── Pagination Info ──
+  get paginationInfo(): string {
+    const filtered = this.filteredCurricula(); // This triggers the computed
+    if (this.curricula().length === 0) return 'No records';
+    
+    const start = (this.currentPage - 1) * this.pageSize + 1;
+    const end = Math.min(this.currentPage * this.pageSize, 
+      this.searchQuery ? this.filteredCurricula().length + (this.currentPage - 1) * this.pageSize : this.curricula().length);
+    
+    return `Showing ${start}–${end} of ${this.searchQuery ? this.filteredCurricula().length + (this.currentPage - 1) * this.pageSize : this.curricula().length} records`;
+  }
+
+  // Delete methods (kept similar)
+  delete(id: number): void {
+    if (!window.confirm('Are you sure you want to delete this curriculum entry?')) return;
+    this.startDeleteProgress(id);
+  }
+
   private startDeleteProgress(id: number): void {
     this.pendingDeleteId.set(id);
     this.showDeleteProgress.set(true);
     this.deleteProgressTime.set(5);
 
-    // Clear any existing timer
-    if (this.deleteTimer) {
-      clearInterval(this.deleteTimer);
-    }
+    if (this.deleteTimer) clearInterval(this.deleteTimer);
 
-    // Start countdown
     this.deleteTimer = setInterval(() => {
-      this.deleteProgressTime.update((time) => time - 1);
-
-      // When timer reaches 0, execute delete
-      if (this.deleteProgressTime() <= 0) {
-        this.executeDelete();
-      }
+      this.deleteProgressTime.update(t => t - 1);
+      if (this.deleteProgressTime() <= 0) this.executeDelete();
     }, 1000);
   }
 
-  /**
-   * Execute the actual delete operation
-   */
   private executeDelete(): void {
     const id = this.pendingDeleteId();
-
     if (!id) return;
 
-    // Clear timer
     if (this.deleteTimer) {
       clearInterval(this.deleteTimer);
       this.deleteTimer = null;
@@ -332,58 +325,33 @@ export class CurriculaComponent implements OnInit {
 
     this.curriculumService.delete(id).subscribe({
       next: () => {
-        // Only remove from UI after successful deletion
-        this._curricula.update((list) => list.filter((item) => item.id !== id));
+        this.curricula.update(list => list.filter(item => item.id !== id));
         this.resetDeleteProgress();
       },
-      error: (err: unknown): void => {
-        console.error('Failed to delete curriculum', err);
-        alert(
-          'Could not delete. The record might be linked to an active section.'
-        );
+      error: () => {
+        alert('Could not delete. The record might be linked to an active section.');
         this.resetDeleteProgress();
-      },
+      }
     });
   }
 
-  /**
-   * Undo the delete operation - prevents the API call from happening
-   */
   undoDelete(): void {
-    // Clear timer
     if (this.deleteTimer) {
       clearInterval(this.deleteTimer);
       this.deleteTimer = null;
     }
-
-    // Show undo success message (toast/snackbar)
-    const undoMessage = document.createElement('div');
-    undoMessage.className = 'undo-toast';
-    undoMessage.innerHTML = `
-      <span class="undo-icon">✓</span>
-      <span class="undo-text">Deletion cancelled</span>
-    `;
-    document.body.appendChild(undoMessage);
-
-    // Trigger animation
-    setTimeout(() => {
-      undoMessage.classList.add('show');
-    }, 10);
-
-    // Remove the message after 3 seconds
-    setTimeout(() => {
-      undoMessage.classList.remove('show');
-      setTimeout(() => {
-        undoMessage.remove();
-      }, 300);
-    }, 3000);
-
+    this.showUndoToast('Deletion cancelled');
     this.resetDeleteProgress();
   }
 
-  /**
-   * Reset delete progress state
-   */
+  private showUndoToast(message: string): void {
+    const toast = document.createElement('div');
+    toast.className = 'fixed bottom-20 right-8 bg-gray-800 text-white px-6 py-3 rounded-2xl shadow-2xl z-50';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+  }
+
   private resetDeleteProgress(): void {
     this.showDeleteProgress.set(false);
     this.deleteProgressTime.set(5);

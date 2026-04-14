@@ -35,30 +35,58 @@
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        
+        <!-- Code Field -->
         <div class="space-y-1.5">
           <label class="text-[11px] font-semibold text-[#718096] tracking-wider uppercase">Code <span class="text-red-500">*</span></label>
-          <input type="text" [(ngModel)]="form.code" 
-                 class="w-full border border-[#cbd5e0] rounded-xl px-4 py-3 text-[13px] focus:border-[#7F77DD] outline-none"
-                 placeholder="e.g. BSIT">
+          <input 
+            type="text" 
+            [(ngModel)]="form.code" 
+            (input)="validateForm()" 
+            class="w-full border border-[#cbd5e0] rounded-xl px-4 py-3 text-[13px] focus:border-[#7F77DD] outline-none transition-colors"
+            placeholder="e.g. BSIT"
+            [class.border-red-500]="formErrors.code">
+          @if (formErrors.code) {
+            <p class="text-red-500 text-xs mt-1">{{ formErrors.code }}</p>
+          }
         </div>
 
+        <!-- Program Name Field -->
         <div class="lg:col-span-2 space-y-1.5">
           <label class="text-[11px] font-semibold text-[#718096] tracking-wider uppercase">Program Name <span class="text-red-500">*</span></label>
-          <input type="text" [(ngModel)]="form.name" 
-                 class="w-full border border-[#cbd5e0] rounded-xl px-4 py-3 text-[13px] focus:border-[#7F77DD] outline-none"
-                 placeholder="Bachelor of Science in Information Technology">
+          <input 
+            type="text" 
+            [(ngModel)]="form.name" 
+            (input)="validateForm()" 
+            class="w-full border border-[#cbd5e0] rounded-xl px-4 py-3 text-[13px] focus:border-[#7F77DD] outline-none transition-colors"
+            placeholder="Bachelor of Science in Information Technology"
+            [class.border-red-500]="formErrors.name">
+          @if (formErrors.name) {
+            <p class="text-red-500 text-xs mt-1">{{ formErrors.name }}</p>
+          }
         </div>
 
+        <!-- Department Field -->
         <div class="space-y-1.5">
           <label class="text-[11px] font-semibold text-[#718096] tracking-wider uppercase">Department <span class="text-red-500">*</span></label>
-          <input type="text" [(ngModel)]="form.department" 
-                 class="w-full border border-[#cbd5e0] rounded-xl px-4 py-3 text-[13px] focus:border-[#7F77DD] outline-none"
-                 placeholder="College of Computing">
+          <input 
+            type="text" 
+            [(ngModel)]="form.department" 
+            (input)="validateForm()" 
+            class="w-full border border-[#cbd5e0] rounded-xl px-4 py-3 text-[13px] focus:border-[#7F77DD] outline-none transition-colors"
+            placeholder="College of Computing"
+            [class.border-red-500]="formErrors.department">
+          @if (formErrors.department) {
+            <p class="text-red-500 text-xs mt-1">{{ formErrors.department }}</p>
+          }
         </div>
 
+        <!-- Status Field -->
         <div class="space-y-1.5">
           <label class="text-[11px] font-semibold text-[#718096] tracking-wider uppercase">Status</label>
-          <select [(ngModel)]="form.status" class="w-full border border-[#cbd5e0] rounded-xl px-4 py-3 text-[13px] focus:border-[#7F77DD] outline-none">
+          <select 
+            [(ngModel)]="form.status" 
+            class="w-full border border-[#cbd5e0] rounded-xl px-4 py-3 text-[13px] focus:border-[#7F77DD] outline-none">
             <option value="active">Active</option>
             <option value="inactive">Inactive</option>
           </select>
@@ -66,11 +94,18 @@
       </div>
 
       <div class="flex justify-end gap-3 mt-8">
-        <button (click)="resetForm()" class="px-5 py-2.5 border border-[#e2e8f0] text-[#718096] rounded-xl hover:bg-[#f7fafc] text-[13px] font-medium">
+        <button 
+          (click)="resetForm()" 
+          class="px-5 py-2.5 border border-[#e2e8f0] text-[#718096] rounded-xl hover:bg-[#f7fafc] text-[13px] font-medium transition-colors">
           Cancel
         </button>
-        <button (click)="onSubmit()" [disabled]="isSaving" 
-                class="px-5 py-2.5 bg-[#2C2C2A] text-white rounded-xl hover:bg-[#444441] text-[13px] font-medium">
+        
+        <button 
+          (click)="onSubmit()" 
+          [disabled]="!isFormValid || isSaving"
+          class="px-5 py-2.5 bg-[#2C2C2A] text-white rounded-xl hover:bg-[#444441] 
+                 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed 
+                 text-[13px] font-medium transition-all">
           {{ isSaving ? 'Saving...' : (isEditing ? 'Update Program' : 'Save Program') }}
         </button>
       </div>
@@ -130,8 +165,14 @@
               </td>
               <td class="p-4 px-6 text-right">
                 <div class="inline-flex gap-2">
-                  <button (click)="editProgram(prog)" class="px-3 py-1.5 border border-[#e2e8f0] hover:bg-[#EEEDFE] text-[#3C3489] text-xs rounded-xl">Edit</button>
-                  <button (click)="deleteProgram(prog.id)" class="px-3 py-1.5 border border-[#e2e8f0] hover:bg-[#fff5f5] text-red-600 text-xs rounded-xl">Delete</button>
+                  <button (click)="editProgram(prog)" 
+                          class="px-3 py-1.5 border border-[#e2e8f0] hover:bg-[#EEEDFE] text-[#3C3489] text-xs rounded-xl transition-colors">
+                    Edit
+                  </button>
+                  <button (click)="deleteProgram(prog.id)" 
+                          class="px-3 py-1.5 border border-[#e2e8f0] hover:bg-[#fff5f5] text-red-600 text-xs rounded-xl transition-colors">
+                    Delete
+                  </button>
                 </div>
               </td>
             </tr>
@@ -140,9 +181,35 @@
       </table>
     </div>
 
-    <!-- Footer -->
-    <div class="p-4 px-6 border-t border-[#edf2f7] bg-[#f7fafc] text-[12px] text-[#718096]">
-      Showing {{ programs.length }} record{{ programs.length !== 1 ? 's' : '' }}
+    <!-- Improved Footer with Pagination -->
+    <div class="flex items-center justify-between p-4 px-6 border-t border-[#edf2f7] bg-[#f7fafc] text-[12px] text-[#718096]">
+      <span>Showing {{ getPaginationStartIndex() }}–{{ getPaginationEndIndex() }} of {{ programs.length }} record{{ programs.length !== 1 ? 's' : '' }}</span>
+
+      <div class="flex items-center gap-2">
+        <button 
+          (click)="previousPage()" 
+          [disabled]="currentPage === 1"
+          class="px-4 py-2 border border-[#e2e8f0] rounded-xl hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+          Previous
+        </button>
+
+        @for (page of getTotalPages(); track page) {
+          <button 
+            (click)="goToPage(page)"
+            [class.bg-[#2C2C2A]]="page === currentPage"
+            [class.text-white]="page === currentPage"
+            class="w-9 h-9 flex items-center justify-center rounded-xl border border-[#e2e8f0] hover:bg-white transition-colors">
+            {{ page }}
+          </button>
+        }
+
+        <button 
+          (click)="nextPage()" 
+          [disabled]="currentPage === getTotalPages().length"
+          class="px-4 py-2 border border-[#e2e8f0] rounded-xl hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+          Next
+        </button>
+      </div>
     </div>
   }
 
@@ -156,7 +223,8 @@
         <span class="text-xl">⚠️</span>
         <span class="text-[#333] font-medium text-sm">Deleting in {{ deleteProgressTime }}s...</span>
       </div>
-      <button (click)="undoDelete()" class="bg-red-500 text-white text-xs font-bold px-5 py-2 rounded-xl hover:bg-red-600">
+      <button (click)="undoDelete()" 
+              class="bg-red-500 text-white text-xs font-bold px-5 py-2 rounded-xl hover:bg-red-600 transition-colors">
         UNDO
       </button>
     </div>

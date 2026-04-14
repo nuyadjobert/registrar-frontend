@@ -12,9 +12,16 @@
 
   <!-- Loading -->
   @if (isLoading) {
-    <div class="text-center py-20">
-      <div class="w-8 h-8 border-4 border-[#e2e8f0] border-t-[#534AB7] rounded-full animate-spin mx-auto"></div>
-      <p class="text-[#718096] text-[13px] mt-4">Retrieving enrollments...</p>
+    <div class="p-6 space-y-3">
+      @for (i of [1,2,3,4,5,6]; track i) {
+        <div class="h-16 bg-[#f8fafc] rounded-2xl animate-pulse"></div>
+      }
+    </div>
+  } 
+  @else if (enrollments.length === 0) {
+    <div class="text-center py-20 text-[#a0aec0]">
+      <span class="text-5xl block mb-4">📋</span>
+      <p class="text-[15px]">No enrollment records available.</p>
     </div>
   } 
   @else {
@@ -31,7 +38,7 @@
           </tr>
         </thead>
         <tbody>
-          @for (item of enrollments; track item.id) {
+          @for (item of paginatedEnrollments; track item.id) {
             <tr class="border-b border-[#edf2f7] hover:bg-[#f8fafc] transition-colors">
               
               <!-- Student -->
@@ -47,9 +54,9 @@
 
               <!-- Subject & Section -->
               <td class="p-4 px-6">
-                <div class="font-medium text-[#1a202c]">{{ item.section?.subject?.subject_name }}</div>
+                <div class="font-medium text-[#1a202c]">{{ item.section?.subject?.subject_name || 'N/A' }}</div>
                 <span class="inline-flex items-center px-3 py-1 mt-1 text-xs font-semibold bg-[#EEEDFE] text-[#534AB7] rounded-xl">
-                  {{ item.section?.section_name }}
+                  {{ item.section?.section_name || 'N/A' }}
                 </span>
               </td>
 
@@ -93,13 +100,14 @@
                   <button 
                     (click)="onApprove(item.id)"
                     [disabled]="isApproveDisabled(item)"
-                    class="inline-flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-medium transition-all"
+                    class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-medium transition-all"
                     [class.bg-emerald-600]="!isApproveDisabled(item)"
                     [class.text-white]="!isApproveDisabled(item)"
                     [class.bg-gray-200]="isApproveDisabled(item)"
                     [class.text-gray-400]="isApproveDisabled(item)">
                     @if (approvingId === item.id) {
-                      <span class="animate-spin">⟳</span> Approving...
+                      <span class="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>
+                      Approving...
                     } @else {
                       Approve
                     }
@@ -121,6 +129,34 @@
           }
         </tbody>
       </table>
+    </div>
+
+    <!-- Pagination Footer -->
+    <div class="flex items-center justify-between p-4 px-6 border-t border-[#edf2f7] bg-[#f7fafc] text-[12px] text-[#718096]">
+      <span>{{ paginationInfo }}</span>
+
+      <div class="flex items-center gap-2">
+        <button (click)="previousPage()" 
+                [disabled]="currentPage === 1"
+                class="px-4 py-2 border border-[#e2e8f0] rounded-xl hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed">
+          Previous
+        </button>
+
+        @for (page of totalPages; track page) {
+          <button (click)="goToPage(page)"
+                  [class.bg-[#2C2C2A]]="page === currentPage"
+                  [class.text-white]="page === currentPage"
+                  class="w-9 h-9 flex items-center justify-center rounded-xl border border-[#e2e8f0] hover:bg-white transition-colors">
+            {{ page }}
+          </button>
+        }
+
+        <button (click)="nextPage()" 
+                [disabled]="currentPage === totalPages.length"
+                class="px-4 py-2 border border-[#e2e8f0] rounded-xl hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed">
+          Next
+        </button>
+      </div>
     </div>
   }
 

@@ -37,6 +37,11 @@
       <p>Retrieving curricula...</p>
     </div>
   } 
+  @else if (filteredCurricula().length === 0 && curricula().length > 0) {
+    <div class="text-center py-16 px-6 text-[#a0aec0] text-[13px]">
+      <p>No matching records found for your search.</p>
+    </div>
+  }
   @else if (filteredCurricula().length === 0) {
     <div class="text-center py-16 px-6 text-[#a0aec0] text-[13px]">
       <svg class="w-10 h-10 mx-auto mb-4 opacity-30" viewBox="0 0 40 40" fill="none">
@@ -62,7 +67,7 @@
         </thead>
         <tbody>
           @for (item of filteredCurricula(); track item.id) {
-            <tr class="border-b border-[#edf2f7] last:border-none hover:bg-[#f8fafc] transition-colors">
+            <tr class="border-b border-[#edf2f7] hover:bg-[#f8fafc] transition-colors">
               <td class="p-4 px-6 font-medium text-[#1a202c]">{{ item.program?.name || 'N/A' }}</td>
               <td class="p-4 px-6">
                 <div class="flex flex-col gap-0.5">
@@ -91,14 +96,8 @@
               </td>
               <td class="p-4 px-6 text-right">
                 <div class="inline-flex gap-2">
-                  <button (click)="editCurriculum(item)"
-                          class="inline-flex items-center gap-1 px-3 py-1.5 border border-[#e2e8f0] hover:bg-[#EEEDFE] text-[#3C3489] text-xs rounded-xl">
-                    Edit
-                  </button>
-                  <button (click)="delete(item.id)"
-                          class="inline-flex items-center gap-1 px-3 py-1.5 border border-[#e2e8f0] hover:bg-[#fff5f5] text-red-600 text-xs rounded-xl">
-                    Delete
-                  </button>
+                  <button (click)="editCurriculum(item)" class="px-3 py-1.5 border border-[#e2e8f0] hover:bg-[#EEEDFE] text-[#3C3489] text-xs rounded-xl">Edit</button>
+                  <button (click)="delete(item.id)" class="px-3 py-1.5 border border-[#e2e8f0] hover:bg-[#fff5f5] text-red-600 text-xs rounded-xl">Delete</button>
                 </div>
               </td>
             </tr>
@@ -107,38 +106,169 @@
       </table>
     </div>
 
-    <!-- Footer -->
+    <!-- Improved Footer with Pagination -->
     <div class="flex items-center justify-between p-4 px-6 border-t border-[#edf2f7] bg-[#f7fafc] text-[12px] text-[#718096]">
-      <span>Showing {{ filteredCurricula().length }} record{{ filteredCurricula().length !== 1 ? 's' : '' }}</span>
+      <span>{{ paginationInfo }}</span>
+
+      <div class="flex items-center gap-2">
+        <button (click)="previousPage()" 
+                [disabled]="currentPage === 1"
+                class="px-4 py-2 border border-[#e2e8f0] rounded-xl hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed">
+          Previous
+        </button>
+
+        @for (page of totalPages(); track page) {
+          <button (click)="goToPage(page)"
+                  [class.bg-[#2C2C2A]]="page === currentPage"
+                  [class.text-white]="page === currentPage"
+                  class="w-9 h-9 flex items-center justify-center rounded-xl border border-[#e2e8f0] hover:bg-white transition-colors">
+            {{ page }}
+          </button>
+        }
+
+        <button (click)="nextPage()" 
+                [disabled]="currentPage === totalPages().length"
+                class="px-4 py-2 border border-[#e2e8f0] rounded-xl hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed">
+          Next
+        </button>
+      </div>
     </div>
   }
-
 </div>
 
 <!-- Modal -->
+<!-- Modal -->
 @if (showModal) {
-  <div class="fixed inset-0 bg-[#0f1219]/55 flex items-center justify-center z-[1000] p-4" (click)="closeModal()">
-    <div class="bg-white rounded-2xl w-full max-w-[500px] border border-[#e2e8f0] overflow-hidden" (click)="$event.stopPropagation()">
-      <!-- Modal content (same as before) -->
-      <div class="flex justify-between items-start p-6 border-b border-[#edf2f7]">
+  <div class="fixed inset-0 bg-[#0f1219]/60 flex items-center justify-center z-[1000] p-4" (click)="closeModal()">
+    <div class="bg-white rounded-2xl w-full max-w-[460px] border border-[#e2e8f0] overflow-hidden shadow-2xl" 
+         (click)="$event.stopPropagation()">
+      
+      <!-- Modal Header -->
+      <div class="flex justify-between items-start p-5 border-b border-[#edf2f7]">
         <div class="flex items-center gap-3">
-          <div class="w-9 h-9 rounded-xl bg-[#EEEDFE] flex items-center justify-center">
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <div class="w-8 h-8 rounded-xl bg-[#EEEDFE] flex items-center justify-center">
+            <svg width="17" height="17" viewBox="0 0 18 18" fill="none">
               <rect x="2" y="3" width="14" height="12" rx="2" stroke="#534AB7" stroke-width="1.4"/>
               <path d="M6 7h6M6 10h4" stroke="#534AB7" stroke-width="1.4" stroke-linecap="round"/>
             </svg>
           </div>
           <div>
-            <h3 class="font-['Syne'] text-[15px] font-bold text-[#1a202c]">{{ isEditing ? 'Edit Curriculum' : 'Add Curriculum' }}</h3>
-            <p class="text-[12px] text-[#718096]">{{ isEditing ? 'Update the curriculum details' : 'Fill in the details to create a new entry' }}</p>
+            <h3 class="font-['Syne'] text-[15px] font-bold text-[#1a202c]">
+              {{ isEditing ? 'Edit Curriculum' : 'Add Curriculum' }}
+            </h3>
+            <p class="text-[12px] text-[#718096]">Fill in the details</p>
           </div>
         </div>
-        <button (click)="closeModal()" class="text-2xl text-[#a0aec0] hover:text-[#1a202c]">×</button>
+        <button (click)="closeModal()" 
+                class="text-2xl leading-none text-[#a0aec0] hover:text-[#1a202c] transition-colors">
+          ×
+        </button>
       </div>
 
-      <!-- Form content here (keep your existing form) -->
-      <!-- ... your form fields ... -->
+      <!-- Form Content - More Compact -->
+      <div class="p-5 space-y-5">
+        
+        <!-- Program -->
+        <div class="space-y-1.5">
+          <label class="text-[11px] font-semibold text-[#718096] tracking-wider uppercase">Program <span class="text-red-500">*</span></label>
+          <select [(ngModel)]="form.program_id" (change)="validateForm()" 
+                  class="w-full border border-[#cbd5e0] rounded-xl px-4 py-3 text-[13px] focus:border-[#7F77DD] outline-none"
+                  [class.border-red-500]="formErrors.program_id">
+            <option value="0" disabled selected>Select Program</option>
+            @for (prog of programs; track prog.id) {
+              <option [value]="prog.id">{{ prog.name }}</option>
+            }
+          </select>
+          @if (formErrors.program_id) {
+            <p class="text-red-500 text-xs">{{ formErrors.program_id }}</p>
+          }
+        </div>
 
+        <!-- Subject -->
+        <div class="space-y-1.5">
+          <label class="text-[11px] font-semibold text-[#718096] tracking-wider uppercase">Subject <span class="text-red-500">*</span></label>
+          <select [(ngModel)]="form.subject_id" (change)="validateForm()" 
+                  class="w-full border border-[#cbd5e0] rounded-xl px-4 py-3 text-[13px] focus:border-[#7F77DD] outline-none"
+                  [class.border-red-500]="formErrors.subject_id">
+            <option value="0" disabled selected>Select Subject</option>
+            @for (sub of subjects; track sub.id) {
+              <option [value]="sub.id">{{ sub.subject_code }} — {{ sub.subject_name }}</option>
+            }
+          </select>
+          @if (formErrors.subject_id) {
+            <p class="text-red-500 text-xs">{{ formErrors.subject_id }}</p>
+          }
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <!-- Year Level -->
+          <div class="space-y-1.5">
+            <label class="text-[11px] font-semibold text-[#718096] tracking-wider uppercase">Year Level <span class="text-red-500">*</span></label>
+            <select [(ngModel)]="form.year_level" (change)="validateForm()" 
+                    class="w-full border border-[#cbd5e0] rounded-xl px-4 py-3 text-[13px] focus:border-[#7F77DD] outline-none"
+                    [class.border-red-500]="formErrors.year_level">
+              @for (level of yearLevels; track level) {
+                <option [value]="level">Year {{ level }}</option>
+              }
+            </select>
+            @if (formErrors.year_level) {
+              <p class="text-red-500 text-xs">{{ formErrors.year_level }}</p>
+            }
+          </div>
+
+          <!-- Semester -->
+          <div class="space-y-1.5">
+            <label class="text-[11px] font-semibold text-[#718096] tracking-wider uppercase">Semester <span class="text-red-500">*</span></label>
+            <select [(ngModel)]="form.semester" (change)="validateForm()" 
+                    class="w-full border border-[#cbd5e0] rounded-xl px-4 py-3 text-[13px] focus:border-[#7F77DD] outline-none"
+                    [class.border-red-500]="formErrors.semester">
+              <option value="1">First Semester</option>
+              <option value="2">Second Semester</option>
+              <option value="summer">Summer</option>
+            </select>
+            @if (formErrors.semester) {
+              <p class="text-red-500 text-xs">{{ formErrors.semester }}</p>
+            }
+          </div>
+        </div>
+
+        <!-- School Year -->
+        <div class="space-y-1.5">
+          <label class="text-[11px] font-semibold text-[#718096] tracking-wider uppercase">School Year <span class="text-red-500">*</span></label>
+          <select [(ngModel)]="form.school_year" (change)="validateForm()" 
+                  class="w-full border border-[#cbd5e0] rounded-xl px-4 py-3 text-[13px] focus:border-[#7F77DD] outline-none"
+                  [class.border-red-500]="formErrors.school_year">
+            @for (year of schoolYears; track year) {
+              <option [value]="year">{{ year }}</option>
+            }
+          </select>
+          @if (formErrors.school_year) {
+            <p class="text-red-500 text-xs">{{ formErrors.school_year }}</p>
+          }
+        </div>
+
+        <!-- Status -->
+        <div class="space-y-1.5">
+          <label class="text-[11px] font-semibold text-[#718096] tracking-wider uppercase">Status</label>
+          <select [(ngModel)]="form.status" 
+                  class="w-full border border-[#cbd5e0] rounded-xl px-4 py-3 text-[13px] focus:border-[#7F77DD] outline-none">
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Footer Buttons -->
+      <div class="flex justify-end gap-3 p-5 border-t border-[#edf2f7] bg-[#f8fafc]">
+        <button (click)="closeModal()" 
+                class="px-5 py-2.5 border border-[#e2e8f0] text-[#718096] rounded-xl hover:bg-white text-[13px] font-medium transition-colors">
+          Cancel
+        </button>
+        <button (click)="save()" [disabled]="!isFormValid || saving()"
+                class="px-6 py-2.5 bg-[#2C2C2A] text-white rounded-xl hover:bg-[#444441] disabled:bg-gray-300 disabled:cursor-not-allowed text-[13px] font-medium transition-all">
+          {{ saving() ? 'Saving...' : (isEditing ? 'Update' : 'Save') }}
+        </button>
+      </div>
     </div>
   </div>
 }

@@ -16,13 +16,13 @@ export class SubjectsComponent implements OnInit {
   programs: Program[] = [];
 
   isLoading = false;
+  isSaving = false;
 
-  // Pagination state
+  // Pagination
   currentPage = 1;
   itemsPerPage = 10;
-  totalItems = 0;
 
-  // Delete progress state
+  // Delete progress
   showDeleteProgress = false;
   deleteProgressTime = 5;
   pendingDeleteId: number | null = null;
@@ -45,6 +45,16 @@ export class SubjectsComponent implements OnInit {
     school_year: new Date().getFullYear().toString()
   };
 
+  formErrors: {
+    subject_code: string;
+    subject_name: string;
+    program_id: string;
+  } = {
+    subject_code: '',
+    subject_name: '',
+    program_id: ''
+  };
+
   constructor(
     private subjectService: SubjectService,
     private programService: ProgramService
@@ -55,35 +65,21 @@ export class SubjectsComponent implements OnInit {
     this.loadData();
   }
 
-  /**
-   * Load programs for dropdown
-   */
   loadPrograms(): void {
     this.programService.getAll().subscribe({
-      next: (data) => {
-        this.programs = data;
-      },
+      next: (data) => this.programs = data,
       error: (err) => console.error('Failed to load programs', err)
     });
   }
 
-  /**
-   * Load all subjects and apply pagination
-   */
   loadData(): void {
     this.isLoading = true;
     this.subjectService.getAll().subscribe({
       next: (data) => {
-        // Map 'programs' array from backend to 'program' object
         this.subjects = data.map(subject => ({
           ...subject,
-          program: subject.programs && subject.programs.length > 0
-            ? subject.programs[0]
-            : undefined
+          program: subject.programs && subject.programs.length > 0 ? subject.programs[0] : undefined
         }));
-        
-        // Set total count and reset to first page
-        this.totalItems = this.subjects.length;
         this.currentPage = 1;
         this.isLoading = false;
       },
@@ -91,124 +87,120 @@ export class SubjectsComponent implements OnInit {
     });
   }
 
-  /**
-   * Get paginated subjects for current page
-   */
+  // ── Pagination ──
   get paginatedSubjects(): Subject[] {
-    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-    const endIndex = startIndex + this.itemsPerPage;
-    return this.subjects.slice(startIndex, endIndex);
+    const start = (this.currentPage - 1) * this.itemsPerPage;
+    return this.subjects.slice(start, start + this.itemsPerPage);
   }
 
-  /**
-   * Get total number of pages
-   */
   get totalPages(): number {
-    return Math.ceil(this.totalItems / this.itemsPerPage);
+    return Math.ceil(this.subjects.length / this.itemsPerPage);
   }
 
-  /**
-   * Get page numbers to display in pagination
-   */
   get pageNumbers(): number[] {
     const pages: number[] = [];
-    const maxPagesToShow = 5;
-    
-    let startPage = Math.max(1, this.currentPage - Math.floor(maxPagesToShow / 2));
-    let endPage = Math.min(this.totalPages, startPage + maxPagesToShow - 1);
-    
-    // Adjust startPage if we're near the end
-    if (endPage - startPage + 1 < maxPagesToShow) {
-      startPage = Math.max(1, endPage - maxPagesToShow + 1);
+    const maxVisible = 5;
+    let start = Math.max(1, this.currentPage - Math.floor(maxVisible / 2));
+    let end = Math.min(this.totalPages, start + maxVisible - 1);
+
+    if (end - start + 1 < maxVisible) {
+      start = Math.max(1, end - maxVisible + 1);
     }
-    
-    for (let i = startPage; i <= endPage; i++) {
+
+    for (let i = start; i <= end; i++) {
       pages.push(i);
     }
-    
     return pages;
   }
 
-  /**
-   * Change to specific page
-   */
   goToPage(page: number): void {
     if (page >= 1 && page <= this.totalPages) {
       this.currentPage = page;
     }
   }
 
-  /**
-   * Go to previous page
-   */
   previousPage(): void {
-    if (this.currentPage > 1) {
-      this.currentPage--;
-    }
+    if (this.currentPage > 1) this.currentPage--;
   }
 
-  /**
-   * Go to next page
-   */
   nextPage(): void {
-    if (this.currentPage < this.totalPages) {
-      this.currentPage++;
-    }
+    if (this.currentPage < this.totalPages) this.currentPage++;
   }
 
-  /**
-   * Check if subject code or name already exists in the list
-   */
-  isDuplicate(): boolean {
-    const currentCode = this.form.subject_code.trim().toLowerCase();
-    const currentName = this.form.subject_name.trim().toLowerCase();
+  // ── Validation ──
+  private hasDuplicate(): boolean {
+    const code = this.form.subject_code.trim().toLowerCase();
+    const name = this.form.subject_name.trim().toLowerCase();
 
-    return this.subjects.some(subject => {
-      if (this.isEditing && subject.id === this.currentId) {
-        return false;
-      }
-      
+    return this.subjects.some(s => {
+      if (this.isEditing && s.id === this.currentId) return false;
       return (
-        subject.subject_code.toLowerCase() === currentCode ||
-        subject.subject_name.toLowerCase() === currentName
+        s.subject_code.toLowerCase() === code ||
+        s.subject_name.toLowerCase() === name
       );
     });
   }
 
-  /**
-   * Validate form - check for empty fields and duplicates
-   */
-  isFormValid(): boolean {
+  validateForm(): boolean {
+    this.formErrors = { subject_code: '', subject_name: '', program_id: '' };
+    let valid = true;
+
+    if (!this.form.subject_code.trim()) {
+      this.formErrors.subject_code = 'Subject code is required.';
+      valid = false;
+    }
+
+    if (!this.form.subject_name.trim()) {
+      this.formErrors.subject_name = 'Subject name is required.';
+      valid = false;
+    }
+
+    if (!this.form.program_id) {
+      this.formErrors.program_id = 'Please select a program.';
+      valid = false;
+    }
+
+    if (this.hasDuplicate()) {
+      this.formErrors.subject_code = 'A subject with this code or name already exists.';
+      valid = false;
+    }
+
+    return valid;
+  }
+
+  get isFormValid(): boolean {
     return (
       this.form.subject_code.trim() !== '' &&
       this.form.subject_name.trim() !== '' &&
-      this.form.units > 0 &&
       this.form.program_id !== undefined &&
-      this.form.year_level !== undefined &&
-      this.form.semester?.trim() !== '' &&
-      !this.isDuplicate()
+      this.form.units > 0 &&
+      !this.hasDuplicate()
     );
   }
 
+  // ── Form Actions ──
   submitForm(): void {
-    if (!this.isFormValid()) {
-      if (this.isDuplicate()) {
-        alert('A subject with this code or name already exists!');
-      } else {
-        alert('Please fill in all required fields correctly');
-      }
-      return;
-    }
+    if (!this.validateForm()) return;
+
+    this.isSaving = true;
 
     if (this.isEditing && this.currentId) {
       this.subjectService.update(this.currentId, this.form).subscribe({
         next: () => this.handleSuccess(),
-        error: (err) => alert(err.error?.message || 'Update failed')
+        error: (err) => {
+          console.error(err);
+          alert(err.error?.message || 'Update failed');
+          this.isSaving = false;
+        }
       });
     } else {
       this.subjectService.create(this.form).subscribe({
         next: () => this.handleSuccess(),
-        error: (err) => alert(err.error?.message || 'Creation failed')
+        error: (err) => {
+          console.error(err);
+          alert(err.error?.message || 'Creation failed');
+          this.isSaving = false;
+        }
       });
     }
   }
@@ -228,118 +220,12 @@ export class SubjectsComponent implements OnInit {
       school_year: sub.school_year
     };
     this.showForm = true;
+    this.formErrors = { subject_code: '', subject_name: '', program_id: '' };
   }
 
-  /**
-   * Initiate delete with confirmation dialog
-   */
-  deleteSubject(id: number): void {
-    const isConfirmed = window.confirm(
-      "Are you sure you want to delete this subject? This might affect existing curricula records."
-    );
-
-    if (isConfirmed) {
-      this.startDeleteProgress(id);
-    }
-  }
-
-  /**
-   * Start the delete progress timer
-   */
-  private startDeleteProgress(id: number): void {
-    this.pendingDeleteId = id;
-    this.showDeleteProgress = true;
-    this.deleteProgressTime = 5;
-
-    if (this.deleteTimer) {
-      clearInterval(this.deleteTimer);
-    }
-
-    this.deleteTimer = setInterval(() => {
-      this.deleteProgressTime--;
-
-      if (this.deleteProgressTime <= 0) {
-        this.executeDelete();
-      }
-    }, 1000);
-  }
-
-  /**
-   * Execute the actual delete operation
-   */
-  private executeDelete(): void {
-    const id = this.pendingDeleteId;
-
-    if (!id) return;
-
-    if (this.deleteTimer) {
-      clearInterval(this.deleteTimer);
-      this.deleteTimer = null;
-    }
-
-    this.subjectService.delete(id).subscribe({
-      next: () => {
-        this.subjects = this.subjects.filter((s) => s.id !== id);
-        this.totalItems--;
-        
-        // Adjust current page if needed
-        if (this.currentPage > this.totalPages && this.totalPages > 0) {
-          this.currentPage = this.totalPages;
-        }
-        
-        this.resetDeleteProgress();
-      },
-      error: (err: unknown): void => {
-        console.error('Failed to delete subject', err);
-        alert("This subject cannot be deleted because it is currently linked to a Curriculum.");
-        this.resetDeleteProgress();
-      },
-    });
-  }
-
-  /**
-   * Undo the delete operation - prevents the API call from happening
-   */
-  undoDelete(): void {
-    if (this.deleteTimer) {
-      clearInterval(this.deleteTimer);
-      this.deleteTimer = null;
-    }
-
-    const undoMessage = document.createElement('div');
-    undoMessage.className = 'undo-toast';
-    undoMessage.innerHTML = `
-      <span class="undo-icon">✓</span>
-      <span class="undo-text">Deletion cancelled</span>
-    `;
-    document.body.appendChild(undoMessage);
-
-    setTimeout(() => {
-      undoMessage.classList.add('show');
-    }, 10);
-
-    setTimeout(() => {
-      undoMessage.classList.remove('show');
-      setTimeout(() => {
-        undoMessage.remove();
-      }, 300);
-    }, 3000);
-
-    this.resetDeleteProgress();
-  }
-
-  /**
-   * Reset delete progress state
-   */
-  private resetDeleteProgress(): void {
-    this.showDeleteProgress = false;
-    this.deleteProgressTime = 5;
-    this.pendingDeleteId = null;
-  }
-
-  handleSuccess(): void {
-    this.resetForm();
-    this.loadData();
+  toggleForm(): void {
+    this.showForm = !this.showForm;
+    if (!this.showForm) this.resetForm();
   }
 
   resetForm(): void {
@@ -357,14 +243,85 @@ export class SubjectsComponent implements OnInit {
       semester: 'first',
       school_year: new Date().getFullYear().toString()
     };
+    this.formErrors = { subject_code: '', subject_name: '', program_id: '' };
   }
 
-  /**
-   * Get pagination info text (e.g., "Showing 1-10 of 14 records")
-   */
-  get paginationInfo(): string {
-    const startIndex = (this.currentPage - 1) * this.itemsPerPage + 1;
-    const endIndex = Math.min(this.currentPage * this.itemsPerPage, this.totalItems);
-    return `Showing ${startIndex}-${endIndex} of ${this.totalItems} records`;
+  handleSuccess(): void {
+    this.isSaving = false;
+    this.resetForm();
+    this.loadData();
   }
+
+  // Delete methods (kept similar to your original)
+  deleteSubject(id: number): void {
+    if (!window.confirm("Are you sure you want to delete this subject? This might affect existing curricula records.")) return;
+    this.startDeleteProgress(id);
+  }
+
+  private startDeleteProgress(id: number): void {
+    this.pendingDeleteId = id;
+    this.showDeleteProgress = true;
+    this.deleteProgressTime = 5;
+
+    if (this.deleteTimer) clearInterval(this.deleteTimer);
+
+    this.deleteTimer = setInterval(() => {
+      this.deleteProgressTime--;
+      if (this.deleteProgressTime <= 0) this.executeDelete();
+    }, 1000);
+  }
+
+  private executeDelete(): void {
+    const id = this.pendingDeleteId;
+    if (!id) return;
+
+    if (this.deleteTimer) {
+      clearInterval(this.deleteTimer);
+      this.deleteTimer = null;
+    }
+
+    this.subjectService.delete(id).subscribe({
+      next: () => {
+        this.subjects = this.subjects.filter(s => s.id !== id);
+        this.resetDeleteProgress();
+        if (this.currentPage > this.totalPages && this.totalPages > 0) {
+          this.currentPage = this.totalPages;
+        }
+      },
+      error: (err) => {
+        console.error(err);
+        alert("This subject cannot be deleted because it is currently linked to a Curriculum.");
+        this.resetDeleteProgress();
+      }
+    });
+  }
+
+  undoDelete(): void {
+    if (this.deleteTimer) {
+      clearInterval(this.deleteTimer);
+      this.deleteTimer = null;
+    }
+    this.showUndoToast("Deletion cancelled");
+    this.resetDeleteProgress();
+  }
+
+  private showUndoToast(message: string): void {
+    const toast = document.createElement('div');
+    toast.className = 'fixed bottom-20 right-8 bg-gray-800 text-white px-6 py-3 rounded-2xl shadow-2xl z-50';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+  }
+
+  private resetDeleteProgress(): void {
+    this.showDeleteProgress = false;
+    this.deleteProgressTime = 5;
+    this.pendingDeleteId = null;
+  }
+
+  get paginationInfo(): string {
+  const start = (this.currentPage - 1) * this.itemsPerPage + 1;
+  const end = Math.min(this.currentPage * this.itemsPerPage, this.subjects.length);
+  return `Showing ${start}–${end} of ${this.subjects.length} records`;
+}
 }
