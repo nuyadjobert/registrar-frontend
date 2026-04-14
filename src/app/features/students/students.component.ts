@@ -46,21 +46,41 @@ export class StudentsComponent implements OnInit {
   }
 
   loadStudents() {
-    this.isLoading = true;
-    this.studentService.getAll().subscribe({
-      next: (res) => {
-        this.students = res || [];
-        this.extractPrograms();
-        this.applyFilters();
-        this.isLoading = false;
-      },
-      error: (err) => {
-        console.error('Failed to load students', err);
-        this.isLoading = false;
-      }
-    });
-  }
+  this.isLoading = true;
 
+  this.studentService.getExternalStudents().subscribe({
+    next: (res) => {
+      // The response is { data: [...] }, so extract the array
+      this.students = res?.data || res || [];
+
+      // IMPORTANT: Map the data to match what your template expects
+      this.students = this.students.map(s => ({
+        ...s,
+        id: s.id || s.student_number,           // some unique id for *ngFor
+        name: `${s.first_name} ${s.last_name}`.trim(),
+        student_number: s.student_number,
+        program: {
+          code: s.course?.course_code || 'N/A',
+          name: s.course?.course_name || 'N/A',
+          department: 'N/A'   // add if your API provides it
+        }
+      }));
+
+      this.extractPrograms();
+      this.applyFilters();
+      this.isLoading = false;
+    },
+    error: (err) => {
+      console.error('Failed to load external students', err);
+      this.isLoading = false;
+
+      // Optional: show a user-friendly message
+      if (err.status === 0) {
+        console.error('Likely CORS error or network block');
+      }
+    }
+  });
+}
   extractPrograms() {
     const set = new Set<string>(
       this.students.map(s => s.program?.name).filter(Boolean)

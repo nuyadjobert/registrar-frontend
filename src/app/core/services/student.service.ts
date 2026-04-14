@@ -92,4 +92,17 @@ export class StudentService {
       }
     );
   }
+
+  // Inside StudentService class
+
+getExternalStudents(): Observable<any> {
+  return this.http.get<any>(
+    'https://admission-api-production.up.railway.app/api/external/students',
+    {
+      headers: {
+        'api_key': 'uGz1oXUDVNVIq1xWmmLglKqgYd6eEP1gy55uIjvwe4a6Lw84FBPETQLmbQzkXtSF'
+      }
+    }
+  );
+}
 }
