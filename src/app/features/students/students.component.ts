@@ -29,7 +29,7 @@ export class StudentsComponent implements OnInit {
   // Grades
   grades: any[] = [];
 
-  // Documents (from Admission API)
+  // Documents
   documents: any[] = [];
 
   // Pagination
@@ -144,7 +144,7 @@ export class StudentsComponent implements OnInit {
     this.documents = [];
 
     this.loadGrades(student.id);
-    this.loadDocuments(student.student_number);   // ← Fetch documents
+    this.loadDocuments(student.student_number);
   }
 
   closeModal() {
@@ -164,15 +164,31 @@ export class StudentsComponent implements OnInit {
     });
   }
 
-  // NEW: Load documents from Admission API
+  // Load list of documents
   loadDocuments(studentNumber: string) {
     this.studentService.getDocuments(studentNumber).subscribe({
       next: (res) => {
-        this.documents = res.data || res || [];
+        this.documents = res?.data || res || [];
       },
       error: (err) => {
         console.error('Failed to load documents', err);
         this.documents = [];
+      }
+    });
+  }
+
+  // NEW: Open actual document (sends api_key properly)
+  viewDocument(studentNumber: string, documentId: string | number) {
+    this.studentService.getDocumentFile(studentNumber, documentId).subscribe({
+      next: (blob: Blob) => {
+        const url = window.URL.createObjectURL(blob);
+        window.open(url, '_blank');
+        // Clean up memory
+        setTimeout(() => window.URL.revokeObjectURL(url), 1500);
+      },
+      error: (err) => {
+        console.error('Failed to open document', err);
+        alert('Could not open the document. Please try again.');
       }
     });
   }

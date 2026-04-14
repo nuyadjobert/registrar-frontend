@@ -23,7 +23,7 @@ export class StudentService {
 
   private studentsBase = `${environment.apiUrl}/students`;
   private gradesBase   = `${environment.apiUrl}/grades`;
-  private url = `${environment.apiUrl}/external/students/sync`; 
+  private url = `${environment.apiUrl}/external/students/sync`;
 
   constructor(private http: HttpClient) {}
 
@@ -62,11 +62,10 @@ export class StudentService {
     return this.http.get<any>(`${this.studentsBase}/${id}/transcript`);
   }
 
-  // ==================== NEW: DOCUMENTS FROM ADMISSION API ====================
+  // ====================== NEW: DOCUMENTS FROM ADMISSION API ======================
 
   /**
-   * Get all documents for a student from Admission API
-   * URL: /api/external/{studentNumber}/documents
+   * Get list of documents for a student
    */
   getDocuments(studentNumber: string): Observable<any> {
     return this.http.get<any>(
@@ -79,16 +78,17 @@ export class StudentService {
     );
   }
 
-  /**
-   * Get specific document type (if needed in future)
+    /**
+   * Get the actual document file by document ID (for viewing/downloading)
    */
-  getDocumentByType(studentNumber: string, type: string): Observable<any> {
-    return this.http.get<any>(
-      `https://admission-api-production.up.railway.app/api/external/${studentNumber}/documents/${type}`,
+  getDocumentFile(studentNumber: string, documentId: string | number): Observable<Blob> {
+    return this.http.get(
+      `https://admission-api-production.up.railway.app/api/external/${studentNumber}/documents/${documentId}`,
       {
         headers: {
           'api_key': 'uGz1oXUDVNVIq1xWmmLglKqgYd6eEP1gy55uIjvwe4a6Lw84FBPETQLmbQzkXtSF'
-        }
+        },
+        responseType: 'blob'   // Correct way
       }
     );
   }

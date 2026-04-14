@@ -1,37 +1,43 @@
 <div class="animate-in fade-in slide-in-from-bottom-2 duration-500 bg-white border border-[#edf2f7] rounded-2xl overflow-hidden font-['DM_Sans']">
 
   <!-- Header -->
-  <div class="flex flex-wrap items-start justify-between gap-4 p-6 pb-4">
+  <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 p-5 lg:p-6 pb-4">
     <div class="flex flex-col gap-1">
       <h2 class="font-['Syne'] text-[18px] font-bold text-[#1a202c] tracking-tight m-0">Student Registry</h2>
       <p class="text-[13px] text-[#718096] m-0">Manage academic records and student profiles</p>
     </div>
 
-    <div class="flex flex-wrap items-center gap-3">
-      <select class="border border-[#e2e8f0] bg-white rounded-xl px-4 py-2.5 text-[13px] focus:border-[#7F77DD] min-w-[200px]"
-              [value]="activeProgram" (change)="filterByProgram($event)">
+    <div class="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+      <!-- Program Filter -->
+      <select 
+        class="border border-[#e2e8f0] bg-white rounded-xl px-4 py-2.5 text-[13px] focus:border-[#7F77DD] w-full sm:w-auto"
+        [value]="activeProgram" 
+        (change)="filterByProgram($event)">
         @for (prog of programs; track prog) {
           <option [value]="prog">{{ prog === 'All' ? 'All Programs' : prog }}</option>
         }
       </select>
 
-      <div class="flex items-center gap-2 bg-[#f7fafc] border border-[#e2e8f0] rounded-xl px-4 py-2 min-w-[260px] focus-within:border-[#7F77DD]">
+      <!-- Search -->
+      <div class="flex items-center gap-2 bg-[#f7fafc] border border-[#e2e8f0] rounded-xl px-4 py-2 w-full sm:w-auto focus-within:border-[#7F77DD]">
         <svg class="shrink-0 opacity-40" width="14" height="14" viewBox="0 0 16 16" fill="none">
           <circle cx="6.5" cy="6.5" r="5" stroke="currentColor" stroke-width="1.5"/>
           <path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
         </svg>
-        <input type="text" placeholder="Search by name or ID..." 
+        <input type="text" 
+               placeholder="Search by name or ID..." 
                class="border-none bg-transparent text-[13px] text-[#1a202c] py-2 outline-none w-full placeholder:text-[#a0aec0]"
-               [(ngModel)]="searchQuery" (input)="applyFilters()">
+               [(ngModel)]="searchQuery" 
+               (input)="applyFilters()">
       </div>
     </div>
   </div>
 
-  <div class="h-[0.5px] bg-[#edf2f7] mx-6 my-4"></div>
+  <div class="h-[0.5px] bg-[#edf2f7] mx-5 lg:mx-6 my-4"></div>
 
   <!-- Active Filter -->
   @if (activeProgram !== 'All') {
-    <div class="px-6 py-3 bg-[#f8fafc] border-b border-[#edf2f7]">
+    <div class="px-5 lg:px-6 py-3 bg-[#f8fafc] border-b border-[#edf2f7]">
       <span class="inline-flex items-center gap-2 bg-white border border-[#e2e8f0] text-[#3C3489] text-xs font-semibold px-4 py-1.5 rounded-3xl">
         {{ activeProgram }}
         <button class="text-[#a0aec0] hover:text-red-500" (click)="clearFilter()">×</button>
@@ -61,7 +67,7 @@
   } 
   @else {
     <div class="overflow-x-auto">
-      <table class="w-full border-collapse text-[13px]">
+      <table class="w-full border-collapse text-[13px] min-w-[720px]">
         <thead class="bg-[#f7fafc]">
           <tr>
             <th class="p-4 px-6 text-left text-[11px] font-semibold tracking-wider uppercase text-[#718096] border-b border-[#edf2f7]">Student ID</th>
@@ -90,7 +96,7 @@
                 </span>
               </td>
               <td class="p-4 px-6 text-right">
-                <button (click)="viewDetails(s)" 
+                <button (click)="viewDetails(s)"
                         class="inline-flex items-center gap-2 border border-[#e2e8f0] hover:bg-[#EEEDFE] text-[#3C3489] px-4 py-2 rounded-xl text-xs font-medium transition-all">
                   View Profile
                 </button>
@@ -102,11 +108,13 @@
     </div>
 
     <!-- Pagination Footer -->
-    <div class="flex items-center justify-between p-4 px-6 border-t border-[#edf2f7] bg-[#f7fafc] text-[12px] text-[#718096]">
-      <span>{{ paginationInfo }}</span>
+    <div class="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 px-6 border-t border-[#edf2f7] bg-[#f7fafc] text-[12px] text-[#718096]">
+      <span class="text-center sm:text-left">{{ paginationInfo }}</span>
       <div class="flex items-center gap-2">
         <button (click)="previousPage()" [disabled]="currentPage === 1"
-                class="px-4 py-2 border border-[#e2e8f0] rounded-xl hover:bg-white disabled:opacity-50">Previous</button>
+                class="px-4 py-2 border border-[#e2e8f0] rounded-xl hover:bg-white disabled:opacity-50 text-sm">
+          Previous
+        </button>
 
         @for (page of totalPages; track page) {
           <button (click)="goToPage(page)"
@@ -118,50 +126,53 @@
         }
 
         <button (click)="nextPage()" [disabled]="currentPage === totalPages.length"
-                class="px-4 py-2 border border-[#e2e8f0] rounded-xl hover:bg-white disabled:opacity-50">Next</button>
+                class="px-4 py-2 border border-[#e2e8f0] rounded-xl hover:bg-white disabled:opacity-50 text-sm">
+          Next
+        </button>
       </div>
     </div>
   }
 </div>
 
 <!-- Student Profile Modal -->
-<!-- Student Profile Modal -->
 @if (showModal && selectedStudent) {
   <div class="fixed inset-0 bg-black/70 flex items-center justify-center z-[1000] p-4" (click)="closeModal()">
-    <div class="bg-white rounded-3xl w-full max-w-4xl max-h-[92vh] overflow-hidden shadow-2xl" (click)="$event.stopPropagation()">
-      
+    <div class="bg-white rounded-3xl w-full max-w-4xl max-h-[92vh] overflow-hidden shadow-2xl" 
+         (click)="$event.stopPropagation()">
+
       <!-- Header -->
-      <div class="px-8 py-6 border-b flex items-center justify-between">
+      <div class="px-6 lg:px-8 py-5 border-b flex items-center justify-between">
         <div>
-          <h2 class="text-2xl font-bold text-[#1a202c]">{{ selectedStudent.name }}</h2>
+          <h2 class="text-xl lg:text-2xl font-bold text-[#1a202c]">{{ selectedStudent.name }}</h2>
           <p class="text-[#718096]">{{ selectedStudent.student_number }}</p>
         </div>
-        <button (click)="closeModal()" class="text-4xl leading-none text-[#a0aec0] hover:text-[#1a202c]">×</button>
+        <button (click)="closeModal()" 
+                class="text-3xl lg:text-4xl leading-none text-[#a0aec0] hover:text-[#1a202c]">×</button>
       </div>
 
       <!-- Tabs -->
-      <div class="flex border-b px-8 bg-[#f8fafc]">
+      <div class="flex border-b px-6 lg:px-8 bg-[#f8fafc] overflow-x-auto">
         <button (click)="activeTab = 'info'" 
                 [class.border-b-2]="activeTab === 'info'"
                 [class.border-[#534AB7]]="activeTab === 'info'"
-                class="py-4 px-8 font-medium text-sm">Student Information</button>
+                class="py-4 px-6 lg:px-8 font-medium text-sm whitespace-nowrap">Student Information</button>
         
         <button (click)="activeTab = 'grades'" 
                 [class.border-b-2]="activeTab === 'grades'"
                 [class.border-[#534AB7]]="activeTab === 'grades'"
-                class="py-4 px-8 font-medium text-sm">Grades</button>
+                class="py-4 px-6 lg:px-8 font-medium text-sm whitespace-nowrap">Grades</button>
         
         <button (click)="activeTab = 'documents'" 
                 [class.border-b-2]="activeTab === 'documents'"
                 [class.border-[#534AB7]]="activeTab === 'documents'"
-                class="py-4 px-8 font-medium text-sm">Documents</button>
+                class="py-4 px-6 lg:px-8 font-medium text-sm whitespace-nowrap">Documents</button>
       </div>
 
       <!-- Content -->
-      <div class="p-8 overflow-auto" style="max-height: calc(92vh - 140px);">
+      <div class="p-6 lg:p-8 overflow-auto" style="max-height: calc(92vh - 140px);">
 
         @if (activeTab === 'info') {
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
             <div>
               <p class="text-xs uppercase tracking-wider text-[#718096] mb-1">Program</p>
               <p class="font-medium">{{ selectedStudent.program?.name || 'N/A' }}</p>
@@ -174,6 +185,7 @@
         }
 
         @if (activeTab === 'grades') {
+          <!-- Grades content remains the same -->
           <div>
             <h3 class="font-semibold mb-6 text-lg">Uploaded Grades</h3>
             @if (grades.length === 0) {
@@ -208,7 +220,6 @@
           </div>
         }
 
-        <!-- Documents Tab -->
         @if (activeTab === 'documents') {
           <div class="p-6 border border-[#e2e8f0] rounded-2xl">
             <h4 class="font-semibold mb-4 text-[#1a202c]">Admission Documents</h4>
@@ -220,21 +231,23 @@
                 <p>No documents found for this student.</p>
               </div>
             } @else {
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                @for (doc of documents; track doc.id || doc.document_type) {
-                  <div class="border border-[#e2e8f0] rounded-2xl p-5 hover:shadow transition-shadow">
-                    <p class="font-medium text-[#1a202c]">
-                      {{ doc.document_type ? (doc.document_type | uppercase) : 'Document' }}
-                    </p>
-                    <p class="text-xs text-[#718096] mt-1">
-                      Uploaded: {{ doc.created_at ? (doc.created_at | date:'medium') : 'N/A' }}
-                    </p>
-                    <a 
-                      [href]="doc.file_url || doc.file_path" 
-                      target="_blank"
-                      class="mt-4 inline-block w-full text-center px-5 py-2.5 bg-[#534AB7] text-white text-sm rounded-xl hover:bg-[#3C3489]">
-                      View Document
-                    </a>
+              <div class="grid grid-cols-1 gap-4">
+                @for (doc of documents; track doc.id) {
+                  <div class="border border-[#e2e8f0] rounded-2xl p-5 hover:shadow transition-shadow flex flex-col sm:flex-row sm:items-center gap-4 sm:justify-between">
+                    <div>
+                      <p class="font-medium text-[#1a202c]">
+                        {{ doc.document_type ? (doc.document_type | uppercase) : 'Document' }}
+                      </p>
+                      <p class="text-xs text-[#718096] mt-1">
+                        Uploaded: {{ doc.created_at ? (doc.created_at | date:'medium') : 'N/A' }}
+                      </p>
+                    </div>
+
+                    <button 
+                      (click)="viewDocument(selectedStudent.student_number, doc.id)"
+                      class="w-full sm:w-auto px-6 py-2.5 bg-[#534AB7] text-white text-sm rounded-xl hover:bg-[#3C3489] transition-colors">
+                      View / Download
+                    </button>
                   </div>
                 }
               </div>
@@ -244,7 +257,7 @@
       </div>
 
       <!-- Footer -->
-      <div class="px-8 py-5 border-t bg-white flex justify-end">
+      <div class="px-6 lg:px-8 py-5 border-t bg-white flex justify-end">
         <button (click)="closeModal()" 
                 class="px-8 py-3 border border-[#e2e8f0] rounded-2xl text-[#718096] hover:bg-[#f8fafc]">
           Close
