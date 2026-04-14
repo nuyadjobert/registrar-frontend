@@ -29,6 +29,9 @@ export class StudentsComponent implements OnInit {
   // Grades
   grades: any[] = [];
 
+  // Documents (from Admission API)
+  documents: any[] = [];
+
   // Pagination
   currentPage = 1;
   itemsPerPage = 10;
@@ -99,7 +102,7 @@ export class StudentsComponent implements OnInit {
     this.applyFilters();
   }
 
-  // Pagination Methods
+  // Pagination
   previousPage() {
     if (this.currentPage > 1) {
       this.currentPage--;
@@ -138,13 +141,17 @@ export class StudentsComponent implements OnInit {
     this.showModal = true;
     this.activeTab = 'info';
     this.grades = [];
+    this.documents = [];
+
     this.loadGrades(student.id);
+    this.loadDocuments(student.student_number);   // ← Fetch documents
   }
 
   closeModal() {
     this.showModal = false;
     this.selectedStudent = null;
     this.grades = [];
+    this.documents = [];
   }
 
   loadGrades(studentId: number) {
@@ -153,6 +160,19 @@ export class StudentsComponent implements OnInit {
       error: (err) => {
         console.error(err);
         this.grades = [];
+      }
+    });
+  }
+
+  // NEW: Load documents from Admission API
+  loadDocuments(studentNumber: string) {
+    this.studentService.getDocuments(studentNumber).subscribe({
+      next: (res) => {
+        this.documents = res.data || res || [];
+      },
+      error: (err) => {
+        console.error('Failed to load documents', err);
+        this.documents = [];
       }
     });
   }
