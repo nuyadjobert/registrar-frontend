@@ -3,12 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ProgramService } from '../../core/services/program.service';
 import { Program, ProgramPayload } from '../../core/models/program.model';
-import { PaginationComponent } from '../../shared/components/paginations/pagination.component'; // ← Import
+import { PaginationComponent } from '../../shared/components/paginations/pagination.component';
 
 @Component({
   selector: 'app-programs',
   standalone: true,
-  imports: [CommonModule, FormsModule, PaginationComponent], // ← Add PaginationComponent
+  imports: [CommonModule, FormsModule, PaginationComponent],
   templateUrl: './programs.component.html',
 })
 export class ProgramsComponent implements OnInit {
@@ -40,7 +40,12 @@ export class ProgramsComponent implements OnInit {
     status: 'active',
   };
 
-  formErrors: { code: string; name: string; department: string } = {
+  formErrors: { 
+    code: string; 
+    name: string; 
+    department: string;
+    general?: string;   // Added for composite errors
+  } = {
     code: '',
     name: '',
     department: ''
@@ -52,41 +57,29 @@ export class ProgramsComponent implements OnInit {
     this.loadPrograms();
   }
 
-  // ── Form Validation ──
+  // ── Basic Client-side Validation (duplicates now handled by backend) ──
   get isFormValid(): boolean {
     return !!(
       this.form.code?.trim() &&
       this.form.name?.trim() &&
       this.form.department?.trim() &&
-      this.form.code.trim().length <= 10 &&
-      !this.hasDuplicateCode()
+      this.form.code.trim().length <= 10
     );
   }
 
-  private hasDuplicateCode(): boolean {
-    const currentCode = this.form.code.trim().toUpperCase();
-    return this.programs.some(program => {
-      if (this.isEditing && program.id === this.selectedProgramId) return false;
-      return program.code.toUpperCase() === currentCode;
-    });
-  }
-
   validateForm(): boolean {
-    this.formErrors = { code: '', name: '', department: '' };
+    this.formErrors = { code: '', name: '', department: '', general: '' };
     let isValid = true;
 
     const trimmedCode = this.form.code.trim();
     const trimmedName = this.form.name.trim();
-    const trimmedDept = this.form.department?.trim() ?? '';
+    const trimmedDept = (this.form.department ?? '').trim();
 
     if (!trimmedCode) {
       this.formErrors.code = 'Program code is required.';
       isValid = false;
     } else if (trimmedCode.length > 10) {
       this.formErrors.code = 'Code must be 10 characters or less.';
-      isValid = false;
-    } else if (this.hasDuplicateCode()) {
-      this.formErrors.code = 'A program with this code already exists.';
       isValid = false;
     }
 
@@ -127,33 +120,47 @@ export class ProgramsComponent implements OnInit {
     if (!this.validateForm()) return;
 
     this.isSaving = true;
+    this.formErrors = { code: '', name: '', department: '', general: '' }; // Clear all errors
 
     const payload: ProgramPayload = {
       code: this.form.code.trim(),
       name: this.form.name.trim(),
-      department: this.form.department?.trim() ?? '',
+      department: (this.form.department ?? '').trim(),
       status: this.form.status ?? 'active',
     };
 
-    if (this.isEditing && this.selectedProgramId) {
-      this.programService.update(this.selectedProgramId, payload).subscribe({
-        next: () => this.handleSuccess(),
-        error: (err) => {
-          console.error('Update failed', err);
-          this.isSaving = false;
-          alert('Failed to update program.');
-        },
-      });
-    } else {
-      this.programService.create(payload).subscribe({
-        next: () => this.handleSuccess(),
-        error: (err) => {
-          console.error('Create failed', err);
-          this.isSaving = false;
-          alert('Failed to create duplicate program.');
-        },
-      });
-    }
+    const request$ = this.isEditing && this.selectedProgramId
+      ? this.programService.update(this.selectedProgramId, payload)
+      : this.programService.create(payload);
+
+    request$.subscribe({
+      next: () => this.handleSuccess(),
+      error: (err) => {
+        this.isSaving = false;
+        console.error('Save failed', err);
+
+        const errorResponse = err.error;
+
+        if (errorResponse?.errors) {
+          // Standard Laravel validation errors
+          const errors = errorResponse.errors;
+
+          if (errors.code) this.formErrors.code = Array.isArray(errors.code) ? errors.code[0] : errors.code;
+          if (errors.name) this.formErrors.name = Array.isArray(errors.name) ? errors.name[0] : errors.name;
+          if (errors.department) this.formErrors.department = Array.isArray(errors.department) ? errors.department[0] : errors.department;
+
+        } else if (errorResponse?.message) {
+          // Handle custom composite unique error from backend (name + department)
+          if (errorResponse.message.includes('name and department')) {
+            this.formErrors.department = errorResponse.message;
+          } else {
+            this.formErrors.general = errorResponse.message;
+          }
+        } else {
+          alert(this.isEditing ? 'Failed to update program.' : 'Failed to create program.');
+        }
+      },
+    });
   }
 
   editProgram(program: Program): void {
@@ -166,10 +173,10 @@ export class ProgramsComponent implements OnInit {
       status: program.status,
     };
     this.showForm = true;
-    this.formErrors = { code: '', name: '', department: '' };
+    this.formErrors = { code: '', name: '', department: '', general: '' };
   }
 
-  // Pagination Handlers for Reusable Component
+  // ── Pagination Methods (unchanged) ──
   previousPage(): void {
     if (this.currentPage > 1) this.currentPage--;
   }
@@ -194,7 +201,7 @@ export class ProgramsComponent implements OnInit {
     return `Showing ${start}–${end} of ${this.programs.length} record${this.programs.length !== 1 ? 's' : ''}`;
   }
 
-  // Delete methods
+  // ── Delete Methods (unchanged) ──
   deleteProgram(id: number): void {
     if (!window.confirm('Are you sure you want to delete this program?')) return;
     this.startDeleteProgress(id);
@@ -279,6 +286,6 @@ export class ProgramsComponent implements OnInit {
     this.isEditing = false;
     this.selectedProgramId = undefined;
     this.form = { code: '', name: '', department: '', status: 'active' };
-    this.formErrors = { code: '', name: '', department: '' };
+    this.formErrors = { code: '', name: '', department: '', general: '' };
   }
 }

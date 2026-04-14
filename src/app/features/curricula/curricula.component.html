@@ -106,7 +106,7 @@
       </table>
     </div>
 
-    <!-- Improved Footer with Pagination -->
+    <!-- Footer with Pagination -->
     <div class="flex items-center justify-between p-4 px-6 border-t border-[#edf2f7] bg-[#f7fafc] text-[12px] text-[#718096]">
       <span>{{ paginationInfo }}</span>
 
@@ -137,7 +137,6 @@
 </div>
 
 <!-- Modal -->
-<!-- Modal -->
 @if (showModal) {
   <div class="fixed inset-0 bg-[#0f1219]/60 flex items-center justify-center z-[1000] p-4" (click)="closeModal()">
     <div class="bg-white rounded-2xl w-full max-w-[460px] border border-[#e2e8f0] overflow-hidden shadow-2xl" 
@@ -165,7 +164,7 @@
         </button>
       </div>
 
-      <!-- Form Content - More Compact -->
+      <!-- Form Content -->
       <div class="p-5 space-y-5">
         
         <!-- Program -->
@@ -270,5 +269,23 @@
         </button>
       </div>
     </div>
+  </div>
+}
+
+<!-- Delete Progress Toast -->
+@if (showDeleteProgress()) {
+  <div class="fixed bottom-8 right-8 bg-gradient-to-br from-[#fff3cd] to-[#ffe8cc] border border-[#ffc107] rounded-2xl p-4 shadow-xl z-50 w-80">
+    <div class="flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <span class="text-xl">⚠️</span>
+        <span class="text-[#333] font-medium text-sm">Deleting in {{ deleteProgressTime() }}s...</span>
+      </div>
+      <button (click)="undoDelete()" 
+              class="bg-red-500 text-white text-xs font-bold px-5 py-2 rounded-xl hover:bg-red-600 transition-colors">
+        UNDO
+      </button>
+    </div>
+    <div class="h-1 bg-red-500 mt-3 rounded-full transition-all" 
+         [style.width.%]="(deleteProgressTime() / 5) * 100"></div>
   </div>
 }
