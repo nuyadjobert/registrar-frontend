@@ -2,11 +2,16 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { StudentService } from '../../core/services/student.service';
+import { PaginationComponent } from '../../shared/components/paginations/pagination.component'; // ← Import here
 
 @Component({
   selector: 'app-students',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule, 
+    FormsModule,
+    PaginationComponent   // ← Add this
+  ],
   templateUrl: './students.component.html',
 })
 export class StudentsComponent implements OnInit {
@@ -26,15 +31,13 @@ export class StudentsComponent implements OnInit {
   showModal = false;
   activeTab: 'info' | 'grades' | 'documents' = 'info';
 
-  // Grades
+  // Grades & Documents
   grades: any[] = [];
-
-  // Documents
   documents: any[] = [];
 
   // Pagination
   currentPage = 1;
-  itemsPerPage = 10;
+  readonly itemsPerPage = 10;
 
   constructor(private studentService: StudentService) {}
 
@@ -102,7 +105,7 @@ export class StudentsComponent implements OnInit {
     this.applyFilters();
   }
 
-  // Pagination
+  // Pagination Handlers (called from reusable component)
   previousPage() {
     if (this.currentPage > 1) {
       this.currentPage--;
@@ -117,11 +120,9 @@ export class StudentsComponent implements OnInit {
     }
   }
 
-  goToPage(page: number) {
-    if (page >= 1 && page <= this.totalPages.length) {
-      this.currentPage = page;
-      this.updatePaginatedStudents();
-    }
+  onPageChange(newPage: number) {
+    this.currentPage = newPage;
+    this.updatePaginatedStudents();
   }
 
   get totalPages(): number[] {
@@ -135,7 +136,7 @@ export class StudentsComponent implements OnInit {
     return `Showing ${start}–${end} of ${this.filteredStudents.length} records`;
   }
 
-  // View Details
+  // Modal
   viewDetails(student: any) {
     this.selectedStudent = student;
     this.showModal = true;
@@ -157,19 +158,13 @@ export class StudentsComponent implements OnInit {
   loadGrades(studentId: number) {
     this.studentService.getGrades(studentId).subscribe({
       next: (res) => this.grades = res || [],
-      error: (err) => {
-        console.error(err);
-        this.grades = [];
-      }
+      error: (err) => console.error(err)
     });
   }
 
-  // Load list of documents
   loadDocuments(studentNumber: string) {
     this.studentService.getDocuments(studentNumber).subscribe({
-      next: (res) => {
-        this.documents = res?.data || res || [];
-      },
+      next: (res) => this.documents = res?.data || res || [],
       error: (err) => {
         console.error('Failed to load documents', err);
         this.documents = [];
@@ -177,13 +172,11 @@ export class StudentsComponent implements OnInit {
     });
   }
 
-  // NEW: Open actual document (sends api_key properly)
   viewDocument(studentNumber: string, documentId: string | number) {
     this.studentService.getDocumentFile(studentNumber, documentId).subscribe({
       next: (blob: Blob) => {
         const url = window.URL.createObjectURL(blob);
         window.open(url, '_blank');
-        // Clean up memory
         setTimeout(() => window.URL.revokeObjectURL(url), 1500);
       },
       error: (err) => {

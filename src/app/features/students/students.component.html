@@ -107,30 +107,15 @@
       </table>
     </div>
 
-    <!-- Pagination Footer -->
-    <div class="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 px-6 border-t border-[#edf2f7] bg-[#f7fafc] text-[12px] text-[#718096]">
-      <span class="text-center sm:text-left">{{ paginationInfo }}</span>
-      <div class="flex items-center gap-2">
-        <button (click)="previousPage()" [disabled]="currentPage === 1"
-                class="px-4 py-2 border border-[#e2e8f0] rounded-xl hover:bg-white disabled:opacity-50 text-sm">
-          Previous
-        </button>
-
-        @for (page of totalPages; track page) {
-          <button (click)="goToPage(page)"
-                  [class.bg-[#2C2C2A]]="page === currentPage"
-                  [class.text-white]="page === currentPage"
-                  class="w-9 h-9 flex items-center justify-center rounded-xl border border-[#e2e8f0]">
-            {{ page }}
-          </button>
-        }
-
-        <button (click)="nextPage()" [disabled]="currentPage === totalPages.length"
-                class="px-4 py-2 border border-[#e2e8f0] rounded-xl hover:bg-white disabled:opacity-50 text-sm">
-          Next
-        </button>
-      </div>
-    </div>
+    <!-- Reusable Pagination Component -->
+    <app-pagination
+      [currentPage]="currentPage"
+      [totalPages]="totalPages"
+      [paginationInfo]="paginationInfo"
+      (pageChange)="onPageChange($event)"
+      (previous)="previousPage()"
+      (next)="nextPage()">
+    </app-pagination>
   }
 </div>
 
@@ -185,7 +170,6 @@
         }
 
         @if (activeTab === 'grades') {
-          <!-- Grades content remains the same -->
           <div>
             <h3 class="font-semibold mb-6 text-lg">Uploaded Grades</h3>
             @if (grades.length === 0) {

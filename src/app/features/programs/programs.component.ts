@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ProgramService } from '../../core/services/program.service';
 import { Program, ProgramPayload } from '../../core/models/program.model';
+import { PaginationComponent } from '../../shared/components/paginations/pagination.component'; // ← Import
 
 @Component({
   selector: 'app-programs',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PaginationComponent], // ← Add PaginationComponent
   templateUrl: './programs.component.html',
 })
 export class ProgramsComponent implements OnInit {
@@ -25,7 +26,7 @@ export class ProgramsComponent implements OnInit {
 
   // Pagination
   currentPage: number = 1;
-  itemsPerPage: number = 10;
+  readonly itemsPerPage: number = 10;
 
   // Form
   showForm = false;
@@ -51,12 +52,7 @@ export class ProgramsComponent implements OnInit {
     this.loadPrograms();
   }
 
-  // ── Computed Properties ──
-  get activeCount()     { return this.programs.filter(p => p.status === 'active').length; }
-  get inactiveCount()   { return this.programs.filter(p => p.status === 'inactive').length; }
-  get departmentCount() { return new Set(this.programs.map(p => p.department).filter(Boolean)).size; }
-
-  /** Real-time form validation */
+  // ── Form Validation ──
   get isFormValid(): boolean {
     return !!(
       this.form.code?.trim() &&
@@ -154,7 +150,7 @@ export class ProgramsComponent implements OnInit {
         error: (err) => {
           console.error('Create failed', err);
           this.isSaving = false;
-          alert('Failed to create program.');
+          alert('Failed to create duplicate program.');
         },
       });
     }
@@ -173,38 +169,29 @@ export class ProgramsComponent implements OnInit {
     this.formErrors = { code: '', name: '', department: '' };
   }
 
-  // ── Pagination Methods ──
-  getPaginatedPrograms(): Program[] {
-    const start = (this.currentPage - 1) * this.itemsPerPage;
-    return this.programs.slice(start, start + this.itemsPerPage);
-  }
-
-  getPaginationStartIndex(): number {
-    return (this.currentPage - 1) * this.itemsPerPage + 1;
-  }
-
-  getPaginationEndIndex(): number {
-    return Math.min(this.currentPage * this.itemsPerPage, this.programs.length);
-  }
-
-  /** Returns array of page numbers for display */
-  getTotalPages(): number[] {
-    const total = Math.ceil(this.programs.length / this.itemsPerPage);
-    return Array.from({ length: total }, (_, i) => i + 1);
-  }
-
+  // Pagination Handlers for Reusable Component
   previousPage(): void {
     if (this.currentPage > 1) this.currentPage--;
   }
 
   nextPage(): void {
-    const total = this.getTotalPages().length;
+    const total = this.totalPages.length;
     if (this.currentPage < total) this.currentPage++;
   }
 
-  goToPage(page: number): void {
-    const total = this.getTotalPages().length;
-    if (page >= 1 && page <= total) this.currentPage = page;
+  onPageChange(newPage: number): void {
+    this.currentPage = newPage;
+  }
+
+  get totalPages(): number[] {
+    const total = Math.ceil(this.programs.length / this.itemsPerPage);
+    return Array.from({ length: total }, (_, i) => i + 1);
+  }
+
+  get paginationInfo(): string {
+    const start = (this.currentPage - 1) * this.itemsPerPage + 1;
+    const end = Math.min(this.currentPage * this.itemsPerPage, this.programs.length);
+    return `Showing ${start}–${end} of ${this.programs.length} record${this.programs.length !== 1 ? 's' : ''}`;
   }
 
   // Delete methods
@@ -240,9 +227,9 @@ export class ProgramsComponent implements OnInit {
         this.programs = this.programs.filter(p => p.id !== id);
         this.resetDeleteProgress();
 
-        const totalPages = this.getTotalPages().length;
-        if (this.currentPage > totalPages && totalPages > 0) {
-          this.currentPage = totalPages;
+        const total = this.totalPages.length;
+        if (this.currentPage > total && total > 0) {
+          this.currentPage = total;
         }
       },
       error: (err) => {
@@ -285,12 +272,6 @@ export class ProgramsComponent implements OnInit {
     this.isSaving = false;
     this.resetForm();
     this.loadPrograms();
-
-    setTimeout(() => {
-      if (this.programs.length % this.itemsPerPage === 1 && this.programs.length > this.itemsPerPage) {
-        this.nextPage();
-      }
-    }, 300);
   }
 
   resetForm(): void {

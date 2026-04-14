@@ -1,0 +1,29 @@
+<div class="flex flex-col sm:flex-row items-center justify-between gap-4 text-[12px] text-[#718096]">
+  <span>{{ paginationInfo }}</span>
+  
+  <div class="flex items-center gap-2">
+    <button 
+      (click)="goPrevious()" 
+      [disabled]="currentPage === 1"
+      class="px-4 py-2 border border-[#e2e8f0] rounded-xl hover:bg-white disabled:opacity-50">
+      Previous
+    </button>
+
+    @for (page of totalPages; track page) {
+      <button 
+        (click)="goToPage(page)"
+        [class.bg-[#2C2C2A]]="page === currentPage"
+        [class.text-white]="page === currentPage"
+        class="w-9 h-9 flex items-center justify-center rounded-xl border border-[#e2e8f0]">
+        {{ page }}
+      </button>
+    }
+
+    <button 
+      (click)="goNext()" 
+      [disabled]="currentPage === totalPages.length"
+      class="px-4 py-2 border border-[#e2e8f0] rounded-xl hover:bg-white disabled:opacity-50">
+      Next
+    </button>
+  </div>
+</div>

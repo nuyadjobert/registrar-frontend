@@ -142,7 +142,7 @@
           </tr>
         </thead>
         <tbody>
-          @for (prog of getPaginatedPrograms(); track prog.id) {
+          @for (prog of programs | slice: (currentPage-1)*itemsPerPage : currentPage*itemsPerPage; track prog.id) {
             <tr class="border-b border-[#edf2f7] hover:bg-[#f8fafc] transition-colors">
               <td class="p-4 px-6">
                 <span class="inline-flex bg-[#EEEDFE] text-[#534AB7] text-xs font-bold px-3 py-1 rounded-lg uppercase tracking-wider">
@@ -181,36 +181,15 @@
       </table>
     </div>
 
-    <!-- Improved Footer with Pagination -->
-    <div class="flex items-center justify-between p-4 px-6 border-t border-[#edf2f7] bg-[#f7fafc] text-[12px] text-[#718096]">
-      <span>Showing {{ getPaginationStartIndex() }}–{{ getPaginationEndIndex() }} of {{ programs.length }} record{{ programs.length !== 1 ? 's' : '' }}</span>
-
-      <div class="flex items-center gap-2">
-        <button 
-          (click)="previousPage()" 
-          [disabled]="currentPage === 1"
-          class="px-4 py-2 border border-[#e2e8f0] rounded-xl hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-          Previous
-        </button>
-
-        @for (page of getTotalPages(); track page) {
-          <button 
-            (click)="goToPage(page)"
-            [class.bg-[#2C2C2A]]="page === currentPage"
-            [class.text-white]="page === currentPage"
-            class="w-9 h-9 flex items-center justify-center rounded-xl border border-[#e2e8f0] hover:bg-white transition-colors">
-            {{ page }}
-          </button>
-        }
-
-        <button 
-          (click)="nextPage()" 
-          [disabled]="currentPage === getTotalPages().length"
-          class="px-4 py-2 border border-[#e2e8f0] rounded-xl hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-          Next
-        </button>
-      </div>
-    </div>
+    <!-- Reusable Pagination Component -->
+    <app-pagination
+      [currentPage]="currentPage"
+      [totalPages]="totalPages"
+      [paginationInfo]="paginationInfo"
+      (pageChange)="onPageChange($event)"
+      (previous)="previousPage()"
+      (next)="nextPage()">
+    </app-pagination>
   }
 
 </div>
